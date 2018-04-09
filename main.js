@@ -653,10 +653,16 @@ function Player(name) {
         this.treasure = 0
         this.tricks = []
     }
+
+    this.changeName = function(name) {
+        this.name = name;
+    }
+
 }
 
 var player1 = new Player("Alasdair");
 var player2 = new Player("Kaley");
 var game = new Game();
+document.getElementById("player-2-name").textContent = player2.name;
 game.newRound();
 game.playRound();
