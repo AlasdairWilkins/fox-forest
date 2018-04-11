@@ -17,6 +17,7 @@ function Game() {
     this.trick = [];
     this.scoreCheck = 0;
     this.displayplayer = player1;
+    this.remoteplayer = player2;
     this.dealplayer = player2;
     this.leadplayer = player1;
     this.followplayer = player2;
@@ -51,12 +52,12 @@ function Game() {
     };
     this.setDecree = function() {
         this.decree = this.deck.pop();
-        var decree = `The decree card is the ${this.decree.value} of ${this.decree.suit}.`
+        var decree = `<img src=${this.decree.image} class="card">`
         this.buildDecree(decree)
     }
 
     this.buildDecree = function(decreetemp) {
-        document.getElementById("Decree").innerHTML = decreetemp
+        document.getElementById("decree").innerHTML = decreetemp
     };
 
     this.whoLeads = function() {
@@ -86,6 +87,16 @@ function Game() {
 
     }
 
+    this.buildDisplayInfo = function() {
+        document.getElementById("display-name").innerHTML = this.displayplayer.name
+        document.getElementById("display-tricks").innerHTML = this.displayplayer.tricks.length
+        document.getElementById("display-score").innerHTML = this.displayplayer.score
+        document.getElementById("remote-name").innerHTML = this.remoteplayer.name
+        document.getElementById("remote-tricks").innerHTML = this.remoteplayer.tricks.length
+        document.getElementById("remote-score").innerHTML = this.remoteplayer.score
+
+    }
+
 
 
     this.doWitch = function() {
@@ -110,7 +121,6 @@ function Game() {
     this.scoreTrick = function() {
         if (this.trick[0].value === 9 || this.trick[1].value === 9) {
             if (this.trick[0].value !== this.trick[1].value) {
-            console.log("Witch time!")
             var olddata = this.doWitch()
             }
         }
@@ -179,32 +189,32 @@ function Game() {
     };
 
     this.buildScores = function() {
-        document.getElementById("Last Round").innerHTML = `As of the last round:`
-        document.getElementById("Player 1 Tricks").innerHTML = player1.roundResult
-        document.getElementById("Player 2 Tricks").innerHTML = player2.roundResult
-        document.getElementById("Score Update").innerHTML = this.currentWinner
+        document.getElementById("last-round").innerHTML = `As of the last round:`
+        document.getElementById("player-1-tricks").innerHTML = player1.roundResult
+        document.getElementById("player-2-tricks").innerHTML = player2.roundResult
+        document.getElementById("score-update").innerHTML = this.currentWinner
     }
 
     this.buildWinner = function() {
-        document.getElementById("Game Over").innerHTML = this.winner
+        document.getElementById("game-over").innerHTML = this.winner
     }
 
 
     this.buildResults = function() {
-        document.getElementById("Lead").innerHTML = this.results.lead;
-        document.getElementById("Follow").innerHTML = this.results.follow;
-        document.getElementById("Winner").innerHTML = this.results.winner
+        document.getElementById("lead").innerHTML = this.results.lead;
+        document.getElementById("follow").innerHTML = this.results.follow;
+        document.getElementById("winner").innerHTML = this.results.winner
     };
 
     this.buildMechanic = function(mechanic) {
-        document.getElementById("Mechanic").innerHTML = mechanic
+        document.getElementById("mechanic").innerHTML = mechanic
     }
 
     this.playRound = function() {
         if (this.displayplayer !== this.leadplayer) {
             this.leadplayer.leadCard();
             this.displayplayer.setFollowCards();
-            this.displayplayer.buildList()
+            this.displayplayer.buildList(14)
         }
     };
 
@@ -250,6 +260,7 @@ function Card(value, suit) {
     this.playable = true;
     this.hasMechanic = false;
     this.mechanic = 0
+    this.image = `images/${this.suit.toLowerCase()}${this.value}.jpg`
 }
 
 function Player(name) {
@@ -281,64 +292,121 @@ function Player(name) {
 
     this.buildTrick = function () {
         var newarray = game.trick.map(function (element) {
-            return `<li class=${element.suit} id=${element.value}>${element.value} of ${element.suit}</li>`
+            var count = game.trick.indexOf(element) + 1
+            return `<img src=${element.image} class="card" id="trick${count}">`
         }).join("");
-        document.querySelector('#Trick').innerHTML = newarray
+        document.getElementById("trick").innerHTML = newarray
     };
 
     this.buildWoodcutterList = function () {
+        var count = 0
+        var handarray = ""
         for (var i = 0; i < this.hand.length; i++) {
-            var newarray = this.hand[i].array.map(function (element) {
-                var z = game.displayplayer.hand[i].array.indexOf(element);
-                if (element.playable) {
-                    return `<button class=${element.suit} id=${element.value} onclick='game.displayplayer.doWoodcutter(${i}, ${z})'>${element.value} of ${element.suit}</button>`
+            var newarray = this.hand[i].array.map(function (card) {
+                var z = game.displayplayer.hand[i].array.indexOf(card);
+                if (card.playable) {
+                    count +=1
+                    var style = game.displayplayer.setListStyle(count, i, card)
+                    return `<img src=${card.image} class="card" id="card${count}" onclick='game.displayplayer.doWoodcutter(${count}, ${i}, ${z})' style=${style}>`
                 } else {
-                    return `<button class=${element.suit} id=${element.value} disabled>${element.value} of ${element.suit}</button>`
+                    count +=1
+                    var style = game.displayplayer.setListStyle(count, i, card)
+                    return `<img src=${card.image} class="card" id="card${count}" disabled style=${style} >`
                 }
             }).join("")
-            document.querySelector(`#${this.hand[i].suit}`).innerHTML = newarray
+            handarray += newarray
         }
+        document.getElementById("hand").innerHTML = handarray
     }
 
     this.buildFoxList = function () {
+        var count = 0
+        var handarray = ""
         for (var i = 0; i < this.hand.length; i++) {
-            var newarray = this.hand[i].array.map(function (element) {
-                var z = game.displayplayer.hand[i].array.indexOf(element);
-                return `<button class=${element.suit} id=${element.value} onclick='game.displayplayer.doFox(${i}, ${z})'>${element.value} of ${element.suit}</button>`
+            var newarray = this.hand[i].array.map(function (card) {
+                var z = game.displayplayer.hand[i].array.indexOf(card);
+                count +=1
+                var style = game.displayplayer.setListStyle(count, i, card)
+                    return `<img src=${card.image} id="card${count}" onclick='game.displayplayer.doFox(${i}, ${z}, ${count})' style=${style}>`
             }).join("")
-            document.querySelector(`#${this.hand[i].suit}`).innerHTML = newarray
+            handarray += newarray
         }
+        document.getElementById("hand").innerHTML = handarray
     }
 
     this.buildPassButton = function (passhtml) {
-        document.getElementById("Pass").innerHTML = passhtml
+        document.getElementById("pass").innerHTML = passhtml
     }
 
-    this.buildList = function () {
+    this.setListStyle = function(counttemp, suittemp, cardtemp) {
+        var position = (counttemp-1)*75
+        if (this.hand[suittemp].playable && cardtemp.playable) {
+            return `'z-index: ${counttemp}; left: ${position}px'`
+        } else {
+            return `'z-index: ${counttemp}; left: ${position}px; filter: blur(3px);'`
+        }
+    }
+
+    this.buildList = function (oldcount) {
+        console.log(oldcount)
+        var handarray = ""
+        var count = 0
         var tricksplayed = player1.tricks.length + player2.tricks.length
         for (var i = 0; i < this.hand.length; i++) {
             if (this.hand[i].playable) {
-                var newarray = this.hand[i].array.map(function (element) {
-                    var y = game.displayplayer.hand[i].array.indexOf(element);
-                    if (element.playable) {
-                        if (element.value === 3 && tricksplayed < 12) {
-                            return `<button class=${element.suit} id=${element.value} onclick='game.displayplayer.doFoxHuman(${i}, ${y})'>${element.value} of ${element.suit}</button>`
-                        } else if (element.value === 5 && tricksplayed < 12) {
-                            return `<button class=${element.suit} id=${element.value} onclick='game.displayplayer.doWoodcutterHuman(${i}, ${y})'>${element.value} of ${element.suit}</button>`
+                var newarray = this.hand[i].array.map(function (card) {
+                    var y = game.displayplayer.hand[i].array.indexOf(card);
+                    if (card.playable) {
+                        if (card.value === 3 && tricksplayed < 12) {
+                            count +=1
+                            var style = game.displayplayer.setListStyle(count, i, card)
+                            if (count < oldcount) {
+                                return `<img src=${card.image} class="leftcard" id="card${count}" onclick='game.displayplayer.doFoxHuman(${count}, ${i}, ${y})' style=${style} >`
+                            } else {
+                                return `<img src=${card.image} class="rightcard" id="card${count}" onclick='game.displayplayer.doFoxHuman(${count}, ${i}, ${y})' style=${style} >`
+                            }
+                        } else if (card.value === 5 && tricksplayed < 12) {
+                            count +=1
+                            var style = game.displayplayer.setListStyle(count, i, card)
+                            if (count < oldcount) {
+                                return `<img src=${card.image} class="leftcard" id="card${count}" onclick='game.displayplayer.doWoodcutterHuman(${count}, ${i}, ${y})' style=${style} >`
+                            } else {
+                                return `<img src=${card.image} class="rightcard" id="card${count}" onclick='game.displayplayer.doWoodcutterHuman(${count}, ${i}, ${y})' style=${style} >`
+                            }
                         } else {
-                            return `<button class=${element.suit} id=${element.value} onclick='game.displayplayer.clicked(${i}, ${y})'>${element.value} of ${element.suit}</button>`
+                            count +=1
+                            var style = game.displayplayer.setListStyle(count, i, card)
+                            if (count < oldcount) {
+                                return `<img src=${card.image} class="leftcard" id="card${count}" onclick='game.displayplayer.clicked(${count}, ${i}, ${y})' style=${style} >`
+                            } else {
+                                return `<img src=${card.image} class="rightcard" id="card${count}" onclick='game.displayplayer.clicked(${count}, ${i}, ${y})' style=${style} >`
+                            }
                         }
                     } else {
-                        return `<button class=${element.suit} id=${element.value} disabled>${element.value} of ${element.suit}</button>`
+                        count +=1
+                        var style = game.displayplayer.setListStyle(count, i, card)
+                        if (count < oldcount) {
+                            return `<img src=${card.image} class="leftcard" id="card${count}" style=${style} >`
+                        } else {
+                            return `<img src=${card.image} class="rightcard" id="card${count}" style=${style} >`
+                        }
                     }
                 }).join("")
             } else {
-                var newarray = this.hand[i].array.map(function (element) {
-                    return `<button class=${element.suit} id=${element.value} disabled>${element.value} of ${element.suit}</button>`
+                var newarray = this.hand[i].array.map(function (card) {
+                    count +=1
+                    var style = game.displayplayer.setListStyle(count, i, card)
+                    if (count < oldcount) {
+                        return `<img src=${card.image} class="leftcard" id="card${count}" style=${style}>`
+                    } else {
+                        return `<img src=${card.image} class="rightcard" id="card${count}" style=${style}>`
+                    }
                 }).join("")
             }
-            document.querySelector(`#${this.hand[i].suit}`).innerHTML = newarray
+            handarray += newarray
         }
+        document.getElementById("hand").innerHTML = handarray
+
     };
 
     this.createHand = function (decktemp) {
@@ -364,7 +432,7 @@ function Player(name) {
         this.hand.push(this.bells, this.keys, this.moons)
         this.handMaster = this.hand.slice(0)
         if (this === game.displayplayer) {
-            this.buildList()
+            this.buildList(14)
         }
     };
 
@@ -385,26 +453,26 @@ function Player(name) {
         }
     }
 
-    this.doFox = function(suit, value) {
+    this.doFox = function(suit, value, oldcount) {
         var newcard = game.decree
         game.decree = this.hand[suit].array[value]
-        var decree = `${this.name} changed the decree card to the ${game.decree.value} of ${game.decree.suit}.`
+        var decree = `<img src=${game.decree.image} class="card">`
         game.buildDecree(decree)
         this.hand[suit].array.splice(value, 1)
         this.insertCard(newcard)
         if (this === game.displayplayer) {
             var passbutton = ""
             this.buildPassButton(passbutton)
-            this.clicked()
+            this.clicked(oldcount)
         }
     }
 
-    this.doWoodcutter = function(suit, value) {
+    this.doWoodcutter = function(oldcount, suit, value) {
         var discard = this.hand[suit].array[value]
         this.hand[suit].array.splice(value, 1)
         game.deck.splice(0, 0, discard)
         if (this === game.displayplayer) {
-            this.clicked()
+            this.clicked(oldcount)
         }
     }
 
@@ -414,7 +482,7 @@ function Player(name) {
         this.clicked(suit, value)
     }
 
-    this.doFoxHuman = function(suit, value) {
+    this.doFoxHuman = function(counttemp, suit, value) {
         this.isFoxWoodcutter = true
         this.playCard(suit, value)
         if (game.displayplayer === game.followplayer) {
@@ -425,7 +493,7 @@ function Player(name) {
         this.buildPassButton(passbutton)
     }
 
-    this.doWoodcutterHuman = function(suit, value) {
+    this.doWoodcutterHuman = function(counttemp, suit, value) {
         this.isFoxWoodcutter = true
         this.playCard(suit, value)
         if (game.displayplayer === game.followplayer) {
@@ -442,7 +510,7 @@ function Player(name) {
         if (Math.floor(Math.random()*2) === 1) {
             var x = Math.floor(Math.random()*this.hand.length)
             var y = Math.floor(Math.random()*this.hand[x].array.length)
-            this.doFox(x, y, "", 0)
+            this.doFox(x, y)
         }
     }
 
@@ -456,17 +524,16 @@ function Player(name) {
         this.insertCard(newcard)
     }
 
-    this.playCard = function(suittemp, cardtemp) {
+    this.playCard = function(suittemp, cardtemp, oldcounttemp) {
         game.trick.push(this.hand[suittemp].array[cardtemp]);
         var tricknum = game.trick.length - 1
-        console.log(this.hand[suittemp].array[cardtemp])
         if (this.hand[suittemp].array[cardtemp].hasMechanic) {
             game.buildMechanic(this.hand[suittemp].array[cardtemp].mechanic)
         }
         this.hand[suittemp].array.splice(cardtemp, 1);
         if (this.hand[suittemp].array.length === 0) {
             if (this === game.displayplayer) {
-                this.buildList()
+                this.buildList(oldcounttemp)
             }
             this.hand.splice(suittemp, 1)
             this.isMonarch = false
@@ -498,9 +565,9 @@ function Player(name) {
         }
     };
 
-    this.clicked = function(x, y) {
+    this.clicked = function(oldcount, x, y) {
         if (!this.isFoxWoodcutter) {
-            this.playCard(x, y);
+            this.playCard(x, y, oldcount);
         }
         if (this === game.leadplayer) {
             game.followplayer.followCard()
@@ -518,25 +585,26 @@ function Player(name) {
             game.whoLeads();
             if (game.gameOver) {
                 game.buildScores()
+                game.buildDisplayInfo()
                 game.buildWinner()
             } else {
                 game.buildScores();
+                game.buildDisplayInfo()
                 game.newRound();
                 this.buildTrick();
-                this.buildList();
+                this.buildList(14);
                 game.playRound()
             }
         } else {
             this.buildTrick();
-            this.buildList();
+            this.buildList(oldcount);
+            game.buildDisplayInfo()
             game.buildResults();
             for (var i; i < this.hand.length; i++) {
                 for (var j; j < this.hand[i].array.length; j++)
                     if (!this.hand[i].array[j].playable) {
-                    console.log(this.hand[i].array[j].suit, this.hand[i].array[j].value)
                     }
             }
-            console.log("All clear!")
             game.playRound()
         }
 
@@ -658,11 +726,21 @@ function Player(name) {
         this.name = name;
     }
 
+    this.sendRequest = function() {
+        var gamesend = JSON.stringify(game)
+        $.post('http://localhost:8000/sendgamestate', game, function(text, status) {
+            console.log(text, status);
+            var newtext = JSON.parse(text)
+            alert(newtext['hand'][0])
+            //alert(text['hand'][0])
+        })
+    }
+
 }
 
 var player1 = new Player("Alasdair");
 var player2 = new Player("Kaley");
 var game = new Game();
-document.getElementById("player-2-name").textContent = player2.name;
+game.buildDisplayInfo()
 game.newRound();
 game.playRound();

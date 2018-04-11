@@ -1,0 +1,108 @@
+body {
+    background-image: url("images/ep_naturalwhite.png");
+    cursor: pointer;
+    margin: 0;
+}
+
+#players-info {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 6px double white;
+    background-color: saddlebrown;
+    color: white;
+}
+
+#players-info div {
+    margin-top: 5px;
+    margin-bottom: 2px;
+}
+
+#display-info {
+    margin-left: 20px
+}
+
+#remote-info {
+    margin-right: 20px
+}
+
+.card {
+    width: 200px;
+    box-shadow: -10px 5px 5px gray;
+    border-radius: 5px;
+}
+
+#hand button {
+    border-style: none;
+    background-color: white
+}
+
+#trick {
+    width: 450px;
+    justify-content: space-between;
+}
+
+#game {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+#decree {
+    margin-left: 20px;
+}
+
+#deck {
+    margin-right: 20px;
+}
+
+#hand-container {
+    display: flex;
+    justify-content: center;
+    margin-left: 20px;
+}
+
+#hand {
+    width: 1200px;
+    height: 300px;
+}
+
+#hand img {
+    width: 200px;
+    position:absolute;
+    box-shadow: -10px 5px 5px gray;
+    border-radius: 5px;
+}
+
+#trick img {
+    animation-name: moveup;
+    animation-duration: 5s
+}
+
+@keyframes moveup {
+    from{
+        top: 316px
+    }
+    to {
+        top: 0px
+          }
+}
+
+.rightcard {
+    animation-name: moveleft;
+    animation-duration: 2s
+}
+
+@keyframes moveleft {
+    from {
+        margin-left: 50px
+    }
+    to {
+        margin-left: 0px
+    }
+}
+
+
+
+

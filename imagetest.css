@@ -1,0 +1,27 @@
+
+:root {
+    --tx: 75%;
+}
+
+#bells1 {
+    animation-name: move;
+    animation-duration: 3s;
+    margin-left: 200px;
+    margin-top: 100px
+}
+
+.rightcard {
+    animation-name: moveleft;
+    animation-duration: 3s
+}
+
+@keyframes moveleft {
+    from {
+        margin-left: var(--tx);
+        margin-top: 0px
+    }
+    to {
+        margin-left: 200px;
+        margin-top: 100px
+    }
+}
