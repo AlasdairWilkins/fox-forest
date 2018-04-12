@@ -4,6 +4,14 @@ body {
     margin: 0;
 }
 
+#startup {
+    margin-left: 15px;
+}
+
+#play {
+    display: none;
+}
+
 #players-info {
     display: flex;
     justify-content: space-between;
@@ -31,41 +39,90 @@ body {
     border-radius: 5px;
 }
 
-#hand button {
-    border-style: none;
-    background-color: white
+#trick {
+    width: 420px;
+    position: relative;
+    margin: 0 auto 0 auto;
 }
 
-#trick {
-    width: 450px;
-    justify-content: space-between;
+
+#trick-cards {
+    z-index: 1;
+}
+
+#trick1 {
+    position: absolute;
+}
+
+#trick2 {
+    position: absolute;
+    margin-left: 220px
+}
+
+#trick-winner div {
+    position: absolute;
+    width: 350px;
+    margin-top: 112px;
+    background-color: gold;
+    border: solid 5px crimson;
+    border-radius: 10px;
+    box-shadow: -5px 5px 5px gray;
+    text-align: center;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    z-index: 2;
+    display: none;
+    margin-left: 35px;
+    font-family: Garamond;
+    animation-name: trick-winner-display;
+    animation-duration: 3300ms;
+}
+
+@keyframes trick-winner-display {
+    from { opacity: .01 }
+    10% {opacity: .01 }
+    30% { opacity: 1 }
+    80% { opacity: 1 }
+    to { opacity: .01 }
 }
 
 #game {
-    display: flex;
-    justify-content: space-between;
     width: 100%;
     margin-top: 20px;
     margin-bottom: 20px;
+    height: 288px;
 }
 
 #decree {
     margin-left: 20px;
+    z-index: 1;
+    position: relative;
+}
+
+#decree-card {
+    position: absolute;
+}
+
+#pass {
+    margin-top: 112px;
+    margin-left: 5px;
+    width: 190px;
+    z-index: 2;
+    position: absolute;
 }
 
 #deck {
     margin-right: 20px;
+    float: right
 }
 
 #hand-container {
-    display: flex;
-    justify-content: center;
     margin-left: 20px;
+    height: 300px
 }
 
 #hand {
-    width: 1200px;
-    height: 300px;
+    position: relative
 }
 
 #hand img {
@@ -75,23 +132,9 @@ body {
     border-radius: 5px;
 }
 
-#trick img {
-    animation-name: moveup;
-    animation-duration: 5s
-}
-
-@keyframes moveup {
-    from{
-        top: 316px
-    }
-    to {
-        top: 0px
-          }
-}
-
 .rightcard {
     animation-name: moveleft;
-    animation-duration: 2s
+    animation-duration: 500ms
 }
 
 @keyframes moveleft {

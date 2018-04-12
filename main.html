@@ -8,39 +8,45 @@
     <script src="main.js" defer></script>
 </head>
 <body>
-    <div id="players-info">
-        <div id="display-info">
-            <strong><span id="display-name"></span> | Tricks: <span id="display-tricks"></span> | Score: <span id="display-score"></span></strong>
+    <div id="startup">
+        <p>Welcome to The Fox in the Forest!</p>
+        <button id="ai" onclick="clickedAI()">Play against the computer.</button>
+        <button id="human" onclick="clickedHuman()">Play against another person.</button>
+    </div>
+    <div id="play">
+        <div id="players-info">
+            <div id="display-info">
+                <strong><span id="display-name"></span> | Tricks: <span id="display-tricks"></span> | Score: <span id="display-score"></span></strong>
+            </div>
+            <div id="remote-info">
+                <strong><span id="remote-name"></span> | Tricks: <span id="remote-tricks"></span> | Score: <span id="remote-score"></span></strong>
+            </div>
         </div>
-        <div id="remote-info">
-            <strong><span id="remote-name"></span> | Tricks: <span id="remote-tricks"></span> | Score: <span id="remote-score"></span></strong>
+        <div id="game">
+            <div id="decree">
+                <div id="decree-card"></div>
+                <div id="pass"></div>
+            </div>
+            <div id="trick">
+                <div id ="trick-cards"></div>
+                <div id="trick-winner"></div>
+            </div>
+            <div id="deck"><img src="images/reverse.jpg" class="card"></div>
+        </div>
+        <div id="hand-container">
+            <div id="hand"></div>
+        </div>
+        <div>
+            <p id="mechanic"></p>
+        </div>
+        <div>
+            <p id ="last-round"></p>
+            <p id ="player-1-tricks"></p>
+            <p id ="player-2-tricks"></p>
+            <p id ="score-update"></p>
+            <p id ="game-over"></p>
         </div>
     </div>
-    <div id="game">
-        <div id="decree"></div>
-        <div id="trick"></div>
-        <div id="deck"><img src="images/reverse.jpg" class="card"></div>
-    </div>
-    <div id="hand-container">
-        <div id="hand"></div>
-    </div>
-    <div>
-        <p id="mechanic"></p>
-        <div id="pass"></div>
-    </div>
-    <div>
-        <p id="lead"></p>
-        <p id="follow"></p>
-        <p id="winner"></p>
-    </div>
-    <div>
-        <p id ="last-round"></p>
-        <p id ="player-1-tricks"></p>
-        <p id ="player-2-tricks"></p>
-        <p id ="score-update"></p>
-        <p id ="game-over"></p>
-    </div>
-    <div><button onclick="game.displayplayer.sendRequest()">Click here to send request</button></div>
 
 
 </body>

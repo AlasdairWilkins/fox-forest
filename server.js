@@ -1,17 +1,35 @@
-// // Load HTTP module
-// var http = require("http");
-//
-// // Create HTTP server and listen on port 8000 for requests
-// http.createServer(function(request, response) {
-//
-//     // Set the response HTTP header with HTTP status and Content type
-//     response.writeHead(200, {'Content-Type': 'text/plain','Access-Control-Allow-Origin':'*'});
-//
-//     // Send the response body "Hello World"
-//     response.end('{"hand": [3,4,5]}');
-// }).listen(8000);
+function Game() {
+    this.decree = 0;
+    this.deck = [];
+    this.buildDeck = function() {
+        var suits = ['Bells', 'Keys', 'Moons'];
+        for (var i = 0; i < suits.length; i++) {
+            for (var num = 1; num < 12; num++) {
+                var card = new Card(num, suits[i]);
+                if (num%2 === 1) {
+                    card.hasMechanic = true
+                    card.mechanic = this.mechanics[Math.floor(num/2)]
+                }
+                this.deck.push(card);
+            }
+        }
+    };
+    this.trick = [];
+    this.scoreCheck = 0;
+    this.sendplayer = player1;
+    this.receiverplayer = player2;
+    this.shuffleDeck = function() {
+        var i = 0
+            , j = 0
+            , temp = [];
 
-//body-parser
+        for (i = this.deck.length - 1; i > 0; i -= 1) {
+            j = Math.floor(Math.random() * (i + 1));
+            temp = this.deck[i];
+            this.deck[i] = this.deck[j];
+            this.deck[j] = temp
+        }
+    };
 
 var express = require('express');
 var bodyParser = require('body-parser');
