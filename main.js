@@ -1,16 +1,17 @@
-function Game(choice) {
+function Game(choice, playera, playerb) {
     this.ai = choice;
-    this.trickcount = 0
+    this.trickcount = 0;
+    this.turncount = 0;
     this.decree = 0;
     this.deck = [];
-    this.buildDeck = function() {
+    this.buildDeck = function () {
         var suits = ['Bells', 'Keys', 'Moons'];
         for (var i = 0; i < suits.length; i++) {
             for (var num = 1; num < 12; num++) {
                 var card = new Card(num, suits[i]);
-                if (num%2 === 1) {
+                if (num % 2 === 1) {
                     card.hasMechanic = true;
-                    card.mechanic = this.mechanics[Math.floor(num/2)]
+                    card.mechanic = this.mechanics[Math.floor(num / 2)]
                 }
                 this.deck.push(card);
             }
@@ -18,8 +19,8 @@ function Game(choice) {
     };
     this.trick = [];
     this.scoreCheck = 0;
-    this.displayplayer = player1;
-    this.remoteplayer = player2;
+    this.displayplayer = playera;
+    this.remoteplayer = playerb;
     this.dealplayer = player2;
     this.leadplayer = player1;
     this.followplayer = player2;
@@ -40,7 +41,7 @@ function Game(choice) {
     this.hasSwan = false;
     this.gameOver = false;
     this.winner = '';
-    this.shuffleDeck = function() {
+    this.shuffleDeck = function () {
         var i = 0
             , j = 0
             , temp = [];
@@ -52,17 +53,17 @@ function Game(choice) {
             this.deck[j] = temp
         }
     };
-    this.setDecree = function() {
+    this.setDecree = function () {
         this.decree = this.deck.pop();
         var decree = `<img src=${this.decree.image} class="card">`;
         this.buildDecree(decree)
     };
 
-    this.buildDecree = function(decreetemp) {
+    this.buildDecree = function (decreetemp) {
         document.getElementById("decree-card").innerHTML = decreetemp
     };
 
-    this.whoLeads = function() {
+    this.whoWinning = function () {
         if (player1.score > player2.score) {
             if (player2.score === 1) {
                 this.currentWinner = `${player1.name} is winning with ${player1.score} points to ${player2.name}'s 1 point.`
@@ -89,7 +90,7 @@ function Game(choice) {
 
     };
 
-    this.buildDisplayInfo = function() {
+    this.buildDisplayInfo = function () {
         document.getElementById("display-name").innerHTML = this.displayplayer.name;
         document.getElementById("display-tricks").innerHTML = this.displayplayer.tricks.length;
         document.getElementById("display-score").innerHTML = this.displayplayer.score;
@@ -99,7 +100,7 @@ function Game(choice) {
 
     };
 
-    this.doWitch = function() {
+    this.doWitch = function () {
         var oldsuittemp = "";
         var position = 0;
         if (this.trick[0].value === 9) {
@@ -117,10 +118,10 @@ function Game(choice) {
         }
     };
 
-    this.scoreTrick = function() {
+    this.scoreTrick = function () {
         if (this.trick[0].value === 9 || this.trick[1].value === 9) {
             if (this.trick[0].value !== this.trick[1].value) {
-            var olddata = this.doWitch()
+                var olddata = this.doWitch()
             }
         }
         if (this.trick[0].suit === this.trick[1].suit) {
@@ -129,14 +130,18 @@ function Game(choice) {
                     this.trick[olddata.position].suit = olddata.suit;
                     this.witchReset = false
                 }
-                if (this.trick[1].value === 1) {this.hasSwan = true}
+                if (this.trick[1].value === 1) {
+                    this.hasSwan = true
+                }
                 this.makeResults(this.leadplayer);
             } else {
                 if (this.witchReset) {
                     this.trick[olddata.position].suit = olddata.suit;
                     this.witchReset = false
                 }
-                if (this.trick[0].value === 1) {this.hasSwan = true}
+                if (this.trick[0].value === 1) {
+                    this.hasSwan = true
+                }
                 this.makeResults(this.followplayer);
                 this.flipPlayers()
             }
@@ -146,7 +151,9 @@ function Game(choice) {
                     this.trick[olddata.position].suit = olddata.suit;
                     this.witchReset = false
                 }
-                if (this.trick[0].value === 1) {this.hasSwan = true}
+                if (this.trick[0].value === 1) {
+                    this.hasSwan = true
+                }
                 this.makeResults(this.followplayer);
                 this.flipPlayers()
             } else {
@@ -154,7 +161,9 @@ function Game(choice) {
                     this.trick[olddata.position].suit = olddata.suit;
                     this.witchReset = false
                 }
-                if (this.trick[1].value === 1) {this.hasSwan = true}
+                if (this.trick[1].value === 1) {
+                    this.hasSwan = true
+                }
                 this.makeResults(this.leadplayer);
             }
         }
@@ -174,55 +183,56 @@ function Game(choice) {
         }
     };
 
-    this.makeResults = function(winner) {
+    this.makeResults = function (winner) {
         this.results.lead = `${this.leadplayer.name} played the ${this.trick[0].value} of ${this.trick[0].suit}.`;
         this.results.follow = `${this.followplayer.name} played the ${this.trick[1].value} of ${this.trick[1].suit}.`;
         this.results.winner = `${winner.name} wins the trick!`
     };
 
-    this.flipPlayers = function() {
+    this.flipPlayers = function () {
         var newfollow = this.leadplayer;
         var newlead = this.followplayer;
         this.leadplayer = newlead;
         this.followplayer = newfollow
     };
 
-    this.buildScores = function() {
+    this.buildScores = function () {
         document.getElementById("last-round").innerHTML = `As of the last round:`;
         document.getElementById("player-1-tricks").innerHTML = player1.roundResult;
         document.getElementById("player-2-tricks").innerHTML = player2.roundResult;
         document.getElementById("score-update").innerHTML = this.currentWinner
     };
 
-    this.buildWinner = function() {
+    this.buildWinner = function () {
         document.getElementById("game-over").innerHTML = this.winner
     };
 
-    this.buildResults = function(elemtemp) {
-        this.trickcount += 1
+    this.buildResults = function (elemtemp, winner, counter) {
+        counter += 1;
+        document.getElementById("trick-winner").innerHTML = `<div id="${elemtemp}">${winner}</div>`;
         document.getElementById(elemtemp).style.display = "block";
-
     };
 
-    this.buildMechanic = function(mechanic) {
+
+    this.buildMechanic = function (mechanic) {
         document.getElementById("mechanic").innerHTML = mechanic
     };
 
-    this.playRound = function() {
-        console.log("Ahoy hoy")
-        game.displayplayer.buildTrick();
+    this.playRound = function () {
+        this.displayplayer.buildTrick();
         if (this.displayplayer !== this.leadplayer) {
-            if (game.ai) {
+            if (this.ai) {
                 this.leadplayer.leadCard();
-            } else {
-                //send for response and receive it
             }
-            this.displayplayer.setFollowCards();
-            this.displayplayer.buildList(14)
+            if (this.trick[0].value == 11) {
+                this.displayplayer.isMonarch = true
+            }
+            this.displayplayer.setFollowCards()
         }
+        this.displayplayer.buildListActive()
     };
 
-    this.gameReset = function() {
+    this.gameReset = function () {
         this.buildScores();
         this.buildDisplayInfo();
         if (this.ai) {
@@ -232,10 +242,10 @@ function Game(choice) {
             //game.decree = receiveddecreeinfo
         }
         game.displayplayer.buildTrick();
-        game.displayplayer.buildList(14);
-    }
+        game.displayplayer.buildListActive();
+    };
 
-    this.newRound = function() {
+    this.newRound = function () {
         this.deck = [];
         this.buildDeck();
         this.shuffleDeck();
@@ -245,7 +255,7 @@ function Game(choice) {
         game.setDecree();
     };
 
-    this.resetPlayers = function() {
+    this.resetPlayers = function () {
         if (player1 === this.dealplayer) {
             this.dealplayer = player2;
             this.leadplayer = player1;
@@ -257,7 +267,7 @@ function Game(choice) {
         }
     };
 
-    this.doMonarch = function(suit) {
+    this.doMonarch = function (suit) {
         for (var i = 0; i < this.followplayer.hand[suit].array.length; i++) {
             if (this.followplayer.hand[suit].array[i].value === 1) {
                 this.followplayer.hand[suit].array[i].playable = true
@@ -267,9 +277,53 @@ function Game(choice) {
                 this.followplayer.hand[suit].array[i].playable = false
             }
         }
+    };
+
+    this.start2p = function (datatemp) {
+        this.resetPlayers();
+        this.decree = datatemp['decree'];
+        this.displayplayer.hand = datatemp['hand'];
+        this.displayplayer.handMaster = datatemp['hand']
+        document.getElementById("startup").style.display = "none";
+        document.getElementById("play").style.display = "block";
+        this.buildDisplayInfo();
+        var decree = `<img src=${game.decree.image} class="card">`;
+        this.buildDecree(decree);
+        this.displayplayer.buildListInactive(14);
+        this.start2pTurn(datatemp['turn'])
+
+    }
+
+    this.buildWhoLeads = function(elemtemp, leadplayer) {
+        if (leadplayer === this.displayplayer.id) {
+            var whoseturn = "You lead this trick!"
+        } else {
+            var whoseturn = `${this.remoteplayer.name} leads this trick!`
+        }
+        this.buildResults(elemtemp, whoseturn, this.turncount);
+    }
+
+    this.start2pTurn = function(leadplayer) {
+        // console.log("Made it to the next round!")
+        // console.log(leadplayer)
+        var elem = `turn${this.turncount}`;
+        this.buildWhoLeads(elem, leadplayer)
+        document.getElementById(elem).addEventListener("animationend", function () {
+            document.getElementById(elem).style.display = "none";
+            // console.log(leadplayer)
+            // console.log(game.displayplayer.id)
+            if (leadplayer === game.displayplayer.id) {
+                game.displayplayer.buildListActive();
+                // console.log("Your turn!")
+            } else {
+                // console.log("Their turn!")
+                game.displayplayer.waitForTurn()
+            }
+        })
     }
 
 }
+
 
 function Card(value, suit) {
     this.value = value;
@@ -280,8 +334,9 @@ function Card(value, suit) {
     this.image = `images/${this.suit.toLowerCase()}${this.value}.jpg`
 }
 
-function Player(name) {
+function Player(name, id) {
     this.name = name;
+    this.id = id;
     this.bells = {
         array: [],
         suit: 'Bells',
@@ -307,10 +362,16 @@ function Player(name) {
     this.isMonarch = false;
     this.roundResult = '';
 
-    this.buildTrick = function () {
+    this.buildTrick = function (zindex) {
         var newarray = game.trick.map(function (element) {
             var count = game.trick.indexOf(element) + 1;
-            return `<img src=${element.image} class="card" id="trick${count}">`
+            if (count === game.trick.length) {
+                var style = game.displayplayer.setTrickStyle(zindex)
+                return `<img src=${element.image} class="activetrick" id="trick${count}"  style=${style} >`
+            } else {
+                return `<img src=${element.image} class="inactivetrick" id="trick${count}">`
+            }
+
         }).join("");
         document.getElementById("trick-cards").innerHTML = newarray
     };
@@ -320,14 +381,14 @@ function Player(name) {
         var handarray = "";
         for (var i = 0; i < this.hand.length; i++) {
             var newarray = this.hand[i].array.map(function (card) {
-                var z = game.displayplayer.hand[i].array.indexOf(card);
+                var value = game.displayplayer.hand[i].array.indexOf(card);
                 if (card.playable) {
-                    count +=1;
-                    var style = game.displayplayer.setListStyle(count, i, card);
-                    return `<img src=${card.image} class="card" id="card${count}" onclick='game.displayplayer.doWoodcutter(${count}, ${i}, ${z})' style=${style}>`
+                    count += 1;
+                    var style = game.displayplayer.setListStyle(count, count, i, card);
+                    return `<img src=${card.image} class="card" id="card${count}" onclick='game.displayplayer.doWoodcutter(${count}, ${i}, ${value})' style=${style}>`
                 } else {
-                    count +=1;
-                    var style = game.displayplayer.setListStyle(count, i, card);
+                    count += 1;
+                    var style = game.displayplayer.setListStyle(count, count, i, card);
                     return `<img src=${card.image} class="card" id="card${count}" disabled style=${style} >`
                 }
             }).join("");
@@ -341,10 +402,10 @@ function Player(name) {
         var handarray = "";
         for (var i = 0; i < this.hand.length; i++) {
             var newarray = this.hand[i].array.map(function (card) {
-                var z = game.displayplayer.hand[i].array.indexOf(card);
-                count +=1;
-                var style = game.displayplayer.setListStyle(count, i, card);
-                    return `<img src=${card.image} id="card${count}" onclick='game.displayplayer.doFox(${i}, ${z}, ${count})' style=${style}>`
+                var value = game.displayplayer.hand[i].array.indexOf(card);
+                count += 1;
+                var style = game.displayplayer.setListStyle(count, count, i, card);
+                return `<img src=${card.image} id="card${count}" onclick='game.displayplayer.doFox(${i}, ${value}, ${count})' style=${style}>`
             }).join("");
             handarray += newarray
         }
@@ -355,75 +416,91 @@ function Player(name) {
         document.getElementById("pass").innerHTML = passhtml
     };
 
-    this.setListStyle = function(counttemp, suittemp, cardtemp) {
-        var position = (counttemp-1)*75;
+    this.setListStyle = function (counttemp, ztemp, suittemp, cardtemp) {
+        var position = (counttemp - 1) * 75;
         if (this.hand[suittemp].playable && cardtemp.playable) {
-            return `'z-index: ${counttemp}; left: ${position}px'`
+            return `'z-index: ${ztemp}; left: ${position}px'`
         } else {
-            return `'z-index: ${counttemp}; left: ${position}px; filter: blur(3px);'`
+            return `'z-index: ${ztemp}; left: ${position}px; filter: blur(3px);'`
         }
     };
 
-    this.buildList = function (oldcount) {
-        console.log(oldcount);
+    this.setTrickStyle = function(zindex) {
+        console.log("Trick pretty!")
+        console.log(this.name)
+        console.log(game.displayplayer.name)
+        var tricktop = document.getElementById("trick-cards").getBoundingClientRect().top
+        var trickleft = document.getElementById("trick-cards").getBoundingClientRect().left
+        var cardtop = document.getElementById("hand").getBoundingClientRect().top
+        var cardleft = document.getElementById("hand").getBoundingClientRect().left + (zindex -1) * 75
+        var trickstarttop = ((cardtop - tricktop)/2) + 'px'
+        var trickstartleft = (cardleft - trickleft) + 'px'
+        //console.log(trickstarttop)
+        //console.log(trickstartleft)
+        stylesheet.setProperty('--top', trickstarttop)
+        stylesheet.setProperty('--left', trickstartleft)
+        return `'z-index: ${zindex}'`
+    }
+
+    this.buildListInactive = function (oldcount) {
+        var handarray = "";
+        var count = 0;
+        var z = 0
+        for (var i = 0; i < this.hand.length; i++) {
+            var newarray = this.hand[i].array.map(function (card) {
+                count += 1
+                if (z === oldcount) {
+                    z += 2
+                } else {
+                    z +=1
+                }
+                var style = game.displayplayer.setListStyle(count, z, i, card);
+                if (count < oldcount) {
+                    return `<img src=${card.image} class="leftcard" id="card${count}" style=${style} >`
+                } else if (count === oldcount) {
+                    return `<img src=${card.image} class="trick" id="card${count}" style=${style} >`
+                } else {
+                    return `<img src=${card.image} class="rightcard" id="card${count}" style=${style} >`
+                }
+            }).join("");
+            handarray += newarray
+        }
+        document.getElementById("hand").innerHTML = handarray
+
+    };
+
+    this.buildListActive = function () {
         var handarray = "";
         var count = 0;
         var tricksplayed = player1.tricks.length + player2.tricks.length;
         for (var i = 0; i < this.hand.length; i++) {
             if (this.hand[i].playable) {
                 var newarray = this.hand[i].array.map(function (card) {
-                    var y = game.displayplayer.hand[i].array.indexOf(card);
+                    count += 1;
+                    var style = game.displayplayer.setListStyle(count, count, i, card);
                     if (card.playable) {
+                        var y = game.displayplayer.hand[i].array.indexOf(card);
                         if (card.value === 3 && tricksplayed < 12) {
-                            count +=1;
-                            var style = game.displayplayer.setListStyle(count, i, card);
-                            if (count < oldcount) {
-                                return `<img src=${card.image} class="leftcard" id="card${count}" onclick='game.displayplayer.doFoxHuman(${count}, ${i}, ${y})' style=${style} >`
-                            } else {
-                                return `<img src=${card.image} class="rightcard" id="card${count}" onclick='game.displayplayer.doFoxHuman(${count}, ${i}, ${y})' style=${style} >`
-                            }
+                            return `<img src=${card.image} id="card${count}" onclick='game.displayplayer.doFoxHuman(${count}, ${i}, ${y})' style=${style} >`
                         } else if (card.value === 5 && tricksplayed < 12) {
-                            count +=1;
-                            var style = game.displayplayer.setListStyle(count, i, card);
-                            if (count < oldcount) {
-                                return `<img src=${card.image} class="leftcard" id="card${count}" onclick='game.displayplayer.doWoodcutterHuman(${count}, ${i}, ${y})' style=${style} >`
-                            } else {
-                                return `<img src=${card.image} class="rightcard" id="card${count}" onclick='game.displayplayer.doWoodcutterHuman(${count}, ${i}, ${y})' style=${style} >`
-                            }
+                            return `<img src=${card.image} id="card${count}" onclick='game.displayplayer.doWoodcutterHuman(${count}, ${i}, ${y})' style=${style} >`
                         } else {
-                            count +=1;
-                            var style = game.displayplayer.setListStyle(count, i, card);
-                            if (count < oldcount) {
-                                return `<img src=${card.image} class="leftcard" id="card${count}" onclick='game.displayplayer.clicked(${count}, ${i}, ${y})' style=${style} >`
-                            } else {
-                                return `<img src=${card.image} class="rightcard" id="card${count}" onclick='game.displayplayer.clicked(${count}, ${i}, ${y})' style=${style} >`
-                            }
+                            return `<img src=${card.image} id="card${count}" onclick='game.displayplayer.clicked(${count}, ${i}, ${y})' style=${style} >`
                         }
                     } else {
-                        count +=1;
-                        var style = game.displayplayer.setListStyle(count, i, card);
-                        if (count < oldcount) {
-                            return `<img src=${card.image} class="leftcard" id="card${count}" style=${style} >`
-                        } else {
-                            return `<img src=${card.image} class="rightcard" id="card${count}" style=${style} >`
-                        }
+                        return `<img src=${card.image} class="leftcard" id="card${count}" style=${style} >`
                     }
                 }).join("")
             } else {
                 var newarray = this.hand[i].array.map(function (card) {
                     count +=1;
-                    var style = game.displayplayer.setListStyle(count, i, card);
-                    if (count < oldcount) {
-                        return `<img src=${card.image} class="leftcard" id="card${count}" style=${style}>`
-                    } else {
-                        return `<img src=${card.image} class="rightcard" id="card${count}" style=${style}>`
-                    }
+                    var style = game.displayplayer.setListStyle(count, count, i, card);
+                    return `<img src=${card.image} id="card${count}" style=${style}>`
                 }).join("")
             }
             handarray += newarray
         }
         document.getElementById("hand").innerHTML = handarray
-
     };
 
     this.createHand = function (decktemp) {
@@ -446,14 +523,22 @@ function Player(name) {
         this.moons.array.sort(function (a, b) {
             return a.value - b.value
         });
-        this.hand.push(this.bells, this.keys, this.moons);
-        this.handMaster = this.hand.slice(0);
+        this.addCards(this.bells)
+        this.addCards(this.keys)
+        this.addCards(this.moons)
         if (this === game.displayplayer) {
-            this.buildList(14)
+            this.buildListActive()
         }
     };
 
-    this.insertCard = function(card) {
+    this.addCards = function (suit) {
+        if (suit.array.length > 0) {
+            this.hand.push(suit)
+            this.handMaster.push(suit)
+        }
+    }
+
+    this.insertCard = function (card) {
         for (var i = 0; i < 3; i++) {
             if (card.suit === this.handMaster[i].suit) {
                 this.handMaster[i].array.push(card);
@@ -470,25 +555,32 @@ function Player(name) {
         }
     };
 
-    this.doFox = function(suit, value, oldcount) {
+    this.doFox = function (suit, value, oldcount) {
         var newcard = game.decree;
         game.decree = this.hand[suit].array[value];
         var decree = `<img src=${game.decree.image} class="card">`;
         game.buildDecree(decree);
         this.hand[suit].array.splice(value, 1);
+        //console.log(newcard)
         this.insertCard(newcard);
         if (this === game.displayplayer) {
             var passbutton = "";
             this.buildPassButton(passbutton);
+            this.buildListInactive(oldcount)
             this.clicked(oldcount)
         }
     };
 
-    this.doWoodcutter = function(oldcount, suit, value) {
+    this.doWoodcutter = function (oldcount, suit, value) {
         var discard = this.hand[suit].array[value];
         this.hand[suit].array.splice(value, 1);
-        game.deck.splice(0, 0, discard);
+        if (game.ai) {
+            game.deck.splice(0, 0, discard);
+        } else {
+            //$.post("http://localhost:8000/woodcutterdiscard", {'discard': discard}, game.displayplayer(oldcount))
+        }
         if (this === game.displayplayer) {
+            this.buildListInactive(oldcount)
             this.clicked(oldcount)
         }
     };
@@ -499,10 +591,10 @@ function Player(name) {
         this.clicked(suit, value)
     };
 
-    this.doFoxHuman = function(counttemp, suit, value) {
+    this.doFoxHuman = function (counttemp, suit, value) {
         this.isFoxWoodcutter = true;
         this.playCard(suit, value);
-        this.buildTrick()
+        this.buildTrick(true);
         if (game.displayplayer === game.followplayer) {
             this.resetCards(suit);
         }
@@ -511,36 +603,46 @@ function Player(name) {
         this.buildPassButton(passbutton)
     };
 
-    this.doWoodcutterHuman = function(counttemp, suit, value) {
+    this.doWoodcutterHuman = function (counttemp, suit, value) {
         this.isFoxWoodcutter = true;
         this.playCard(suit, value);
-        this.buildTrick()
+        this.buildTrick(true);
         if (game.displayplayer === game.followplayer) {
             this.resetCards(suit);
         }
         if (game.ai) {
-            var newcard = game.deck.pop()
+            var card = game.deck.pop()
+            this.insertWoodcutter(card, suit, value)
         } else {
-            //var newcard = from the server
-        }
+            $.post("http://localhost:8000/woodcutterdraw", null, function (data, status) {
+                var card = data['newcard']
+                //console.log(card)
+                game.displayplayer.insertWoodcutter(card, suit, value)
 
-        newcard.playable = false;
-        this.insertCard(newcard);
-        this.buildWoodcutterList(suit, value);
-        newcard.playable = true
+            })
+        }
     };
 
-    this.doFoxAI = function() {
-        if (Math.floor(Math.random()*2) === 1) {
-            var x = Math.floor(Math.random()*this.hand.length);
-            var y = Math.floor(Math.random()*this.hand[x].array.length);
+    this.insertWoodcutter = function (newcard, suittemp, valuetemp) {
+        //console.log("Inserting card!")
+        //console.log(newcard)
+        newcard.playable = false;
+        this.insertCard(newcard);
+        this.buildWoodcutterList(suittemp, valuetemp);
+        newcard.playable = true
+    }
+
+    this.doFoxAI = function () {
+        if (Math.floor(Math.random() * 2) === 1) {
+            var x = Math.floor(Math.random() * this.hand.length);
+            var y = Math.floor(Math.random() * this.hand[x].array.length);
             this.doFox(x, y)
         }
     };
 
-    this.doWoodcutterAI = function() {
-        var x = Math.floor(Math.random()*this.hand.length);
-        var y = Math.floor(Math.random()*this.hand[x].array.length);
+    this.doWoodcutterAI = function () {
+        var x = Math.floor(Math.random() * this.hand.length);
+        var y = Math.floor(Math.random() * this.hand[x].array.length);
         var discard = this.hand[x].array[y];
         this.hand[x].array.splice(y, 1);
         game.deck.splice(0, 0, discard);
@@ -548,7 +650,7 @@ function Player(name) {
         this.insertCard(newcard)
     };
 
-    this.playCard = function(suittemp, cardtemp, oldcounttemp) {
+    this.playCard = function (suittemp, cardtemp, oldcounttemp) {
         game.trick.push(this.hand[suittemp].array[cardtemp]);
         var tricknum = game.trick.length - 1;
         if (this.hand[suittemp].array[cardtemp].hasMechanic) {
@@ -556,9 +658,9 @@ function Player(name) {
         }
         this.hand[suittemp].array.splice(cardtemp, 1);
         if (this.hand[suittemp].array.length === 0) {
-            if (this === game.displayplayer) {
-                this.buildList(oldcounttemp)
-            }
+            // if (this === game.displayplayer) {
+            //     this.buildListInactive(oldcounttemp)
+            // }
             this.hand.splice(suittemp, 1);
             this.isMonarch = false
         }
@@ -576,76 +678,176 @@ function Player(name) {
                 }
             }
         }
-    }
+    };
 
-    this.leadCard = function() {
+    this.leadCard = function () {
         var x = Math.floor(Math.random() * this.hand.length);
         var y = Math.floor(Math.random() * (this.hand[x].array.length));
         this.playCard(x, y);
-        this.buildTrick();
-        if (game.trick[0].value === 11) {
-            game.displayplayer.isMonarch = true
-        }
+        this.buildTrick(0);
     };
 
-    this.clicked = function(oldcount, x, y) {
+    this.waitForTurn = function () {
+        var turnwait = setInterval(function () {
+            $.post("http://localhost:8000/turnwaiting", {'player': game.displayplayer.id, 'wantscore': false}, function (data, status) {
+                if (!data['resend']) {
+                    clearInterval(turnwait);
+                    // console.log(game.decree)
+                    // console.log(data['decree'])
+                    if (game.decree != data['decree']) {
+                        game.decree = data['decree'];
+                        var decree = `<img src=${game.decree.image} class="card">`;
+                        game.buildDecree(decree);
+                    }
+                    game.trick = data['trick'];
+                    // console.log(game.trick)
+                    game.playRound()
+                }
+            })
+        }, 5000)
+    };
+
+    this.waitForResults = function (suittemp) {
+        var turnwait = setInterval(function () {
+            $.post("http://localhost:8000/roundwaiting", {'player': game.displayplayer.id, 'wantscore': false}, function (data, status) {
+                if (!data['resend']) {
+                    clearInterval(turnwait);
+                    game.displayplayer.receiveScores(data, suittemp)
+                }
+            })
+        }, 5000)
+    };
+
+    this.receiveScores = function (datatemp, suit) {
+        console.log(datatemp)
+        if (game.decree != datatemp['decree']) {
+            game.decree = datatemp['decree'];
+            var decree = `<img src=${game.decree.image} class="card">`;
+            game.buildDecree(decree);
+        }
+        console.log("Figuring things out time!")
+        if (game.displayplayer.id === datatemp['turn']) {
+            console.log("My turn!")
+            console.log(game.displayplayer)
+            console.log(game.displayplayer.id)
+            console.log(datatemp['turn'])
+            game.leadplayer = game.displayplayer
+            game.followplayer = game.remoteplayer
+        } else {
+            console.log("Their turn!")
+            console.log(game.remoteplayer)
+            console.log(game.remoteplayer.id)
+            console.log(datatemp['turn'])
+            game.leadplayer = game.remoteplayer
+            game.followplayer = game.displayplayer
+        }
+        game.trick = datatemp['trick'];
+        player1.tricks = datatemp['player1tricks']
+        player1.score = datatemp['player1score']
+        player2.tricks = datatemp['player2tricks']
+        player2.score = datatemp['player2score']
+        game.results.winner = datatemp['result']
+        game.displayplayer.buildTrick()
+        game.displayplayer.completeRound(suit)
+    }
+
+    this.clicked = function (oldcount, x, y) {
         if (!this.isFoxWoodcutter) {
             this.playCard(x, y, oldcount);
-            this.buildTrick()
+            this.resetCards(x)
+            this.buildListInactive(oldcount)
+            this.buildTrick(oldcount);
         }
-        if (this === game.leadplayer) {
-            if (game.ai) {
+        if (game.ai) {
+            if (this === game.leadplayer) {
                 game.followplayer.followCard()
+            }
+            game.scoreTrick(game.leadplayer, game.followplayer)
+            game.trick = []
+            this.completeRound(x)
+        } else {
+            state = {'decree': game.decree, 'trick': game.trick, 'turn': this.id, 'name': this.name, 'completed': true};
+            stateJSON = JSON.stringify(state)
+            console.log(state)
+            console.log(stateJSON)
+            if (game.trick.length === 2) {
+                // $.post("http://localhost:8000/roundcompleted", stateJSON, function (data, status) {
+                //     game.displayplayer.receiveScores(data, x)
+                // })
+                $.ajax({
+                    url: "http://localhost:8000/roundcompleted",
+                    type: "POST",
+                    crossDomain: true,
+                    data: stateJSON,
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        game.displayplayer.receiveScores(data, x)
+                    }
+                })
             } else {
-                //send for server response
+                $.ajax({
+                    url: "http://localhost:8000/turncompleted",
+                    type: "POST",
+                    crossDomain: true,
+                    data: stateJSON,
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: game.displayplayer.waitForResults(x)
+                })
+                //$.post("http://localhost:8000/turncompleted", stateJSON, game.displayplayer.waitForResults(x))
             }
         }
+    }
+
+    this.completeRound = function(suit) {
         if (this.isFoxWoodcutter) {
             this.isFoxWoodcutter = false
         } else {
-            this.resetCards(x)
+            this.resetCards(suit)
         }
-        game.scoreTrick(game.leadplayer, game.followplayer);
-        game.trick = [];
         if (player1.tricks.length + player2.tricks.length === 13) {
-            console.log("New round!")
-            player1.hand = []
-            player2.hand = []
+            player1.hand = [];
+            player2.hand = [];
             player1.getScores();
             player2.getScores();
-            game.whoLeads();
+            game.whoWinning();
             if (game.gameOver) {
                 game.buildScores();
                 game.buildDisplayInfo();
                 game.buildWinner()
             } else {
-                this.buildList(oldcount);
-                var elem = `trickwinner${game.trickcount}`
-                console.log(elem)
-                for (var i; i < this.hand.length; i++) {
-                    for (var j; j < this.hand[i].array.length; j++)
-                        if (!this.hand[i].array[j].playable) {
-                        }
-                }
+                var elem = `trickwinner${game.trickcount}`;
+                game.buildResults(elem, game.results.winner, game.trickcount);
+                // for (var i; i < this.hand.length; i++) {
+                //     for (var j; j < this.hand[i].array.length; j++)
+                //         if (!this.hand[i].array[j].playable) {
+                //         }
+                // }
                 document.getElementById(elem).addEventListener("animationend", function () {
                     document.getElementById(elem).style.display = "none";
                     game.gameReset()
                 })
             }
         } else {
-            this.buildList(oldcount);
             game.buildDisplayInfo();
-            var elem = `trickwinner${game.trickcount}`
-            console.log(elem)
-            game.buildResults(elem);
-            for (var i; i < this.hand.length; i++) {
-                for (var j; j < this.hand[i].array.length; j++)
-                    if (!this.hand[i].array[j].playable) {
-                    }
-            }
-            document.getElementById(elem).addEventListener("animationend", function() {
+            var elem = `trickwinner${game.trickcount}`;
+            game.buildResults(elem, game.results.winner, game.trickcount);
+            // for      (var i; i < this.hand.length; i++) {
+            //     for (var j; j < this.hand[i].array.length; j++)
+            //         if (!this.hand[i].array[j].playable) {
+            //         }
+            // }
+            document.getElementById(elem).addEventListener("animationend", function () {
                 document.getElementById(elem).style.display = "none";
-                game.playRound()
+                if (game.ai) {
+                    game.playRound()
+                } else {
+                    game.trick = []
+                    game.displayplayer.buildTrick()
+                    game.start2pTurn(game.leadplayer.id)
+                }
+
             })
         }
     }
@@ -684,7 +886,7 @@ function Player(name) {
                 var y = Math.floor(Math.random() * followsuit.array.length);
             }
             this.playCard(x, y);
-            this.buildTrick()
+            this.buildTrick(0)
         } else {
             var x = Math.floor(Math.random() * this.hand.length);
             var y = Math.floor(Math.random() * (this.hand[x].array.length));
@@ -766,28 +968,13 @@ function Player(name) {
         this.name = name;
     };
 
-    this.sendRequest = function () {
-        var gamesend = JSON.stringify(game);
-        $.post('http://localhost:8000/sendgamestate', game, function (text, status) {
-            console.log(text, status);
-            var newtext = JSON.parse(text);
-            alert(newtext['hand'][0])
-            //alert(text['hand'][0])
-        })
-    }
-}
-
-function GameState() {
-    this.decree = 0;
-    this.trick = [];
-    this.turnover = false
 }
 
 
 function clickedAI() {
     player1 = new Player("Alasdair");
     player2 = new Player("Kaley");
-    game = new Game(true);
+    game = new Game(true, player1, player2);
     document.getElementById("startup").style.display = "none";
     document.getElementById("play").style.display = "block";
     game.buildDisplayInfo();
@@ -796,19 +983,34 @@ function clickedAI() {
 }
 
 function clickedHuman() {
-    console.log("Ahoy hoy");
-    //wait for response
-    //receive game initialization response
-    //player1 = new Player(receivedplayer1info)
-    //player2 = new Player(receivedplayer2info)
-    game = new Game(false);
-    state = new GameState();
-    document.getElementById("startup").style.display = "none";
-    document.getElementById("play").style.display = "block";
-    game.resetPlayers();
-    //game.displayplayer.createHand(receivedhandinfo)
-    //game.decree = receiveddecreeinfo
-    game.playRound()
+    $.post("http://localhost:8000/playerjoin", {'test': "Hello world"}, function(data, status) {
+        console.log(data);
+        if (data['hand'] === null) {
+            player1 = new Player("Alasdair", data['id']);
+            player2 = new Player("Kaley");
+            var playerwait = setInterval(function() {
+                    $.post("http://localhost:8000/playerwaiting", null, function(data, status) {
+                        if (!data['resend']) {
+                            clearInterval(playerwait);
+                            //console.log(data);
+                            //console.log("startinggame");
+                            player2.id = data['remote']
+                            game = new Game(false, player1, player2);
+                            game.start2p(data)
+                        } else {
+                            //console.log("waiting")
+                        }
+                    })
+                },
+                5000)
+        } else {
+            player1 = new Player("Alasdair", data['remote']);
+            player2 = new Player("Kaley", data['id']);
+            game = new Game(false, player2, player1);
+            //console.log("starting game");
+            game.start2p(data)
+        }
+    })
 }
 
 
@@ -817,6 +1019,7 @@ var player1;
 var player2;
 var game;
 var state;
+const stylesheet = document.documentElement.style
 
 
 

@@ -1,3 +1,8 @@
+:root {
+    --top: 0;
+    --left: 0;
+}
+
 body {
     background-image: url("images/ep_naturalwhite.png");
     cursor: pointer;
@@ -45,10 +50,28 @@ body {
     margin: 0 auto 0 auto;
 }
 
-
-#trick-cards {
-    z-index: 1;
+#trick img {
+    width: 200px;
+    box-shadow: -10px 5px 5px gray;
+    border-radius: 5px;
 }
+
+/*.activetrick {*/
+     /*animation-name: movetrick;*/
+     /*animation-duration: 5000ms;*/
+ /*}*/
+
+/*@keyframes movetrick {*/
+    /*from {*/
+        /*top: var(--top);*/
+        /*left: var(--left);*/
+    /*}*/
+    /*to {*/
+        /*top: 0;*/
+        /*left: 0;*/
+          /*}*/
+/*}*/
+
 
 #trick1 {
     position: absolute;
@@ -70,7 +93,7 @@ body {
     text-align: center;
     padding-top: 10px;
     padding-bottom: 10px;
-    z-index: 2;
+    z-index: 14;
     display: none;
     margin-left: 35px;
     font-family: Garamond;
