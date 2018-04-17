@@ -1,9 +1,13 @@
-const style = document.documentElement.style;
+function changeparent() {
+    console.log("Success!")
+    var image = document.getElementById("bells1")
+    var newparent = document.getElementById("newparent")
+    newparent.appendChild(image)
+    document.getElementById("bells1").style.top = "300px"
+    document.getElementById("bells1").style.top = "0px"
+}
 
-var x = Math.floor(Math.random()*100)
-var newvalue = x + '%'
+margin = Math.floor(Math.random() * 400)
+console.log(margin)
 
-style.setProperty('--tx', newvalue)
-
-var image = document.getElementById('bells1')
-console.log(image.getBoundingClientRect())
+document.getElementById("bells1").style.marginLeft = `${margin}px`

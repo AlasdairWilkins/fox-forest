@@ -25,6 +25,7 @@ function Game(choice, playera, playerb) {
     this.leadplayer = player1;
     this.followplayer = player2;
     this.currentWinner = "";
+    this.trickwinner = player1;
     this.results = {
         lead: "",
         follow: "",
@@ -177,6 +178,7 @@ function Game(choice, playera, playerb) {
             }
         }
         this.leadplayer.tricks.push(this.trick);
+        this.trickwinner = this.leadPlayer
         if (this.hasSwan) {
             this.flipPlayers();
             this.hasSwan = false
@@ -206,13 +208,6 @@ function Game(choice, playera, playerb) {
     this.buildWinner = function () {
         document.getElementById("game-over").innerHTML = this.winner
     };
-
-    this.buildResults = function (elemtemp, winner, counter) {
-        counter += 1;
-        document.getElementById("trick-winner").innerHTML = `<div id="${elemtemp}">${winner}</div>`;
-        document.getElementById(elemtemp).style.display = "block";
-    };
-
 
     this.buildMechanic = function (mechanic) {
         document.getElementById("mechanic").innerHTML = mechanic
@@ -286,39 +281,60 @@ function Game(choice, playera, playerb) {
         this.displayplayer.handMaster = datatemp['hand']
         document.getElementById("startup").style.display = "none";
         document.getElementById("play").style.display = "block";
+        this.setEventListeners()
         this.buildDisplayInfo();
         var decree = `<img src=${game.decree.image} class="card">`;
         this.buildDecree(decree);
         this.displayplayer.buildListInactive(14);
-        this.start2pTurn(datatemp['turn'])
-
+        this.buildResults("trick-leader", "lead the", game.leadplayer)
     }
 
-    this.buildWhoLeads = function(elemtemp, leadplayer) {
-        if (leadplayer === this.displayplayer.id) {
-            var whoseturn = "You lead this trick!"
+    // this.buildResults("trick-winner", "won the", game.leadplayer.id)
+
+    //this.buildWhoLeads
+    this.buildResults = function(element, action, leadplayer) {
+        if (leadplayer === this.displayplayer) {
+            var result = `You ${action} trick!`
         } else {
-            var whoseturn = `${this.remoteplayer.name} leads this trick!`
-        }
-        this.buildResults(elemtemp, whoseturn, this.turncount);
-    }
-
-    this.start2pTurn = function(leadplayer) {
-        // console.log("Made it to the next round!")
-        // console.log(leadplayer)
-        var elem = `turn${this.turncount}`;
-        this.buildWhoLeads(elem, leadplayer)
-        document.getElementById(elem).addEventListener("animationend", function () {
-            document.getElementById(elem).style.display = "none";
-            // console.log(leadplayer)
-            // console.log(game.displayplayer.id)
-            if (leadplayer === game.displayplayer.id) {
-                game.displayplayer.buildListActive();
-                // console.log("Your turn!")
+            if (action === "lead the") {
+                var result = `${this.remoteplayer.name} leads the trick!`
             } else {
-                // console.log("Their turn!")
+                var result = `${this.remoteplayer.name} ${action} the trick!`
+            }
+        }
+        document.getElementById(element).innerHTML = `${result}`
+        document.getElementById(element).style.display = "block";
+    };
+
+    this.setEventListeners = function() {
+        //from start2pturn
+        document.getElementById("trick-leader").addEventListener("animationend", function () {
+            document.getElementById("trick-leader").style.display = "none";
+            if (game.leadplayer.id === game.displayplayer.id) {
+                game.displayplayer.buildListActive();
+            } else {
                 game.displayplayer.waitForTurn()
             }
+        })
+        // //from game reset in complete round
+        // var elem = `trickwinner${game.trickcount}`;
+        // game.buildResults(elem, game.results.winner, game.trickcount);
+        // document.getElementById(elem).addEventListener("animationend", function () {
+        //     document.getElementById(elem).style.display = "none";
+        //     game.gameReset()
+        // })
+        //
+        // //from start next round in complete round
+        document.getElementById("trick-winner").addEventListener("animationend", function () {
+            document.getElementById("trick-winner").style.display = "none";
+            if (game.ai) {
+                game.playRound()
+            } else {
+                game.trick = []
+                game.displayplayer.buildTrick()
+                game.buildResults("trick-leader", "lead the", game.leadplayer.id)
+            }
+
         })
     }
 
@@ -426,9 +442,6 @@ function Player(name, id) {
     };
 
     this.setTrickStyle = function(zindex) {
-        console.log("Trick pretty!")
-        console.log(this.name)
-        console.log(game.displayplayer.name)
         var tricktop = document.getElementById("trick-cards").getBoundingClientRect().top
         var trickleft = document.getElementById("trick-cards").getBoundingClientRect().left
         var cardtop = document.getElementById("hand").getBoundingClientRect().top
@@ -457,8 +470,6 @@ function Player(name, id) {
                 var style = game.displayplayer.setListStyle(count, z, i, card);
                 if (count < oldcount) {
                     return `<img src=${card.image} class="leftcard" id="card${count}" style=${style} >`
-                } else if (count === oldcount) {
-                    return `<img src=${card.image} class="trick" id="card${count}" style=${style} >`
                 } else {
                     return `<img src=${card.image} class="rightcard" id="card${count}" style=${style} >`
                 }
@@ -594,7 +605,7 @@ function Player(name, id) {
     this.doFoxHuman = function (counttemp, suit, value) {
         this.isFoxWoodcutter = true;
         this.playCard(suit, value);
-        this.buildTrick(true);
+        this.buildTrick();
         if (game.displayplayer === game.followplayer) {
             this.resetCards(suit);
         }
@@ -606,7 +617,7 @@ function Player(name, id) {
     this.doWoodcutterHuman = function (counttemp, suit, value) {
         this.isFoxWoodcutter = true;
         this.playCard(suit, value);
-        this.buildTrick(true);
+        this.buildTrick();
         if (game.displayplayer === game.followplayer) {
             this.resetCards(suit);
         }
@@ -727,17 +738,9 @@ function Player(name, id) {
         }
         console.log("Figuring things out time!")
         if (game.displayplayer.id === datatemp['turn']) {
-            console.log("My turn!")
-            console.log(game.displayplayer)
-            console.log(game.displayplayer.id)
-            console.log(datatemp['turn'])
             game.leadplayer = game.displayplayer
             game.followplayer = game.remoteplayer
         } else {
-            console.log("Their turn!")
-            console.log(game.remoteplayer)
-            console.log(game.remoteplayer.id)
-            console.log(datatemp['turn'])
             game.leadplayer = game.remoteplayer
             game.followplayer = game.displayplayer
         }
@@ -746,7 +749,7 @@ function Player(name, id) {
         player1.score = datatemp['player1score']
         player2.tricks = datatemp['player2tricks']
         player2.score = datatemp['player2score']
-        game.results.winner = datatemp['result']
+        game.trickwinner = datatemp['result']
         game.displayplayer.buildTrick()
         game.displayplayer.completeRound(suit)
     }
@@ -817,13 +820,7 @@ function Player(name, id) {
                 game.buildDisplayInfo();
                 game.buildWinner()
             } else {
-                var elem = `trickwinner${game.trickcount}`;
                 game.buildResults(elem, game.results.winner, game.trickcount);
-                // for (var i; i < this.hand.length; i++) {
-                //     for (var j; j < this.hand[i].array.length; j++)
-                //         if (!this.hand[i].array[j].playable) {
-                //         }
-                // }
                 document.getElementById(elem).addEventListener("animationend", function () {
                     document.getElementById(elem).style.display = "none";
                     game.gameReset()
@@ -831,24 +828,7 @@ function Player(name, id) {
             }
         } else {
             game.buildDisplayInfo();
-            var elem = `trickwinner${game.trickcount}`;
-            game.buildResults(elem, game.results.winner, game.trickcount);
-            // for      (var i; i < this.hand.length; i++) {
-            //     for (var j; j < this.hand[i].array.length; j++)
-            //         if (!this.hand[i].array[j].playable) {
-            //         }
-            // }
-            document.getElementById(elem).addEventListener("animationend", function () {
-                document.getElementById(elem).style.display = "none";
-                if (game.ai) {
-                    game.playRound()
-                } else {
-                    game.trick = []
-                    game.displayplayer.buildTrick()
-                    game.start2pTurn(game.leadplayer.id)
-                }
-
-            })
+            game.buildResults("trick-winner", "won the", game.trickwinner)
         }
     }
 
@@ -977,6 +957,7 @@ function clickedAI() {
     game = new Game(true, player1, player2);
     document.getElementById("startup").style.display = "none";
     document.getElementById("play").style.display = "block";
+    game.setEventListeners()
     game.buildDisplayInfo();
     game.newRound();
     game.playRound();
@@ -1007,7 +988,6 @@ function clickedHuman() {
             player1 = new Player("Alasdair", data['remote']);
             player2 = new Player("Kaley", data['id']);
             game = new Game(false, player2, player1);
-            //console.log("starting game");
             game.start2p(data)
         }
     })

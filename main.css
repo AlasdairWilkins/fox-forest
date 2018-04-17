@@ -82,7 +82,7 @@ body {
     margin-left: 220px
 }
 
-#trick-winner div {
+#trick-info div {
     position: absolute;
     width: 350px;
     margin-top: 112px;
@@ -97,11 +97,12 @@ body {
     display: none;
     margin-left: 35px;
     font-family: Garamond;
-    animation-name: trick-winner-display;
+    font-weight: bold;
+    animation-name: trick-info-display;
     animation-duration: 3300ms;
 }
 
-@keyframes trick-winner-display {
+@keyframes trick-info-display {
     from { opacity: .01 }
     10% {opacity: .01 }
     30% { opacity: 1 }

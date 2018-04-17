@@ -148,6 +148,7 @@ function Game(turn) {
         console.log("At the end of scoring...")
         console.log(this.leadplayer.name)
         this.leadplayer.tricks.push(this.trick);
+        this.trickwinner = this.leadplayer
         if (this.hasSwan) {
             this.flipPlayers();
             this.hasSwan = false
@@ -346,7 +347,7 @@ app.post('/roundcompleted', function(req, res){
     // console.log({'decree': game.decree, 'trick': game.trick, 'turn': game.turn, 'result': game.results.winner,
     //     'player1': player1.id, 'player1tricks': player1.tricks, 'player1score': player1.score,
     //     'player2': player2.id, 'player2tricks': player2.tricks, 'player2score': player2.score})
-    res.send({'decree': game.decree, 'trick': game.trick, 'turn': game.turn, 'result': game.results.winner,
+    res.send({'decree': game.decree, 'trick': game.trick, 'turn': game.turn, 'result': game.trickwinner,
         'player1': player1.id, 'player1tricks': player1.tricks, 'player1score': player1.score,
         'player2': player2.id, 'player2tricks': player2.tricks, 'player2score': player2.score})
 })
@@ -372,10 +373,12 @@ app.post('/roundwaiting', function(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*')
     if (game.roundcompleted) {
         game.roundcompleted = false
-        res.send({'resend': false, 'decree': game.decree, 'trick': game.trick, 'turn': game.turn, 'result': game.results.winner,
+        res.send({'resend': false, 'decree': game.decree, 'trick': game.trick, 'turn': game.turn, 'result': game.trickwinner,
             'player1': player1.id, 'player1tricks': player1.tricks, 'player1score': player1.score,
             'player2': player2.id, 'player2tricks': player2.tricks, 'player2score': player2.score})
         game.trick = []
+        console.log(player1.tricks)
+        console.log(player2.tricks)
         // console.log("Reset!")
         // console.log(game.trick)
     } else {
