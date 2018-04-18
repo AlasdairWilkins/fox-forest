@@ -4,7 +4,7 @@
 }
 
 body {
-    background-image: url("images/ep_naturalwhite.png");
+    background-image: url("../images/ep_naturalwhite.png");
     cursor: pointer;
     margin: 0;
 }

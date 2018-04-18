@@ -272,11 +272,107 @@ function Player(name, id) {
 }
 
 
-var express = require('express');
-var bodyParser = require('body-parser');
-var cors = require('cors')
-var uniqid = require('uniqid');
-var app = express();
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors')
+const uniqid = require('uniqid');
+const app = express();
+
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+
+app.use(express.static('public'))
+
+app.get('/', function(req, res){
+    res.sendFile(__dirname + '/main.html')
+    console.log('here comes a user');
+});
+
+io.on('connection', function(socket){
+    console.log('a user connected');
+    clients.push(socket.id)
+    console.log(clients)
+    console.log(clients.length)
+
+    socket.on('2pgame', function(msg){
+        console.log(msg)
+        console.log(socket.id)
+        socket.emit('hello', 'can you hear me? 1, 2, 3, sibilance')
+        gamewaiting.push(socket.id)
+        gamesocket.push(socket)
+        console.log(gamewaiting)
+        if (gamewaiting.length >= 2) {
+            console.log("Ready to start a game!")
+            gamesocket[0].emit('startup', "And away we go!")
+            gamesocket[1].emit('startup', "And here we go!")
+            gameroom = uniqid()
+            gamesocket[0].join(gameroom)
+            gamesocket[1].join(gameroom)
+            io.to(gameroom).emit('gamebeginning', "We are about to start!")
+            player1 = new Player('Alasdair', gamesocket[0].id)
+            player2 = new Player('Kaley', gamesocket[1].id)
+            game = new Game(player2.id)
+            game.buildDeck()
+            game.shuffleDeck()
+            player1.createHand(game.deck)
+            player2.createHand(game.deck)
+            game.setDecree(game.deck)
+            state = {'player1': player1.id, 'player2': player2.id, 'player1hand': player1.hand, 'player2hand': player2.hand, 'decree': game.decree, 'turn': game.turn}
+            io.to(gameroom).emit('startupinfo', state)
+        }
+    })
+
+    socket.on('turncompleted', function(msg){
+        console.log(msg)
+        socket.to(gameroom).emit('turninfo', msg)
+    })
+
+    socket.on('roundcompleted', function(msg){
+        console.log("What's all this then")
+        console.log(msg)
+        game.decree = msg['decree']
+        game.trick = msg['trick']
+        game.turn = msg['turn']
+        if (game.turn === player1.id) {
+            // console.log("Player 1 followed!")
+            game.leadplayer = player2
+            game.followplayer = player1
+        } else {
+            // console.log("Player 2 followed!")
+            game.leadplayer = player1
+            game.followplayer = player2
+        }
+        game.scoreTrick(game.leadplayer, game.followplayer)
+        game.turn = game.leadplayer.id
+        game.roundcompleted = true
+        // console.log({'decree': game.decree, 'trick': game.trick, 'turn': game.turn, 'result': game.results.winner,
+        //     'player1': player1.id, 'player1tricks': player1.tricks, 'player1score': player1.score,
+        //     'player2': player2.id, 'player2tricks': player2.tricks, 'player2score': player2.score})
+        state = ({'decree': game.decree, 'trick': game.trick, 'turn': game.turn, 'result': game.trickwinner,
+            'player1': player1.id, 'player1tricks': player1.tricks, 'player1score': player1.score,
+            'player2': player2.id, 'player2tricks': player2.tricks, 'player2score': player2.score})
+        console.log(state)
+        io.in(gameroom).emit('trickresults', state)
+    })
+
+    socket.on('disconnect', function(){
+        console.log('a user disconnected');
+        console.log(socket.id)
+        let x = clients.indexOf(socket.id)
+        clients.splice(x, 1)
+        console.log(clients)
+    });
+});
+
+// io.on('disconnect', function(socket) {
+//     console.log('a user disconnected')
+//     console.log(socket.id)
+// });
+
+http.listen(8000, function() {
+    console.log('Example app listening on port 8000!');
+});
+
 app.use(bodyParser.json());
 app.use(cors())
 app.options('*', cors())
@@ -289,9 +385,9 @@ var player1 = null
 var player2 = null
 var game = null
 
-app.listen(8000, function() {
-    console.log('Example app listening on port 8000!');
-});
+// app.get('/', function(req, res){
+//     res.send('<h1>Hello world</h1>');
+// });
 
 app.post('/playerjoin', function(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*')
@@ -426,3 +522,9 @@ app.post('/woodcutterdiscard', function(req, res) {
 //         res.send({'id': player2.id, 'hand': player2.hand, 'decree': state.decree, 'trick': state.trick, 'whoseturn': state.turn})
 //     }
 // })
+
+let clients = []
+let gamewaiting = []
+let gamesocket = []
+let gameroom = null
+let state = null
