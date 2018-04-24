@@ -624,9 +624,6 @@ function Player(name, id) {
         }
         this.hand[suittemp].array.splice(cardtemp, 1);
         if (this.hand[suittemp].array.length === 0) {
-            // if (this === game.displayplayer) {
-            //     this.buildListInactive(oldcounttemp)
-            // }
             this.hand.splice(suittemp, 1);
             this.isMonarch = false
         }

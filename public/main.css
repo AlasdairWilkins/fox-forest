@@ -17,25 +17,232 @@ body {
     display: none;
 }
 
+.dropdown-content {
+    display: none;
+    position: absolute;
+    z-index: 20;
+    width: 500px;
+}
+
+.show {
+    top: 25px;
+    display: block;
+    background-color: saddlebrown;
+    padding-left: 15px;
+    padding-color: black;
+    padding-right: 15px;
+    margin-left: -200px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom: double 5px white;
+    border-left: double 5px white;
+    border-right: double 5px white;
+}
+
+.container:hover {
+    background-color: sandybrown;
+}
+
 #players-info {
+    padding-top: 5px;
     display: flex;
     justify-content: space-between;
     border-bottom: 6px double white;
     background-color: saddlebrown;
     color: white;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+#players-info * {
+    font-family: Garamond;
 }
 
 #players-info div {
-    margin-top: 5px;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
+    font-weight: bold;
+}
+
+#reference-menu {
+    display: flex;
+    width: 100%;
+}
+
+.reference {
+    width: 100%;
+    text-align: center;
+}
+
+.bars {
+    /*display: inline-block;*/
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+#bar1, #bar2, #bar3 {
+    margin-top: 2px;
+    width: 20px;
+    height: 2px;
+    background-color: white;
+    transition: 0.4s;
+    margin-bottom: 0;
+}
+
+.change .bar1 {
+    -webkit-transform: rotate(-45deg) translate(-9px, 6px) ;
+    transform: rotate(-45deg) translate(-9px, 6px) ;
+}
+
+.change .bar2 {
+    opacity: 0;
+}
+
+.change .bar3 {
+    -webkit-transform: rotate(45deg) translate(-8px, -8px) ;
+    transform: rotate(45deg) translate(-8px, -8px) ;
+}
+
+#user-dropdown-content {
+    margin-left: -10px;
+    width: 125px;
+    top: 30px;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+#user-dropdown-content div {
+    background-color: saddlebrown;
+    border: none;
+    color: white;
+    text-decoration: none;
+    display: block;
+    width: 100%;
+    text-align: left;
+}
+
+#user-dropdown-content div:hover {
+    background-color: sandybrown;
+}
+
+#user-dropdown-content p {
+    margin: 0 5px 0 5px;
+    padding: 8px 0 8px 0;
 }
 
 #display-info {
-    margin-left: 20px
+    margin-left: 5px;
+    width: 100%;
 }
 
 #remote-info {
-    margin-right: 20px
+    text-align: right;
+    width: 100%;
+}
+
+.dropdown {
+    background-color: saddlebrown;
+    border: none;
+    color: white;
+}
+
+.dropdown:hover, .dropdown:focus {
+    background-color: sandybrown;
+}
+
+.reference {
+    position: relative;
+    display: inline-block;
+}
+
+#rules-dropdown-content{
+    width: 150px;
+    margin-left: -4%;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 20;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    /*overflow: auto;*/
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-container {
+    /*width: 700px;*/
+    margin: 10px auto;
+    border: white double 5px;
+    border-radius: 5px;
+    background-color: saddlebrown;
+}
+
+.modal-container div {
+    font-family: Garamond;
+    font-weight: bold;
+    color: white;
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
+#settings-container {
+    padding-left: 20px;
+    padding-right: 20px;
+    width: 400px;
+}
+
+#flipbook-container {
+    width: 850px;
+}
+
+#video-tutorial-container {
+    width: 700px
+}
+
+.modal div iframe {
+    display: block;
+    margin: 15px auto 10px;
+}
+
+.modal div button {
+    display: block;
+    margin: 10px auto 10px;
+}
+
+label {
+    padding-left: 5px;
+}
+
+table {
+    margin-bottom: 10px
+}
+
+#rules-dropdown-content {
+    top: 25px;
+}
+
+#rules-dropdown-content div {
+    background-color: saddlebrown;
+    border: none;
+    color: white;
+    text-decoration: none;
+    display: block;
+    width: 100%;
+    text-align: left;
+}
+
+#rules-dropdown-content p {
+    margin: 0 5px 0 5px;
+    padding: 8px 0 8px 0;
+}
+
+#rules-dropdown-content div:hover {
+    background-color: sandybrown;
 }
 
 .card {
@@ -55,6 +262,41 @@ body {
     box-shadow: -10px 5px 5px gray;
     border-radius: 5px;
 }
+
+#info {
+    width: 200px;
+    height: 283px;
+    border-radius: 5px;
+    border: double 5px white;
+    color: white;
+    background-color: saddlebrown;
+    margin-right: 5px;
+    float: right;
+    font-family: Garamond;
+    font-weight: bold;
+}
+
+#info p {
+    margin-left: 10px;
+    margin-right: 10px;
+
+}
+
+/*.dealcard {*/
+    /*animation-name: dealcards;*/
+    /*animation-duration: 2500ms;*/
+/*}*/
+
+/*@keyframes dealcards {*/
+    /*from {*/
+        /*top: -400px;*/
+        /*left: 500px;*/
+    /*}*/
+    /*to {*/
+        /*top: 0;*/
+        /*left: 0;*/
+    /*}*/
+/*}*/
 
 /*.activetrick {*/
      /*animation-name: movetrick;*/
@@ -136,7 +378,7 @@ body {
 }
 
 #deck {
-    margin-right: 20px;
+    margin-right: 5px;
     float: right
 }
 
@@ -169,7 +411,4 @@ body {
         margin-left: 0px
     }
 }
-
-
-
 
