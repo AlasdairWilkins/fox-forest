@@ -1,6 +1,7 @@
 :root {
     --top: 0;
     --left: 0;
+    --animation: moveleft
 }
 
 body {
@@ -399,16 +400,25 @@ table {
 }
 
 .rightcard {
-    animation-name: moveleft;
+    animation-name: var(--animation);
     animation-duration: 500ms
 }
 
 @keyframes moveleft {
     from {
-        margin-left: 50px
+        margin-left: 75px
     }
     to {
         margin-left: 0px
+    }
+}
+
+@keyframes moveright {
+    from {
+        margin-left: 0px;
+    }
+    to {
+        margin-left: 75px;
     }
 }
 

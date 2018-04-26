@@ -416,6 +416,7 @@ Player.prototype.doFox = function (card) {
     round.decree = this.hand[card];
     let decree = `<img src=${round.decree.image} class="card">`;
     display.buildDecree(decree);
+    display.clearHint()
     this.hand.splice(card, 1);
     this.insertCard(newcard);
     if (this === game.displayplayer) {
@@ -427,6 +428,7 @@ Player.prototype.doFox = function (card) {
 };
 
 Player.prototype.doWoodcutter = function (card) {
+    display.clearHint()
     let discard = this.hand[card];
     this.hand.splice(card, 1);
     if (game.ai) {
@@ -443,13 +445,16 @@ Player.prototype.doWoodcutter = function (card) {
 Player.prototype.passFox = function (card) {
     let passbutton = '';
     display.buildPassButton(passbutton);
+    display.clearHint()
     this.clicked(card)
 };
 
 Player.prototype.doFoxHuman = function (card) {
+    let value = this.hand[card]['value']
     this.isFoxWoodcutter = true;
     this.playCard(card);
     display.buildTrick();
+    display.buildHint(value)
     if (game.displayplayer === game.followplayer) {
         this.resetCards();
     }
@@ -459,9 +464,11 @@ Player.prototype.doFoxHuman = function (card) {
 };
 
 Player.prototype.doWoodcutterHuman = function (card) {
+    let value = this.hand[card]['value']
     this.isFoxWoodcutter = true;
     this.playCard(card);
     display.buildTrick();
+    display.buildHint(value)
     if (game.displayplayer === game.followplayer) {
         this.resetCards();
     }
@@ -478,10 +485,8 @@ Player.prototype.doWoodcutterHuman = function (card) {
 };
 
 Player.prototype.insertWoodcutter = function (card) {
-    card.playable = false;
     this.insertCard(card);
     display.buildWoodcutterList();
-    card.playable = true
 }
 
 Player.prototype.doFoxAI = function () {
@@ -492,12 +497,12 @@ Player.prototype.doFoxAI = function () {
 };
 
 Player.prototype.doWoodcutterAI = function () {
+    let newcard = round.deck.pop();
+    this.insertCard(newcard)
     let card = Math.floor(Math.random() * this.hand.length);
     let discard = this.hand[card];
     this.hand.splice(card, 1);
     round.deck.splice(0, 0, discard);
-    let newcard = round.deck.pop();
-    this.insertCard(newcard)
 };
 
 Player.prototype.playCard = function (cardtemp) {
@@ -766,7 +771,7 @@ function Display() {
     };
 
     this.clearMechanic = function () {
-        document.getElementById("mechanic").innerHTML = ""
+        document.getElementById("mechanic").innerHTML = "Mouse over any odd-numbered card to see its special ability!"
     }
 
     this.buildResults = function (element, action, leadplayer) {
@@ -806,11 +811,7 @@ function Display() {
         let handarray = game.displayplayer.hand.map(function (card) {
             let count = game.displayplayer.hand.indexOf(card);
             let style = game.displayplayer.setListStyle(count, count, card);
-            if (card.playable) {
-                return `<img src=${card.image} class="card" id="card${count}" onclick='game.displayplayer.doWoodcutter(${count})' onmouseover="display.buildMechanic('${card.mechanic}')" onmouseout='display.clearMechanic()' style=${style}>`
-            } else {
-                return `<img src=${card.image} class="card" id="card${count}" disabled style=${style} >`
-            }
+            return `<img src=${card.image} class="card" id="card${count}" onclick='game.displayplayer.doWoodcutter(${count})' onmouseover="display.buildMechanic('${card.mechanic}')" onmouseout='display.clearMechanic()' style=${style}>`
         }).join("");
         document.getElementById("hand").innerHTML = handarray
     };
@@ -910,6 +911,19 @@ function Display() {
 
     this.clearModal = function(element) {
         document.getElementById(element).style.display = "none"
+    }
+
+    this.buildHint = function(value) {
+        console.log("made it here", value)
+        if (value === 3) {
+            document.getElementById('hint').innerHTML = 'Hint: You can now change the decree card with a card from your deck, or keep the current one.'
+        } else if (value === 5) {
+            document.getElementById('hint').innerHTML = "Hint: You have drawn an extra card from the deck, so now discard one you don't want to keep."
+        }
+    }
+
+    this.clearHint = function(value) {
+        document.getElementById('hint').innerHTML = ''
     }
 }
 
