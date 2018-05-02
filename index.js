@@ -1,3 +1,4 @@
+
 // Set the configuration settings
 const express = require('express')
 const app = express()
@@ -27,19 +28,21 @@ app.get('/auth', (req, res) => {
 // Callback service parsing the authorization token and asking for the access token
 app.get('/login', async (req, res) => {
     console.log("Made it here!")
+    debugger
     const code = req.query.code;
     const options = {
         code: code,
         redirect_uri: 'http://localhost:8000/login'
     };
-    console.log(options)
+    console.log("What is being sent: ", options)
 
     try {
         const result = await oauth2.authorizationCode.getToken(options);
 
-        console.log('The resulting token: ', result);
+        // console.log('The resulting token: ', result);
 
         const token = oauth2.accessToken.create(result);
+        // console.log("What's about to appear on the page", res.status(200).json(token))
 
         return res.status(200).json(token)
     } catch(error) {
@@ -60,13 +63,15 @@ app.listen(8000, () => {
     console.log('Express server started on port 8000');
 });
 
+//
+//
 // // Get the access token object (the authorization code is given from the previous step).
 // const tokenConfig = {
 //     code: '<code>',
 //     redirect_uri: 'http://localhost:3000/callback',
 //     scope: '<scope>', // also can be an array of multiple scopes, ex. ['<scope1>, '<scope2>', '...']
 // };
-
+//
 // // Save the access token
 // try {
 //     const result = await oauth2.authorizationCode.getToken(tokenConfig)

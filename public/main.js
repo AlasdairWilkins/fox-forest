@@ -1,7 +1,8 @@
-function Round(dealplayer) {
+function Round(dealplayer, receiveplayer) {
     this.decree = null
     this.deck = []
     this.dealplayer = dealplayer;
+    this.receiveplayer = receiveplayer
     this.currentWinner = "";
 }
 
@@ -209,15 +210,19 @@ Game.prototype.playRound = function () {
         }
         game.displayplayer.setFollowCards()
     }
+    if (!game.ai) {
+        console.log("Should build the turn display!")
+        display.buildDisplayTurn()
+    }
     display.buildListActive()
 };
 
 Game.prototype.gameReset = function () {
     display.buildDisplayInfo();
     if (player1 === round.dealplayer) {
-        round = new Round(player2)
+        round = new Round(player2, player1)
     } else {
-        round = new Round(player1)
+        round = new Round(player1, player2)
     }
     if (game.ai) {
         game.newRound();
@@ -266,6 +271,9 @@ Game.prototype.startTrick = function() {
     } else {
         if (game.leadplayer.id === game.displayplayer.id) {
             display.buildListActive();
+            display.buildDisplayTurn()
+        } else {
+            display.buildRemoteTurn()
         }
     }
 }
@@ -573,6 +581,7 @@ Player.prototype.clicked = function (card) {
         if (game.trick.length === 2) {
             socket.emit('trickcompleted', state)
         } else {
+            display.buildRemoteTurn()
             socket.emit('turncompleted', state)
         }
     }
@@ -879,8 +888,6 @@ function Display() {
     };
 
     this.build2p = function() {
-        console.log("build time")
-        console.log(round.decree)
         display.buildDecree();
         display.buildListDeal();
         display.buildDisplayInfo();
@@ -914,7 +921,6 @@ function Display() {
     }
 
     this.buildHint = function(value) {
-        console.log("made it here", value)
         if (value === 3) {
             document.getElementById('hint').innerHTML = 'Hint: You can now change the decree card with a card from your deck, or keep the current one.'
         } else if (value === 5) {
@@ -924,6 +930,19 @@ function Display() {
 
     this.clearHint = function(value) {
         document.getElementById('hint').innerHTML = ''
+    }
+
+    this.buildDisplayTurn = function() {
+        document.getElementById('turn').innerHTML = "It's your turn!"
+    }
+
+    this.buildRemoteTurn = function() {
+        document.getElementById('turn').innerHTML = `Waiting for ${game.remoteplayer.name} to play a card!`
+    }
+
+    this.clearTurn = function() {
+        console.log("Clearing!")
+        document.getElementById('turn').innerHTML = ''
     }
 }
 
@@ -1013,10 +1032,10 @@ function clickedAI() {
         game = new Game(true, player1, player2);
         document.getElementById("startup").style.display = "none";
         document.getElementById("play").style.display = "block";
+        // document.getElementById("chat-dropdown").style.display = "block";
         game.setEventListeners()
         display.buildDisplayInfo();
-        console.log(player1)
-        round = new Round(player1)
+        round = new Round(player1, player2)
         game.newRound();
         if (document.getElementById('leader-checkBox').checked) {
             display.buildResults("trick-leader", "lead the", game.leadplayer)
@@ -1054,7 +1073,7 @@ socket.on('startupinfo', function(msg) {
     } else {
         game = new Game(false, player2, player1)
     }
-    round = new Round(player1)
+    round = new Round(player1, player2)
     game.resetPlayers();
     document.getElementById("startup").style.display = "none";
     document.getElementById("play").style.display = "block";
@@ -1066,10 +1085,10 @@ socket.on('startupinfo', function(msg) {
 socket.on('newround', function(msg) {
     console.log('newround', msg)
     if (round.dealplayer.id === player1.id) {
-        round = new Round(player2)
+        round = new Round(player2, player1)
         game.leadplayer = player1
     } else {
-        round = new Round(player1)
+        round = new Round(player1, player2)
         game.leadplayer = player2
     }
     game.start2p(msg)
@@ -1092,6 +1111,7 @@ socket.on('trickresults', function(msg) {
 })
 
 socket.on('roundresults', function(msg) {
+    display.clearTurn()
     player1.score = msg['p1score']
     player1.roundResult = msg['p1result']
     player2.score = msg['p2score']
@@ -1135,6 +1155,16 @@ function onYouTubeIframeAPIReady() {
 function pauseVideo() {
     video.pauseVideo();
 }
+
+$(function(){
+
+    $("#flipbook").turn({
+        width: 800,
+        height: 592,
+        autoCenter: true
+    });
+
+})
 
 // $(function(){
 //

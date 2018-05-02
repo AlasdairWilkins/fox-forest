@@ -1,0 +1,1 @@
+document.getElementsByClassName('rightcard').style.setProperty('--animation', 'moveright')

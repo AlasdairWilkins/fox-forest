@@ -7,82 +7,10 @@
     <script type="application/javascript" src="/jquery-3.3.1.js" ></script>
     <script type="application/javascript" src="/turn.js" ></script>
     <style>
-        body{
-            overflow:hidden;
-        }
 
-        #flipbook{
-            width: 800px;
-            margin: 5px auto 10px;
-        }
-
-        #flipbook img {
-            width: 400px;
-        }
-
-        #flipbook .page{
-            width:400px;
-            background-color:white;
-        }
-
-        #flipbook .page-wrapper{
-            -webkit-perspective:2000px;
-            -moz-perspective:2000px;
-            -ms-perspective:2000px;
-            -o-perspective:2000px;
-            perspective:2000px;
-        }
-
-        #flipbook .hard{
-            background:#ccc !important;
-            color:#333;
-            -webkit-box-shadow:inset 0 0 5px #666;
-            -moz-box-shadow:inset 0 0 5px #666;
-            -o-box-shadow:inset 0 0 5px #666;
-            -ms-box-shadow:inset 0 0 5px #666;
-            box-shadow:inset 0 0 5px #666;
-            font-weight:bold;
-        }
-
-        #flipbook .odd{
-            background:-webkit-gradient(linear, right top, left top, color-stop(0.95, #FFF), color-stop(1, #DADADA));
-            background-image:-webkit-linear-gradient(right, #FFF 95%, #C4C4C4 100%);
-            background-image:-moz-linear-gradient(right, #FFF 95%, #C4C4C4 100%);
-            background-image:-ms-linear-gradient(right, #FFF 95%, #C4C4C4 100%);
-            background-image:-o-linear-gradient(right, #FFF 95%, #C4C4C4 100%);
-            background-image:linear-gradient(right, #FFF 95%, #C4C4C4 100%);
-            -webkit-box-shadow:inset 0 0 5px #666;
-            -moz-box-shadow:inset 0 0 5px #666;
-            -o-box-shadow:inset 0 0 5px #666;
-            -ms-box-shadow:inset 0 0 5px #666;
-            box-shadow:inset 0 0 5px #666;
-
-        }
-
-        #flipbook .even{
-            background:-webkit-gradient(linear, left top, right top, color-stop(0.95, #fff), color-stop(1, #dadada));
-            background-image:-webkit-linear-gradient(left, #fff 95%, #dadada 100%);
-            background-image:-moz-linear-gradient(left, #fff 95%, #dadada 100%);
-            background-image:-ms-linear-gradient(left, #fff 95%, #dadada 100%);
-            background-image:-o-linear-gradient(left, #fff 95%, #dadada 100%);
-            background-image:linear-gradient(left, #fff 95%, #dadada 100%);
-            -webkit-box-shadow:inset 0 0 5px #666;
-            -moz-box-shadow:inset 0 0 5px #666;
-            -o-box-shadow:inset 0 0 5px #666;
-            -ms-box-shadow:inset 0 0 5px #666;
-            box-shadow:inset 0 0 5px #666;
-        }
     </style>
     <script>
-        $(function(){
 
-            $("#flipbook").turn({
-                width: 800,
-                height: 592,
-                autoCenter: true
-            });
-
-        })
     </script>
     <script type="application/javascript" src="/main.js" defer></script>
 </head>
@@ -94,18 +22,21 @@
 </div>
 <div id="play">
     <div id="players-info">
-        <div class="dropdown bars" id="user-dropdown">
-            <div class="bars" id="bar1"></div>
-            <div class="bars" id="bar2"></div>
-            <div class="bars" id="bar3"></div>
-            <div class="dropdown-content" id="user-dropdown-content">
-                <div onclick="display.showModal('settings-modal')"><p>User Settings</p></div>
-                <div onclick="alert('Under construction!'")><p>Log Out</p></div>
+        <!--<div id="display-container">-->
+            <div class="dropdown bars" id="user-dropdown">
+                <div class="bars" id="bar1"></div>
+                <div class="bars" id="bar2"></div>
+                <div class="bars" id="bar3"></div>
+                <div class="dropdown-content" id="user-dropdown-content">
+                    <div onclick="display.showModal('settings-modal')"><p>User Settings</p></div>
+                    <div onclick="alert('Under construction!'")><p>Log Out</p></div>
+                </div>
             </div>
-        </div>
-        <div id="display-info">
-            <span id="display-name"></span> | Tricks: <span id="display-tricks"></span> | Score: <span id="display-score"></span>
-        </div>
+            <div id="display-info">
+                <span id="display-name"></span> | Tricks: <span id="display-tricks"></span> | Score: <span id="display-score"></span>
+            </div>
+        <!--</div>-->
+
         <div id="reference-menu">
             <div class="reference" id="scoring-reference">
                 <div class="dropdown" id="scoring-dropdown" onclick="display.showDropdown('scoring-dropdown-content')">Scoring Reference</div>
@@ -173,9 +104,18 @@
                 </div>
             </div>
         </div>
-        <div id="remote-info">
-            <span id="remote-name"></span> | Tricks: <span id="remote-tricks"></span> | Score: <span id="remote-score"></span>
-        </div>
+        <!--<div id="remote-container">-->
+            <!--<div class="dropdown bars" id="chat-dropdown">-->
+                <!--<div class="bars" id="bar4"></div>-->
+                <!--<div class="bars" id="bar5"></div>-->
+                <!--<div class="bars" id="bar6"></div>-->
+                <!--<div class="dropdown-content" id="chat-dropdown-content">-->
+                <!--</div>-->
+            <!--</div>-->
+            <div id="remote-info">
+                <span id="remote-name"></span> | Tricks: <span id="remote-tricks"></span> | Score: <span id="remote-score"></span>
+            </div>
+        <!--</div>-->
     </div>
     <div id="game">
         <div id="decree">

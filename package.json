@@ -5,10 +5,11 @@
   "main": "main.js",
   "dependencies": {
     "body-parser": "^1.18.2",
+    "client-oauth2": "^4.2.0",
     "cors": "^2.8.4",
     "express": "^4.16.3",
     "oauth20-provider": "^0.6.0",
-    "simple-oauth2": "^1.5.2",
+    "simple-oauth2": "file:../simple-oauth2",
     "socket.io": "^2.1.0",
     "uniqid": "^4.1.1"
   },
