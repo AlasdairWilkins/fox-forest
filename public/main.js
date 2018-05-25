@@ -30,7 +30,8 @@ window.onclick = function(event) {
 
 function clickedAI() {
     player1 = new Player("Alasdair", socket.id);
-    $.post("http://localhost:8000/computername", null, function (data, status) {
+    var addr = "http://" + window.location.host + "/computername";
+    $.post(addr, null, function (data, status) {
         player2 = new Player(data['name']);
         game = new Game(true, player1, player2);
         document.getElementById("players-info").classList.toggle("setup");
