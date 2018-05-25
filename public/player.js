@@ -152,6 +152,7 @@ Player.prototype.doWoodcutterHuman = function (card) {
     if (game.displayplayer === game.followplayer) {
         this.resetCards();
     }
+    this.resetCards()
     if (game.ai) {
         let newcard = round.deck.pop()
         this.insertWoodcutter(newcard)

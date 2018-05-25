@@ -1,7 +1,13 @@
-// function State() {
-//     this.stuff = null4
-//
-// }
+function State(player1, player2, round) {
+    this.player1 = player1.id
+    this.player2 = player2.id
+    this.player1hand = player1.hand
+    this.player2hand = player2.hand
+    this.decree = round.decree
+    this.trick = []
+    this.turn = round.receiveplayer
+    this.completed = false
+}
 
 function Round(dealplayer) {
     this.decree = null
@@ -41,12 +47,10 @@ Round.prototype.setDecree = function () {
 };
 
 function Trick() {
-    this.cards = [] // game.trick previously
-    this.leadplayer = player1; //trick
-    this.followplayer = player2; //trick
-    this.trickwinner = player1; //trick
-    this.witchReset = false; //trick
-    this.hasSwan = false; //trick
+    this.cards = []
+    this.leadplayer = player1
+    this.followplayer = player2
+    this.trickwinner = player1
 }
 
 Trick.prototype.hasSevens = function() {
@@ -89,6 +93,17 @@ function Game(choice, id, playera, playerb) {
     this.hasSwan = false; //trick
     this.gameOver = false; //game? or possibly round
     this.winner = ''; //game
+}
+
+Game.prototype.newRound = function (dealplayer) {
+    round = new Round(dealplayer)
+    round.createDeck()
+    round.shuffleDeck()
+    player1.createHand(round.deck)
+    player2.createHand(round.deck)
+    round.setDecree(round.deck)
+    state = new State(player1, player2, round)
+    return state
 }
 
 Game.prototype.whoWinning = function () {
@@ -203,39 +218,6 @@ Game.prototype.flipPlayers = function () {
     game.followplayer = newfollow
 };
 
-Game.prototype.playRound = function () {
-    display.buildTrick();
-    if (game.displayplayer !== game.leadplayer) {
-        if (game.ai) {
-            game.leadplayer.leadCard();
-        }
-        if (game.trick[0].value == 11) {
-            game.displayplayer.isMonarch = true
-        }
-        game.displayplayer.setFollowCards()
-    }
-    display.buildListActive()
-};
-
-Game.prototype.gameReset = function () {
-    display.buildScores();
-    display.buildDisplayInfo();
-    if (game.ai) {
-        if (player1 === game.dealplayer) {
-            round = new Round(player2)
-        } else {
-            round = new Round(player1)
-        }
-        game.newRound();
-    } else {
-        //game.displayplayer.createHand(receivedhandinfo)
-        //round.decree = receiveddecreeinfo
-    }
-    display.buildTrick();
-    display.buildListActive();
-};
-
-
 Game.prototype.newRound = function (dealplayer) {
     round = new Round(dealplayer)
     round.createDeck()
@@ -246,16 +228,6 @@ Game.prototype.newRound = function (dealplayer) {
     state = {'player1': player1.id, 'player2': player2.id, 'player1hand': player1.hand, 'player2hand': player2.hand, 'decree': round.decree, 'turn': game.turn}
     return state
 }
-
-Game.prototype.resetPlayers = function () {
-    if (player1 === game.dealplayer) {
-        game.leadplayer = player2;
-        game.followplayer = player1
-    } else {
-        game.leadplayer = player1;
-        game.followplayer = player2
-    }
-};
 
 Game.prototype.doMonarch = function () {
     playablecards = this.hand.filter(card => {
@@ -268,27 +240,6 @@ Game.prototype.doMonarch = function () {
     })
 
 };
-
-Game.prototype.start2p = function (datatemp) {
-    console.log(datatemp)
-    game.resetPlayers();
-    round.decree = datatemp['decree'];
-    if (game.displayplayer.id === player1.id) {
-        game.displayplayer.hand = datatemp['player1hand'];
-    } else {
-        game.displayplayer.hand = datatemp['player2hand'];
-    }
-
-    document.getElementById("startup").style.display = "none";
-    document.getElementById("play").style.display = "block";
-    game.setEventListeners()
-    display.buildDisplayInfo();
-    let decree = `<img src=${round.decree.image} class="card">`;
-    display.buildDecree(decree);
-    display.buildListInactive(14);
-    display.buildResults("trick-leader", "lead the", game.leadplayer)
-}
-
 
 function Card(value, suit) {
     this.value = value;
@@ -309,27 +260,6 @@ function Player(name, id) {
     this.isWoodcutter = false;
     this.isMonarch = false;
     this.roundResult = '';
-}
-
-Player.prototype.setListStyle = function (counttemp, ztemp, cardtemp) {
-    let position = counttemp * 75;
-    if (cardtemp.playable) {
-        return `'z-index: ${ztemp}; left: ${position}px'`
-    } else {
-        return `'z-index: ${ztemp}; left: ${position}px; filter: blur(3px);'`
-    }
-};
-
-Player.prototype.setTrickStyle = function(zindex) {
-    let tricktop = document.getElementById("trick-cards").getBoundingClientRect().top
-    let trickleft = document.getElementById("trick-cards").getBoundingClientRect().left
-    let cardtop = document.getElementById("hand").getBoundingClientRect().top
-    let cardleft = document.getElementById("hand").getBoundingClientRect().left + (zindex -1) * 75
-    let trickstarttop = ((cardtop - tricktop)/2) + 'px'
-    let trickstartleft = (cardleft - trickleft) + 'px'
-    stylesheet.setProperty('--top', trickstarttop)
-    stylesheet.setProperty('--left', trickstartleft)
-    return `'z-index: ${zindex}'`
 }
 
 Player.prototype.sortHand = function() {
@@ -355,262 +285,6 @@ Player.prototype.createHand = function (decktemp) {
     if (this === game.displayplayer) {
         display.buildListActive()
     }
-};
-
-Player.prototype.insertCard = function (card) {
-    this.hand.push(card)
-    this.sortHand()
-};
-
-Player.prototype.doFox = function (card) {
-    let newcard = round.decree;
-    round.decree = this.hand[card];
-    let decree = `<img src=${round.decree.image} class="card">`;
-    display.buildDecree(decree);
-    this.hand.splice(card, 1);
-    this.insertCard(newcard);
-    if (this === game.displayplayer) {
-        let passbutton = "";
-        display.buildPassButton(passbutton);
-        display.buildListInactive(card)
-        this.clicked(card)
-    }
-};
-
-Player.prototype.doWoodcutter = function (card) {
-    let discard = this.hand[card];
-    this.hand.splice(card, 1);
-    if (game.ai) {
-        round.deck.splice(0, 0, discard);
-    } else {
-        //$.post("http://localhost:8000/woodcutterdiscard", {'discard': discard}, game.displayplayer(oldcount))
-    }
-    if (this === game.displayplayer) {
-        display.buildListInactive(card)
-        this.clicked(card)
-    }
-};
-
-Player.prototype.passFox = function (card) {
-    let passbutton = '';
-    display.buildPassButton(passbutton);
-    this.clicked(card)
-};
-
-Player.prototype.doFoxHuman = function (card) {
-    this.isFoxWoodcutter = true;
-    this.playCard(card);
-    display.buildTrick();
-    if (game.displayplayer === game.followplayer) {
-        this.resetCards();
-    }
-    display.buildFoxList(card);
-    let passbutton = `<button onclick='game.displayplayer.passFox(${card})'>Keep the current decree card</button>`;
-    display.buildPassButton(passbutton)
-};
-
-Player.prototype.doWoodcutterHuman = function (card) {
-    this.isFoxWoodcutter = true;
-    this.playCard(card);
-    display.buildTrick();
-    if (game.displayplayer === game.followplayer) {
-        this.resetCards();
-    }
-    if (game.ai) {
-        let newcard = round.deck.pop()
-        this.insertWoodcutter(newcard)
-    } else {
-        $.post("http://localhost:8000/woodcutterdraw", null, function (data, status) {
-            let card = data['newcard']
-            game.displayplayer.insertWoodcutter(card, suit, value)
-
-        })
-    }
-};
-
-Player.prototype.insertWoodcutter = function (card) {
-    card.playable = false;
-    this.insertCard(card);
-    display.buildWoodcutterList();
-    card.playable = true
-}
-
-Player.prototype.doFoxAI = function () {
-    if (Math.floor(Math.random() * 2) === 1) {
-        let card = Math.floor(Math.random() * this.hand.length);
-        this.doFox(card)
-    }
-};
-
-Player.prototype.doWoodcutterAI = function () {
-    let card = Math.floor(Math.random() * this.hand.length);
-    let discard = this.hand[card];
-    this.hand.splice(card, 1);
-    round.deck.splice(0, 0, discard);
-    let newcard = round.deck.pop();
-    this.insertCard(newcard)
-};
-
-Player.prototype.playCard = function (cardtemp) {
-    game.trick.push(this.hand[cardtemp]);
-    let tricknum = game.trick.length - 1;
-    if (this.hand[cardtemp].mechanic !==null) {
-        display.buildMechanic(this.hand[cardtemp].mechanic)
-    }
-    this.hand.splice(cardtemp, 1);
-    if (this.hand.length > 0) {
-        if (game.ai) {
-            if (game.trick[tricknum].value === 3) {
-                if (this !== game.displayplayer) {
-                    this.doFoxAI()
-                }
-            }
-            if (game.trick[tricknum].value === 5) {
-                if (this !== game.displayplayer) {
-                    this.doWoodcutterAI()
-                }
-            }
-        }
-    }
-};
-
-Player.prototype.leadCard = function () {
-    let card = Math.floor(Math.random() * (this.hand.length - 1))
-    this.playCard(card);
-    display.buildTrick(0);
-};
-
-Player.prototype.receiveScores = function (datatemp, suit) {
-    if (round.decree != datatemp['decree']) {
-        round.decree = datatemp['decree'];
-        let decree = `<img src=${round.decree.image} class="card">`;
-        display.buildDecree(decree);
-    }
-    if (game.displayplayer.id === datatemp['turn']) {
-        game.leadplayer = game.displayplayer
-        game.followplayer = game.remoteplayer
-    } else {
-        game.leadplayer = game.remoteplayer
-        game.followplayer = game.displayplayer
-    }
-    game.trick = datatemp['trick'];
-    player1.tricks = datatemp['player1tricks']
-    player1.score = datatemp['player1score']
-    player2.tricks = datatemp['player2tricks']
-    player2.score = datatemp['player2score']
-    game.trickwinner = datatemp['result']
-    display.buildTrick()
-    game.displayplayer.completeRound(suit)
-}
-
-Player.prototype.clicked = function (card) {
-    if (!this.isFoxWoodcutter) {
-        this.playCard(card);
-        this.resetCards()
-        display.buildListInactive(card)
-        display.buildTrick(card);
-    }
-    if (game.ai) {
-        if (this === game.leadplayer) {
-            game.followplayer.followCard()
-        }
-        game.scoreTrick(game.leadplayer, game.followplayer)
-        game.trick = []
-        this.completeRound(card)
-    } else {
-        state = {'decree': round.decree, 'trick': game.trick, 'turn': this.id, 'name': this.name, 'completed': true};
-        if (game.trick.length === 2) {
-            socket.emit('roundcompleted', state)
-        } else {
-            socket.emit('turncompleted', state)
-        }
-    }
-}
-
-Player.prototype.completeRound = function(suit) {
-    if (this.isFoxWoodcutter) {
-        this.isFoxWoodcutter = false
-    }
-    // } else {
-    //     this.resetCards(suit)
-    // }
-    if (player1.tricks.length + player2.tricks.length === 13) {
-        player1.hand = [];
-        player2.hand = [];
-        player1.getScores();
-        player2.getScores();
-        game.whoWinning();
-        if (game.gameOver) {
-            display.buildScores();
-            display.buildDisplayInfo();
-            display.buildWinner()
-        } else {
-            display.buildResults(elem, game.results.winner, game.trickcount);
-            document.getElementById(elem).addEventListener("animationend", function () {
-                document.getElementById(elem).style.display = "none";
-                game.gameReset()
-            })
-        }
-    } else {
-        display.buildDisplayInfo();
-        console.log(game.trickwinner)
-        display.buildResults("trick-winner", "won the", game.trickwinner)
-    }
-}
-
-Player.prototype.setFollowCards = function () {
-    if (this.hasSuit()) {
-        for (let i = 0; i < this.hand.length; i++) {
-            if (this.hand[i].suit !== game.trick[0].suit) {
-                this.hand[i].playable = false
-            } else {
-                if (this.isMonarch) {
-                    game.doMonarch(i)
-                }
-            }
-        }
-    }
-};
-
-Player.prototype.followCard = function () {
-    let playablecards = this.hand
-    console.log("made it here")
-    if (this.hasSuit()) {
-        console.log("in the if!")
-        playablecards = this.hand.filter(card => {
-            console.log(card)
-            if (card.suit === game.trick[0].suit) {
-                return true
-            } else {
-                return false
-            }
-        })
-        console.log(playablecards)
-    }
-    let playablecard = Math.floor(Math.random() * (playablecards.length));
-    let card = this.hand.indexOf(playablecards[playablecard])
-    this.playCard(card);
-    display.buildTrick()
-}
-
-
-Player.prototype.resetCards = function () {
-    for (let i = 0; i < this.hand.length; i++) {
-        this.hand[i].playable = true
-    }
-    if (this.isMonarch || this.isWoodcutter) {
-        this.isMonarch = false;
-        this.isWoodcutter = false
-    }
-};
-
-Player.prototype.hasSuit = function () {
-    for (let i = 0; i < this.hand.length; i++) {
-        if (this.hand[i].suit === game.trick[0].suit) {
-            return true
-        }
-    }
-    return false
 };
 
 Player.prototype.getScores = function () {
@@ -658,10 +332,6 @@ Player.prototype.getScores = function () {
     this.tricks = []
 };
 
-Player.prototype.changeName = function (name) {
-    this.name = name;
-};
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors')
@@ -674,175 +344,204 @@ const io = require('socket.io')(http);
 const nodemailer = require('nodemailer');
 const cookieParser = require('cookie-parser')
 
-
 app.use(express.static('public'))
 app.use(cookieParser())
 
 app.get('/', function(req, res){
     if (!req.cookies.id) {
-        cookie = uniqid()
-        res.setHeader('Set-Cookie', 'id='+cookie)
-    } else {
-        cookie = req.cookies.id
-
-        //check if there is a game associated with this cookie
-
+        let cookie = uniqid()
+        res.setHeader('Set-Cookie', 'id=' + cookie)
     }
     res.sendFile(__dirname + '/main.html')
-    console.log('here comes a user', cookie);
-
-    if (!connected) {
-        io.on('connection', function(socket){
-
-            //or possibly run the cookie to game check here
-
-            connected = true
-            console.log('a user connected', socket.id, cookie);
-
-            if (req.query.code) {
-                console.log("What was received:", req.query)
-                startGame(req.query.code, socket)
-                // if (games[req.query.code].length === 1) {
-            }
-
-            socket.on('2pgame', function(msg){
-                console.log("And away we go!")
-                gameroom = uniqid()
-                let newcookie = parseCookie(socket.request.headers.cookie).id
-                games[gameroom] = {'2p': true, 'p1socket': socket.id, 'p1cookie': newcookie}
-                if (!players[newcookie]) {
-                    players[newcookie] = [gameroom]
-                    console.log(players)
-                    console.log(players[newcookie])
-                } else {
-                    console.log(players)
-                    console.log(players[newcookie])
-                    players[newcookie].push(gameroom)
-                }
-                socket.join(gameroom)
-                socket.emit('gamecode', gameroom)
-            })
-
-            socket.on('sendcode', function(msg){
-                let link = `http://localhost:8000/?code=${msg.gameroom}`
-                let transporter = nodemailer.createTransport({
-                    service: 'gmail',
-                    auth: {
-                        user: 'alasdairprograms@gmail.com',
-                        pass: 'h0p3&j0y'
-                    },
-                    tls: {
-                        rejectUnauthorized: false
-                    }
-                });
-
-                let mailOptions = {
-                    to: msg.email,
-                    subject: "Here's your game code",
-                    text: `${msg.gameroom} or go to ${link}`,
-                    html: `<b>${msg.gameroom}</b>, <a href='${link}'>${link}</a>`
-                };
-
-                transporter.sendMail(mailOptions, (error, info) => {
-                    if (error) {
-                        return console.log(error);
-                    }
-                    console.log('Message sent: %s', info.messageId);
-                    // Preview only available when sending through an Ethereal account
-                    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-
-                    // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-                    // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
-                });
-            })
-
-            socket.on('startgame', function(msg){
-                if (games[msg].p1socket) {
-                    startGame(msg, socket)
-                }
-
-            })
-
-            socket.on('turncompleted', function(msg){
-
-                //update gameroom's state information for reload here
-
-                socket.to(gameroom).emit('turninfo', msg)
-            })
-
-            socket.on('trickcompleted', function(msg) {
-                console.log(msg['hand'])
-                round.decree = msg['decree']
-                game.trick = msg['trick']
-                game.turn = msg['turn']
-                if (game.turn === player1.id) {
-                    game.leadplayer = player2
-                    game.followplayer = player1
-                } else {
-                    game.leadplayer = player1
-                    game.iollowplayer = player2
-                }
-                game.scoreTrick(game.leadplayer, game.followplayer)
-                game.turn = game.leadplayer.id
-                game.roundcompleted = true
-                state = ({
-                    'decree': round.decree, 'trick': game.trick, 'turn': game.turn, 'result': game.trickwinner,
-                    'player1': player1.id, 'player1tricks': player1.tricks, 'player1score': player1.score,
-                    'player2': player2.id, 'player2tricks': player2.tricks, 'player2score': player2.score
-                })
-
-                //update gameroom's state information for reload here
-
-                io.in(gameroom).emit('trickresults', state)
-            })
-
-            socket.on('roundcompleted', function() {
-                player1.getScores()
-                player2.getScores()
-                scores = {
-                    'p1score': player1.score,
-                    'p1result': player1.roundResult,
-                    'p2score': player2.score,
-                    'p2result': player2.roundResult
-                }
-                io.in(gameroom).emit('roundresults', scores)
-            })
-
-            socket.on('roundstartup', function() {
-                player1.hand = []
-                player2.hand = []
-                state = game.newRound(player2)
-                io.in(gameroom).emit('newround', state)
-            })
-
-            socket.on('woodcutter', function(msg){
-                var discard = msg['discard']
-                round.deck.splice(0, 0, discard)
-            })
-
-            socket.on('disconnect', function(){
-
-                //remove socket id from any active games
-
-                console.log('a user disconnected');
-                console.log(socket.id)
-            });
-        });
-    }
+    console.log('here comes a user');
 });
 
-function startGame(msg, socket) {
-    games[msg]['p2socket'] =  socket.id
+io.on('connection', function(socket){
+    let cookie = parseCookie(socket.request.headers.cookie).id
+    console.log(players)
+
+    if (players[cookie]) {
+        //resume first game in array
+        let gameroom = players[cookie][0]
+        let game = games[gameroom]
+        console.log('Game ID', gameroom)
+        console.log("Resumable game", game)
+        if (cookie === game['p1cookie'] && !game['p1socket']) {
+            game['p1socket'] = socket.id
+            socket.join(gameroom)
+            console.log("This is player 1!", game)
+            socket.emit("resumegame", "Hey hey, let's resume this game!")
+            io.in(gameroom).emit("announcement", "This worked!")
+        } else if (cookie === game['p2cookie'] && !game['p2socket']) {
+            game['p2socket'] = socket.id
+            socket.join(gameroom)
+            console.log("This is player 2!", game)
+            socket.emit("resumegame", "Hey hey, let's resume this game!")
+        } else {
+            console.log("That's an error!")
+        }
+
+    }
+
+    //or possibly run the cookie to game check here
+    console.log('a user connected', socket.id, cookie);
+
+    let referer = socket.request.headers.referer
+    let query = referer.substr(url.length)
+    if (query.substr(0, 5) === '?code') {
+        let code = query.substr(6)
+        startgame(code, socket)
+    }
+
+
+
+
+    socket.on('2pgame', function(msg){
+        console.log("And away we go!")
+        gameroom = uniqid()
+        let newcookie = parseCookie(socket.request.headers.cookie).id
+        games[gameroom] = {'2p': true, 'p1socket': socket.id, 'p1cookie': newcookie}
+        if (!players[newcookie]) {
+            players[newcookie] = [gameroom]
+            console.log(players)
+            console.log(players[newcookie])
+        } else {
+            console.log(players)
+            console.log(players[newcookie])
+            players[newcookie].push(gameroom)
+        }
+        socket.join(gameroom)
+        socket.emit('gamecode', gameroom)
+    })
+
+    socket.on('sendcode', function(msg){
+        let link = `http://localhost:8000/?code=${msg.gameroom}`
+        let transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: 'alasdairprograms@gmail.com',
+                pass: 'h0p3&j0y'
+            },
+            tls: {
+                rejectUnauthorized: false
+            }
+        });
+
+        let mailOptions = {
+            to: msg.email,
+            subject: "Here's your game code",
+            text: `${msg.gameroom} or go to ${link}`,
+            html: `<a href='${link}'>${link}</a>`
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                return console.log(error);
+            }
+            console.log('Message sent: %s', info.messageId);
+            // Preview only available when sending through an Ethereal account
+            console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+
+            // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+            // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+        });
+    })
+
+    socket.on('startgame', function(msg){
+        if (games[msg].p1socket) {
+            startGame(msg, socket)
+        }
+
+    })
+
+    socket.on('turncompleted', function(msg){
+
+        //update gameroom's state information for reload here
+
+        socket.to(gameroom).emit('turninfo', msg)
+    })
+
+    socket.on('trickcompleted', function(msg) {
+        state.decree = msg['decree']
+        state.trick = msg['trick']
+        state.turn = msg['turn']
+        if (state.turn === player1.id) {
+            game.leadplayer = player2
+            game.followplayer = player1
+        } else {
+            game.leadplayer = player1
+            game.iollowplayer = player2
+        }
+        game.scoreTrick(game.leadplayer, game.followplayer)
+        state.turn = game.leadplayer.id
+        state = ({
+            'decree': round.decree, 'trick': game.trick, 'turn': game.turn, 'result': game.trickwinner,
+            'player1': player1.id, 'player1tricks': player1.tricks, 'player1score': player1.score,
+            'player2': player2.id, 'player2tricks': player2.tricks, 'player2score': player2.score
+        })
+
+        //update gameroom's state information for reload here
+
+        io.in(gameroom).emit('trickresults', state)
+    })
+
+    socket.on('roundcompleted', function() {
+        player1.getScores()
+        player2.getScores()
+        scores = {
+            'p1score': player1.score,
+            'p1result': player1.roundResult,
+            'p2score': player2.score,
+            'p2result': player2.roundResult
+        }
+        io.in(gameroom).emit('roundresults', scores)
+    })
+
+    socket.on('roundstartup', function() {
+        player1.hand = []
+        player2.hand = []
+        state = game.newRound(player2)
+        io.in(gameroom).emit('newround', state)
+    })
+
+    socket.on('woodcutter', function(msg){
+        var discard = msg['discard']
+        round.deck.splice(0, 0, discard)
+    })
+
+    socket.on('disconnect', function(){
+        if (players[cookie]) {
+            for (let i = 0; i < players[cookie].length; i++) {
+                let game = games[players[cookie][i]]
+                if (socket.id === game['p1socket']) {
+                    game['p1socket'] = null
+                } else {
+                    game['p2socket'] = null
+                }
+            }
+        }
+
+        console.log('a user disconnected');
+        console.log(socket.id, cookie)
+    });
+});
+
+function startGame(gameroom, socket) {
+    games[gameroom]['p2socket'] =  socket.id
     let newcookie = parseCookie(socket.request.headers.cookie).id
-    games[msg]['p2cookie'] = newcookie
-    players[newcookie] = msg
+    games[gameroom]['p2cookie'] = newcookie
+    if (!players[newcookie]) {
+        players[newcookie] = [gameroom]
+    } else {
+        players[newcookie].push(gameroom)
+    }
     socket.join(gameroom)
-    player1 = new Player('Alasdair', games[msg]['p1cookie'])
-    player2 = new Player('Kaley', games[msg]['p2cookie'])
-    game = new Game(player2.id, msg)
+    player1 = new Player('Alasdair', games[gameroom]['p1cookie'])
+    player2 = new Player('Kaley', games[gameroom]['p2cookie'])
+    game = new Game(player2.id, gameroom)
     state = game.newRound(player2)
-    games[msg]['state'] = state
-    console.log('As the game begins', games[msg])
+    games[gameroom]['state'] = state
+    console.log('As the game begins', games[gameroom])
     io.to(gameroom).emit('startupinfo', state)
 }
 
@@ -886,7 +585,6 @@ app.post('/computername', function(req, res) {
     })
 })
 
-let cookie = null
 let player1 = null
 let player2 = null
 let game = null
@@ -900,5 +598,4 @@ let round = null
 let trick = new Trick()
 let connected = false
 const suits = ['Bells', 'Keys', 'Moons']
-
-
+const url = 'http://localhost:8000/'

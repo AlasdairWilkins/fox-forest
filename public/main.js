@@ -121,6 +121,14 @@ socket.on('trickresults', function(msg) {
     game.displayplayer.receiveScores(msg, 0)
 })
 
+socket.on('resumegame', function(msg) {
+    console.log(msg)
+})
+
+socket.on('announcement', function(msg) {
+    console.log(msg)
+})
+
 socket.on('roundresults', function(msg) {
     display.clearTurn()
     player1.score = msg['p1score']
