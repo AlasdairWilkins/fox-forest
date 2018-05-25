@@ -1,3 +1,8 @@
+// function State() {
+//     this.stuff = null4
+//
+// }
+
 function Round(dealplayer) {
     this.decree = null
     this.deck = []
@@ -15,6 +20,7 @@ Round.prototype.createDeck = function () {
             this.deck.push(card);
         }
     }
+
 };
 
 Round.prototype.shuffleDeck = function () {
@@ -665,111 +671,203 @@ const util = require('util')
 const fs = require('fs')
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
+const nodemailer = require('nodemailer');
+const cookieParser = require('cookie-parser')
+
 
 app.use(express.static('public'))
+app.use(cookieParser())
 
 app.get('/', function(req, res){
+    if (!req.cookies.id) {
+        cookie = uniqid()
+        res.setHeader('Set-Cookie', 'id='+cookie)
+    } else {
+        cookie = req.cookies.id
+
+        //check if there is a game associated with this cookie
+
+    }
     res.sendFile(__dirname + '/main.html')
-    console.log('here comes a user');
+    console.log('here comes a user', cookie);
+
+    if (!connected) {
+        io.on('connection', function(socket){
+
+            //or possibly run the cookie to game check here
+
+            connected = true
+            console.log('a user connected', socket.id, cookie);
+
+            if (req.query.code) {
+                console.log("What was received:", req.query)
+                startGame(req.query.code, socket)
+                // if (games[req.query.code].length === 1) {
+            }
+
+            socket.on('2pgame', function(msg){
+                console.log("And away we go!")
+                gameroom = uniqid()
+                let newcookie = parseCookie(socket.request.headers.cookie).id
+                games[gameroom] = {'2p': true, 'p1socket': socket.id, 'p1cookie': newcookie}
+                if (!players[newcookie]) {
+                    players[newcookie] = [gameroom]
+                    console.log(players)
+                    console.log(players[newcookie])
+                } else {
+                    console.log(players)
+                    console.log(players[newcookie])
+                    players[newcookie].push(gameroom)
+                }
+                socket.join(gameroom)
+                socket.emit('gamecode', gameroom)
+            })
+
+            socket.on('sendcode', function(msg){
+                let link = `http://localhost:8000/?code=${msg.gameroom}`
+                let transporter = nodemailer.createTransport({
+                    service: 'gmail',
+                    auth: {
+                        user: 'alasdairprograms@gmail.com',
+                        pass: 'h0p3&j0y'
+                    },
+                    tls: {
+                        rejectUnauthorized: false
+                    }
+                });
+
+                let mailOptions = {
+                    to: msg.email,
+                    subject: "Here's your game code",
+                    text: `${msg.gameroom} or go to ${link}`,
+                    html: `<b>${msg.gameroom}</b>, <a href='${link}'>${link}</a>`
+                };
+
+                transporter.sendMail(mailOptions, (error, info) => {
+                    if (error) {
+                        return console.log(error);
+                    }
+                    console.log('Message sent: %s', info.messageId);
+                    // Preview only available when sending through an Ethereal account
+                    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+
+                    // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+                    // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+                });
+            })
+
+            socket.on('startgame', function(msg){
+                if (games[msg].p1socket) {
+                    startGame(msg, socket)
+                }
+
+            })
+
+            socket.on('turncompleted', function(msg){
+
+                //update gameroom's state information for reload here
+
+                socket.to(gameroom).emit('turninfo', msg)
+            })
+
+            socket.on('trickcompleted', function(msg) {
+                console.log(msg['hand'])
+                round.decree = msg['decree']
+                game.trick = msg['trick']
+                game.turn = msg['turn']
+                if (game.turn === player1.id) {
+                    game.leadplayer = player2
+                    game.followplayer = player1
+                } else {
+                    game.leadplayer = player1
+                    game.iollowplayer = player2
+                }
+                game.scoreTrick(game.leadplayer, game.followplayer)
+                game.turn = game.leadplayer.id
+                game.roundcompleted = true
+                state = ({
+                    'decree': round.decree, 'trick': game.trick, 'turn': game.turn, 'result': game.trickwinner,
+                    'player1': player1.id, 'player1tricks': player1.tricks, 'player1score': player1.score,
+                    'player2': player2.id, 'player2tricks': player2.tricks, 'player2score': player2.score
+                })
+
+                //update gameroom's state information for reload here
+
+                io.in(gameroom).emit('trickresults', state)
+            })
+
+            socket.on('roundcompleted', function() {
+                player1.getScores()
+                player2.getScores()
+                scores = {
+                    'p1score': player1.score,
+                    'p1result': player1.roundResult,
+                    'p2score': player2.score,
+                    'p2result': player2.roundResult
+                }
+                io.in(gameroom).emit('roundresults', scores)
+            })
+
+            socket.on('roundstartup', function() {
+                player1.hand = []
+                player2.hand = []
+                state = game.newRound(player2)
+                io.in(gameroom).emit('newround', state)
+            })
+
+            socket.on('woodcutter', function(msg){
+                var discard = msg['discard']
+                round.deck.splice(0, 0, discard)
+            })
+
+            socket.on('disconnect', function(){
+
+                //remove socket id from any active games
+
+                console.log('a user disconnected');
+                console.log(socket.id)
+            });
+        });
+    }
 });
 
+function startGame(msg, socket) {
+    games[msg]['p2socket'] =  socket.id
+    let newcookie = parseCookie(socket.request.headers.cookie).id
+    games[msg]['p2cookie'] = newcookie
+    players[newcookie] = msg
+    socket.join(gameroom)
+    player1 = new Player('Alasdair', games[msg]['p1cookie'])
+    player2 = new Player('Kaley', games[msg]['p2cookie'])
+    game = new Game(player2.id, msg)
+    state = game.newRound(player2)
+    games[msg]['state'] = state
+    console.log('As the game begins', games[msg])
+    io.to(gameroom).emit('startupinfo', state)
+}
 
+function parseCookie(cookie) {
+    cookie = cookie.split("; ").join(";")
+    cookie = cookie.split(" =").join("=")
+    cookie = cookie.split(";")
 
-io.on('connection', function(socket){
-    console.log('a user connected');
-    clients.push(socket.id)
-    console.log(clients)
-    console.log(clients.length)
+    let object = {}
+    for (let i = 0; i < cookie.length; i++) {
+        cookie[i] = cookie[i].split("=");
+        object[cookie[i][0]] = decodeURIComponent(cookie[i][1])
+    }
+    return object
 
-    socket.on('2pgame', function(msg){
-        // fs.readFile('./data.json', 'utf8', function(err, data) {
-        //     jsonstate = JSON.parse(data)
-        //     console.log('inside function', jsonstate)
-        // })
-        // console.log("And again")
-        // console.log('outside function', jsonstate)
-        // console.log("Let's check what games are already happening!")
-        gamewaiting.push(socket.id)
-        gamesocket.push(socket)
-        if (gamewaiting.length >= 2) {
-            gameroom = uniqid()
-            gamesocket[0].join(gameroom)
-            gamesocket[1].join(gameroom)
-            gamewaiting.shift()
-            gamewaiting.shift()
-            player1 = new Player('Alasdair', gamesocket[0].id)
-            player2 = new Player('Kaley', gamesocket[1].id)
-            game = new Game(player2.id, uniqid())
-            state = game.newRound(player2)
-            io.to(gameroom).emit('startupinfo', state)
-        }
-    })
-
-    socket.on('turncompleted', function(msg){
-        socket.to(gameroom).emit('turninfo', msg)
-    })
-
-    socket.on('trickcompleted', function(msg) {
-        round.decree = msg['decree']
-        game.trick = msg['trick']
-        game.turn = msg['turn']
-        if (game.turn === player1.id) {
-            game.leadplayer = player2
-            game.followplayer = player1
-        } else {
-            game.leadplayer = player1
-            game.iollowplayer = player2
-        }
-        game.scoreTrick(game.leadplayer, game.followplayer)
-        game.turn = game.leadplayer.id
-        game.roundcompleted = true
-        state = ({
-            'decree': round.decree, 'trick': game.trick, 'turn': game.turn, 'result': game.trickwinner,
-            'player1': player1.id, 'player1tricks': player1.tricks, 'player1score': player1.score,
-            'player2': player2.id, 'player2tricks': player2.tricks, 'player2score': player2.score
-        })
-        io.in(gameroom).emit('trickresults', state)
-    })
-
-    socket.on('roundcompleted', function() {
-        player1.getScores()
-        player2.getScores()
-        scores = {
-            'p1score': player1.score,
-            'p1result': player1.roundResult,
-            'p2score': player2.score,
-            'p2result': player2.roundResult
-        }
-        io.in(gameroom).emit('roundresults', scores)
-    })
-
-    socket.on('roundstartup', function() {
-        player1.hand = []
-        player2.hand = []
-        state = game.newRound(player2)
-        io.in(gameroom).emit('newround', state)
-    })
-
-    socket.on('woodcutter', function(msg){
-        var discard = msg['discard']
-        round.deck.splice(0, 0, discard)
-    })
-
-    socket.on('disconnect', function(){
-        console.log('a user disconnected');
-        console.log(socket.id)
-        let x = clients.indexOf(socket.id)
-        clients.splice(x, 1)
-        console.log(clients)
-        // let statevar = {'gamestate': state}
-        // fs.writeFile('./data.json', JSON.stringify(statevar, null, 2), 'utf-8')
-        // console.log(__dirname)
-    });
-});
+}
 
 http.listen(8000, function() {
     console.log('Example app listening on port 8000!');
 });
+
+app.post('/codesent', function(req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    console.log(req.body)
+})
 
 app.post('/woodcutterdraw', function(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*')
@@ -788,17 +886,19 @@ app.post('/computername', function(req, res) {
     })
 })
 
+let cookie = null
 let player1 = null
 let player2 = null
 let game = null
-let clients = []
-let gamewaiting = []
-let gamesocket = []
+let games = {}
 let gameroom = null
 let state = null
 let scores = null
 let jsonstate = null
+let players = {}
 let round = null
 let trick = new Trick()
+let connected = false
 const suits = ['Bells', 'Keys', 'Moons']
+
 

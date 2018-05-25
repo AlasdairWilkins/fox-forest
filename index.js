@@ -1,4 +1,6 @@
 
+
+
 // Set the configuration settings
 const express = require('express')
 const app = express()
@@ -8,7 +10,7 @@ const credentials = {
         secret: 'faa0e825b09c5a155115261a0fb81f97524b583f4c4413d0487799ac43088342'
     },
     auth: {
-        tokenHost: 'https://recurse.com'
+        tokenHost: 'https://www.recurse.com'
     }
 };
 
@@ -21,6 +23,7 @@ const authorizationUri = oauth2.authorizationCode.authorizeURL({
 });
 
 app.get('/auth', (req, res) => {
+    console.log('ahoy hoy')
     console.log(authorizationUri);
     res.redirect(authorizationUri);
 });
@@ -44,6 +47,8 @@ app.get('/login', async (req, res) => {
         const token = oauth2.accessToken.create(result);
         // console.log("What's about to appear on the page", res.status(200).json(token))
 
+        // return res.status(200).json(token)
+        console.log('ze stuff', token)
         return res.status(200).json(token)
     } catch(error) {
         console.error('Access Token Error', error.message);
