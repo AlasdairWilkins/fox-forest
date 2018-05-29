@@ -1,19 +1,36 @@
-function State(player1, player2, round) {
-    this.player1 = player1.id
-    this.player2 = player2.id
-    this.player1hand = player1.hand
-    this.player2hand = player2.hand
-    this.decree = round.decree
-    this.trick = []
-    this.turn = round.receiveplayer
-    this.completed = false
+function Gameroom (choice, socket, cookie) {
+    this.twoplayer = choice
+    this.p1socket = socket
+    this.p1cookie = cookie
+    this.p2socket = null
+    this.p2cookie = null
+    this.state = null
 }
 
-function Round(dealplayer) {
+function State(player1, player2, round) {
+    this.player1 = player1
+    this.player2 = player2
+    this.decree = round.decree
+    this.trick = []
+    this.turn = round.receiveplayer.id
+}
+
+State.prototype.update = function () {
+    trick.winner.wonLast = true
+    trick.loser.wonLast = false
+    if (trick.hasSwan) {
+        trick = new Trick(trick.loser, trick.winner)
+    } else {
+        trick = new Trick(trick.winner, trick.loser)
+    }
+    state.turn = trick.leadplayer.id
+}
+
+function Round(dealplayer, receiveplayer) {
     this.decree = null
     this.deck = []
     this.dealplayer = dealplayer;
-    this.currentWinner = "";
+    this.receiveplayer = receiveplayer
 }
 
 Round.prototype.createDeck = function () {
@@ -46,42 +63,105 @@ Round.prototype.setDecree = function () {
     this.decree = this.deck.pop();
 };
 
-function Trick() {
-    this.cards = []
-    this.leadplayer = player1
-    this.followplayer = player2
-    this.trickwinner = player1
+Round.prototype.start = function () {
+    round.createDeck()
+    round.shuffleDeck()
+    player1.createHand()
+    player2.createHand()
+    round.setDecree()
+    trick = new Trick(round.receiveplayer, round.dealplayer)
+    state = new State(player1, player2, round)
+    return state
 }
+
+function Trick(leadplayer, followplayer) {
+    this.cards = []
+    this.leadplayer = leadplayer
+    this.followplayer = followplayer
+    this.winner = null;
+    this.witchReset = false;
+    this.hasSwan = false;
+    this.loser = null
+}
+
+Trick.prototype.doWitch = function () {
+    let oldsuittemp = "";
+    let position = 0;
+    if (trick.cards[0].value === 9) {
+        oldsuittemp = trick.cards[0].suit;
+        trick.cards[0].suit = state.decree.suit
+    } else {
+        oldsuittemp = trick.cards[1].suit;
+        position = 1;
+        trick.cards[1].suit = state.decree.suit
+    }
+    trick.witchReset = true;
+    return {
+        suit: oldsuittemp,
+        position: position
+    }
+};
 
 Trick.prototype.hasSevens = function() {
     let sevens = 0
     for (let i = 0; i < 2; i++) {
-        if (game.trick[i].value === 7) {
+        if (trick.cards[i].value === 7) {
             sevens += 1
         }
     }
     return sevens
-}
+};
 
-function Game(choice, id, playera, playerb) {
-    this.ai = choice; //game
-    this.id = id
-    this.decree = 0; //round
-    this.deck = null; //round
-    this.trick = []; //trick
-    this.scoreCheck = 0; //??
-    this.displayplayer = playera; //game
-    this.remoteplayer = playerb; //game
-    this.dealplayer = player1; //round <-- chosen by pass-in
-    this.leadplayer = player1; //trick
-    this.followplayer = player2; //trick
-    this.currentWinner = ""; //round
-    this.trickwinner = player1; //trick
-    this.results = {
-        lead: "",
-        follow: "",
-        winner: ""
-    };
+Trick.prototype.score = function () {
+    let olddata = trick.cards[0].value === 9 ^ trick.cards[1].value === 9 ? trick.doWitch() : null
+    if (trick.cards[0].suit === trick.cards[1].suit) {
+        if (trick.cards[0].value > trick.cards[1].value) {
+            if (trick.witchReset) {
+                trick.cards[olddata.position].suit = olddata.suit;
+            }
+            if (trick.cards[1].value === 1) {
+                trick.hasSwan = true
+            }
+            trick.winner = trick.leadplayer
+            trick.loser = trick.followplayer
+        } else {
+            if (trick.witchReset) {
+                trick.cards[olddata.position].suit = olddata.suit;
+            }
+            if (trick.cards[0].value === 1) {
+                trick.hasSwan = true
+            }
+            trick.winner = trick.followplayer
+            trick.loser = trick.leadplayer
+        }
+    } else {
+        if (trick.cards[1].suit === state.decree.suit) {
+            if (trick.witchReset) {
+                trick.cards[olddata.position].suit = olddata.suit;
+            }
+            if (trick.cards[0].value === 1) {
+                trick.hasSwan = true
+            }
+            trick.winner = trick.followplayer
+            trick.loser = trick.leadplayer
+        } else {
+            if (trick.witchReset) {
+                trick.cards[olddata.position].suit = olddata.suit;
+            }
+            if (trick.cards[1].value === 1) {
+                trick.hasSwan = true
+            }
+            trick.winner = trick.leadplayer
+            trick.loser = trick.followplayer
+        }
+    }
+    trick.winner.score += trick.hasSevens()
+    trick.winner.treasure += trick.hasSevens()
+    trick.winner.tricks.push(trick.cards);
+};
+
+function Game(choice) {
+    this.ai = choice
     this.swan = `Swan: If you play this and lose the trick, you lead the next trick.`;
     this.fox = `Fox: When you play this, you may exchange the decree card with a card from your hand.`;
     this.woodcutter = `Woodcutter: When you play this, draw 1 card. Then discard any 1 card to the bottom of the deck.`;
@@ -89,21 +169,8 @@ function Game(choice, id, playera, playerb) {
     this.witch = `Witch: When determining the winner of a trick with only one 9, treat the 9 as if it were in the trump suit.`;
     this.monarch = `Monarch: When you lead this, if your opponent has any cards of the same suit, they must play either the 1 or their highest card from that suit.`;
     this.mechanics = [this.swan, this.fox, this.woodcutter, this.treasure, this.witch, this.monarch];
-    this.witchReset = false; //trick
-    this.hasSwan = false; //trick
     this.gameOver = false; //game? or possibly round
     this.winner = ''; //game
-}
-
-Game.prototype.newRound = function (dealplayer) {
-    round = new Round(dealplayer)
-    round.createDeck()
-    round.shuffleDeck()
-    player1.createHand(round.deck)
-    player2.createHand(round.deck)
-    round.setDecree(round.deck)
-    state = new State(player1, player2, round)
-    return state
 }
 
 Game.prototype.whoWinning = function () {
@@ -133,114 +200,6 @@ Game.prototype.whoWinning = function () {
 
 };
 
-Game.prototype.doWitch = function () {
-    let oldsuittemp = "";
-    let position = 0;
-    if (game.trick[0].value === 9) {
-        oldsuittemp = game.trick[0].suit;
-        game.trick[0].suit = round.decree.suit
-    } else {
-        oldsuittemp = game.trick[1].suit;
-        position = 1;
-        game.trick[1].suit = round.decree.suit
-    }
-    game.witchReset = true;
-    return {
-        suit: oldsuittemp,
-        position: position
-    }
-};
-
-Game.prototype.scoreTrick = function () {
-    let olddata = game.trick[0].value === 9 ^ game.trick[1].value === 9 ? game.doWitch() : null
-    if (game.trick[0].suit === game.trick[1].suit) {
-        if (game.trick[0].value > game.trick[1].value) {
-            if (game.witchReset) {
-                game.trick[olddata.position].suit = olddata.suit;
-                game.witchReset = false
-            }
-            if (game.trick[1].value === 1) {
-                game.hasSwan = true
-            }
-            game.makeResults(game.leadplayer);
-        } else {
-            if (game.witchReset) {
-                game.trick[olddata.position].suit = olddata.suit;
-                game.witchReset = false
-            }
-            if (game.trick[0].value === 1) {
-                game.hasSwan = true
-            }
-            game.makeResults(game.followplayer);
-            game.flipPlayers()
-        }
-    } else {
-        if (game.trick[1].suit === round.decree.suit) {
-            if (game.witchReset) {
-                game.trick[olddata.position].suit = olddata.suit;
-                game.witchReset = false
-            }
-            if (game.trick[0].value === 1) {
-                game.hasSwan = true
-            }
-            game.makeResults(game.followplayer);
-            game.flipPlayers()
-        } else {
-            if (game.witchReset) {
-                game.trick[olddata.position].suit = olddata.suit;
-                game.witchReset = false
-            }
-            if (game.trick[1].value === 1) {
-                game.hasSwan = true
-            }
-            game.makeResults(game.leadplayer);
-        }
-    }
-    game.leadplayer.score += trick.hasSevens()
-    game.leadplayer.tricks.push(game.trick);
-    game.trickwinner = game.leadplayer
-    if (game.hasSwan) {
-        game.flipPlayers();
-        game.hasSwan = false
-    }
-};
-
-Game.prototype.makeResults = function (winner) {
-    game.results.lead = `${game.leadplayer.name} played the ${game.trick[0].value} of ${game.trick[0].suit}.`;
-    game.results.follow = `${game.followplayer.name} played the ${game.trick[1].value} of ${game.trick[1].suit}.`;
-    game.results.winner = `${winner.name} wins the trick!`
-};
-
-Game.prototype.flipPlayers = function () {
-    let newfollow = game.leadplayer;
-    let newlead = game.followplayer;
-    game.leadplayer = newlead;
-    game.followplayer = newfollow
-};
-
-Game.prototype.newRound = function (dealplayer) {
-    round = new Round(dealplayer)
-    round.createDeck()
-    round.shuffleDeck()
-    player1.createHand(round.deck)
-    player2.createHand(round.deck)
-    round.setDecree(round.deck)
-    state = {'player1': player1.id, 'player2': player2.id, 'player1hand': player1.hand, 'player2hand': player2.hand, 'decree': round.decree, 'turn': game.turn}
-    return state
-}
-
-Game.prototype.doMonarch = function () {
-    playablecards = this.hand.filter(card => {
-        console.log(card)
-        if (card.suit === game.trick[0].suit) {
-            return true
-        } else {
-            return false
-        }
-    })
-
-};
-
 function Card(value, suit) {
     this.value = value;
     this.suit = suit;
@@ -256,10 +215,8 @@ function Player(name, id) {
     this.tricks = [];
     this.score = 0;
     this.treasure = 0;
-    this.isFoxWoodcutter = false;
-    this.isWoodcutter = false;
-    this.isMonarch = false;
-    this.roundResult = '';
+    this.wonLast = false
+    this.roundResult = null;
 }
 
 Player.prototype.sortHand = function() {
@@ -276,15 +233,12 @@ Player.prototype.sortHand = function() {
     })
 }
 
-Player.prototype.createHand = function (decktemp) {
+Player.prototype.createHand = function () {
     for (let i = 0; i < 13; i++) {
-        let newcard = decktemp.pop();
+        let newcard = round.deck.pop();
         this.hand.push(newcard)
     }
     this.sortHand()
-    if (this === game.displayplayer) {
-        display.buildListActive()
-    }
 };
 
 Player.prototype.getScores = function () {
@@ -366,51 +320,43 @@ io.on('connection', function(socket){
         let game = games[gameroom]
         console.log('Game ID', gameroom)
         console.log("Resumable game", game)
-        if (cookie === game['p1cookie'] && !game['p1socket']) {
-            game['p1socket'] = socket.id
-            socket.join(gameroom)
-            console.log("This is player 1!", game)
-            socket.emit("resumegame", "Hey hey, let's resume this game!")
-            io.in(gameroom).emit("announcement", "This worked!")
-        } else if (cookie === game['p2cookie'] && !game['p2socket']) {
-            game['p2socket'] = socket.id
-            socket.join(gameroom)
-            console.log("This is player 2!", game)
-            socket.emit("resumegame", "Hey hey, let's resume this game!")
-        } else {
-            console.log("That's an error!")
+        if (game.twoplayer) {
+            if (cookie === game.p1cookie && !game.p1socket) {
+                game.p1socket = socket.id
+                socket.join(gameroom)
+                console.log("This is player 1!", game)
+                console.log("What will be sent:", game.state)
+                socket.emit("resumegame", game.state)
+            } else if (cookie === game['p2cookie'] && !game['p2socket']) {
+                game.p2socket = socket.id
+                socket.join(gameroom)
+                console.log("This is player 2!", game)
+                console.log("What will be sent:", game.state)
+                socket.emit("resumegame", game.state)
+            } else {
+                console.log("That's an error!")
+            }
         }
-
     }
 
-    //or possibly run the cookie to game check here
     console.log('a user connected', socket.id, cookie);
 
     let referer = socket.request.headers.referer
     let query = referer.substr(url.length)
     if (query.substr(0, 5) === '?code') {
         let code = query.substr(6)
-        startgame(code, socket)
+        start2p(code, socket)
     }
 
-
-
+    socket.on('1pgame', function(msg){
+        gameroom = uniqid()
+        newPlayer(gameroom, socket, false)
+        nameAIPlayer(gameroom, socket)
+    })
 
     socket.on('2pgame', function(msg){
-        console.log("And away we go!")
         gameroom = uniqid()
-        let newcookie = parseCookie(socket.request.headers.cookie).id
-        games[gameroom] = {'2p': true, 'p1socket': socket.id, 'p1cookie': newcookie}
-        if (!players[newcookie]) {
-            players[newcookie] = [gameroom]
-            console.log(players)
-            console.log(players[newcookie])
-        } else {
-            console.log(players)
-            console.log(players[newcookie])
-            players[newcookie].push(gameroom)
-        }
-        socket.join(gameroom)
+        newPlayer(gameroom, socket, true)
         socket.emit('gamecode', gameroom)
     })
 
@@ -449,39 +395,42 @@ io.on('connection', function(socket){
 
     socket.on('startgame', function(msg){
         if (games[msg].p1socket) {
-            startGame(msg, socket)
+            start2p(msg, socket)
         }
 
     })
 
     socket.on('turncompleted', function(msg){
-
+        trick.leadplayer.hand = msg.hand
+        if (state.decree !== msg.decree) {
+            state.decree = msg.decree
+        }
+        state.trick = msg.trick
+        if (msg.turn === state.player1.id) {
+            state.turn = state.player2.id
+        } else {
+            state.turn = state.player1.id
+        }
+        console.log("Mid-trick update:", state)
         //update gameroom's state information for reload here
-
         socket.to(gameroom).emit('turninfo', msg)
     })
 
     socket.on('trickcompleted', function(msg) {
-        state.decree = msg['decree']
-        state.trick = msg['trick']
-        state.turn = msg['turn']
+        state.decree = msg.decree
+        state.trick = msg.trick
+        trick.followplayer.hand = msg.hand
+        state.turn = msg.turn
+        trick.cards = msg.trick
         if (state.turn === player1.id) {
             game.leadplayer = player2
             game.followplayer = player1
         } else {
             game.leadplayer = player1
-            game.iollowplayer = player2
+            game.followplayer = player2
         }
-        game.scoreTrick(game.leadplayer, game.followplayer)
-        state.turn = game.leadplayer.id
-        state = ({
-            'decree': round.decree, 'trick': game.trick, 'turn': game.turn, 'result': game.trickwinner,
-            'player1': player1.id, 'player1tricks': player1.tricks, 'player1score': player1.score,
-            'player2': player2.id, 'player2tricks': player2.tricks, 'player2score': player2.score
-        })
-
-        //update gameroom's state information for reload here
-
+        trick.score(game.leadplayer, game.followplayer)
+        state.update()
         io.in(gameroom).emit('trickresults', state)
     })
 
@@ -497,10 +446,21 @@ io.on('connection', function(socket){
         io.in(gameroom).emit('roundresults', scores)
     })
 
+    socket.on('updatestate', function (msg) {
+        // games[]
+    })
+
+    //FIX THIS!!!!! ------>>>>>
+
     socket.on('roundstartup', function() {
         player1.hand = []
         player2.hand = []
-        state = game.newRound(player2)
+        if (round.dealplayer.id === player1.id) {
+            round = new Round(player2, player1)
+        } else {
+            round = new Round(player1, player2)
+        }
+        state = round.start()
         io.in(gameroom).emit('newround', state)
     })
 
@@ -520,29 +480,62 @@ io.on('connection', function(socket){
                 }
             }
         }
-
         console.log('a user disconnected');
         console.log(socket.id, cookie)
     });
 });
 
-function startGame(gameroom, socket) {
-    games[gameroom]['p2socket'] =  socket.id
+function start1p(gameroom, socket, name) {
+    games[gameroom]['p2socket'] = socket.id
+    newPlayer(gameroom, socket)
+    player1 = new Player('Alasdair', games[gameroom]['p1cookie'])
+    player2 = new Player(name)
+    startGame(gameroom)
+}
+
+function startGame(gameroom) {
+    game = new Game()
+    round = new Round(player1, player2)
+    state = round.start()
+    games[gameroom]['state'] = state
+    let startup = {'twoplayer': games[gameroom].twoplayer, 'state': state}
+    console.log(startup)
+    io.to(gameroom).emit('startupinfo', startup)
+}
+
+function start2p(gameroom, socket) {
+    games[gameroom]['p2socket'] = socket.id
+    newPlayer(gameroom, socket)
+    player1 = new Player('Alasdair', games[gameroom]['p1cookie'])
+    player2 = new Player('Kaley', games[gameroom]['p2cookie'])
+    startGame(gameroom)
+}
+
+function newPlayer(gameroom, socket, choice) {
     let newcookie = parseCookie(socket.request.headers.cookie).id
-    games[gameroom]['p2cookie'] = newcookie
+    if (!games[gameroom]) {
+        games[gameroom] = new Gameroom(choice, socket.id, newcookie)
+    } else {
+        games[gameroom].p2socket = socket.id
+        games[gameroom].p2cookie = newcookie
+    }
     if (!players[newcookie]) {
         players[newcookie] = [gameroom]
     } else {
         players[newcookie].push(gameroom)
     }
     socket.join(gameroom)
-    player1 = new Player('Alasdair', games[gameroom]['p1cookie'])
-    player2 = new Player('Kaley', games[gameroom]['p2cookie'])
-    game = new Game(player2.id, gameroom)
-    state = game.newRound(player2)
-    games[gameroom]['state'] = state
-    console.log('As the game begins', games[gameroom])
-    io.to(gameroom).emit('startupinfo', state)
+
+}
+
+function nameAIPlayer(gameroom, socket) {
+    fs.readFile('./names.json', 'utf8', function(err, data) {
+        let json = JSON.parse(data)
+        let names = json['names']
+        let num = Math.floor(Math.random() * 202)
+        let name = names[num]
+        start1p(gameroom, socket, name)
+    })
 }
 
 function parseCookie(cookie) {
@@ -588,14 +581,14 @@ app.post('/computername', function(req, res) {
 let player1 = null
 let player2 = null
 let game = null
+let round = null
+let trick = null
 let games = {}
 let gameroom = null
 let state = null
 let scores = null
 let jsonstate = null
 let players = {}
-let round = null
-let trick = new Trick()
 let connected = false
 const suits = ['Bells', 'Keys', 'Moons']
 const url = 'http://localhost:8000/'

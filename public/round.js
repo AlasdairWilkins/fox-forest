@@ -44,12 +44,12 @@ Round.prototype.start = function () {
 };
 
 Round.prototype.end = function() {
-    if (game.ai) {
-        round.reset()
-    } else {
+    if (game.twoplayer) {
         if (trick.leadplayer.id === game.displayplayer.id) {
             socket.emit('roundstartup')
         }
+    } else {
+        round.reset()
     }
 }
 

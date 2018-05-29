@@ -1,5 +1,3 @@
-
-
 window.onclick = function(event) {
     if (!event.target.matches('#scoring-dropdown')) {
         document.getElementById('scoring-dropdown-content').classList.remove('show')
@@ -29,27 +27,40 @@ window.onclick = function(event) {
 }
 
 function clickedAI() {
-    player1 = new Player("Alasdair", socket.id);
-    $.post("/computername", null, function (data, status) {
-        player2 = new Player(data['name']);
-        game = new Game(true, player1, player2);
-        document.getElementById("players-info").classList.toggle("setup");
-        document.getElementById("display-container").style.display = "contents";
-        document.getElementById("remote-info").style.display = "block";
-        document.getElementById("startup").style.display = "none";
-        document.getElementById("play").style.display = "block";
-        // document.getElementById("chat-dropdown").style.display = "block";
-        game.setEventListeners()
-        display.buildDisplayInfo();
-        round = new Round(player1, player2)
-        round.start();
-        if (document.getElementById('leader-checkBox').checked) {
-            display.buildResults("trick-leader", "lead the", trick.leadplayer)
-        } else {
-            trick.start()
-        }
-    })
+    socket.emit('1pgame', "I'd like to start a game.")
+    // player1 = new Player("Alasdair", socket.id);
+    // let name = $.post("/computername", null, function (data, status) {
+    //     player2 = new Player(data.name);
+    //     game = new Game(true, player1, player2);
+    //     display.buildGame()
+    //     // document.getElementById("chat-dropdown").style.display = "block";
+    //     game.setEventListeners()
+    //     display.buildDisplayInfo();
+    //     round = new Round(player1, player2)
+    //     round.start();
+    //     if (document.getElementById('leader-checkBox').checked) {
+    //         display.buildResults("trick-leader", "lead the", trick.leadplayer)
+    //     } else {
+    //         trick.start()
+    //     }
+    // })
 
+}
+
+function start1p(state) {
+    player1 = new Player(state.player1.name, state.player1.id)
+    player2 = new Player(state.player2.name)
+    game = new Game(false, player1, player2)
+    display.buildGame()
+    game.setEventListeners()
+    display.buildDisplayInfo()
+    round = new Round(player1, player2)
+    round.start()
+    if (document.getElementById('leader-checkBox').checked) {
+        display.buildResults("trick-leader", "lead the", trick.leadplayer)
+    } else {
+        trick.start()
+    }
 }
 
 function clicked2P() {
@@ -60,6 +71,26 @@ function clicked2P() {
 function clickedNew() {
     console.log('Got here!')
     socket.emit('2pgame', "I'd like to start a game.")
+}
+
+function start2p(msg) {
+    prepare2p(msg)
+    display.buildGame()
+    game.setEventListeners()
+    game.start2p(msg)
+    display.build2p()
+}
+
+function prepare2p(msg) {
+    player1 = new Player('Alasdair', msg.player1.id)
+    player2 = new Player('Kaley', msg.player2.id)
+    let cookie = "id=" + msg.player1.id
+    if (cookie === document.cookie) {
+        game = new Game(true, player1, player2)
+    } else {
+        game = new Game(true, player2, player1)
+    }
+    round = new Round(player1, player2)
 }
 
 socket.on('gamecode', function(msg) {
@@ -75,22 +106,19 @@ socket.on('startup')
 socket.on('gamebeginning')
 
 socket.on('startupinfo', function(msg) {
-    player1 = new Player('Alasdair', msg['player1'])
-    player2 = new Player('Kaley', msg['player2'])
-    let cookie = "id=" + msg['player1']
-    if (cookie === document.cookie) {
-        game = new Game(false, player1, player2)
+    if (msg.twoplayer) {
+        start2p(msg.state)
     } else {
-        game = new Game(false, player2, player1)
+        start1p(msg.state)
     }
-    round = new Round(player1, player2)
-    document.getElementById("players-info").classList.toggle("setup");
-    document.getElementById("display-container").style.display = "contents";
-    document.getElementById("remote-info").style.display = "block";
-    document.getElementById("startup").style.display = "none";
-    document.getElementById("play").style.display = "block";
+})
+
+socket.on('resumegame', function(msg) {
+    console.log(msg)
+    prepare2p(msg)
+    display.buildGame()
     game.setEventListeners()
-    game.start2p(msg)
+    game.resume2p(msg)
     display.build2p()
 })
 
@@ -119,10 +147,6 @@ socket.on('turninfo', function(msg) {
 socket.on('trickresults', function(msg) {
     console.log(msg)
     game.displayplayer.receiveScores(msg, 0)
-})
-
-socket.on('resumegame', function(msg) {
-    console.log(msg)
 })
 
 socket.on('announcement', function(msg) {

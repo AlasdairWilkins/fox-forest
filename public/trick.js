@@ -86,27 +86,43 @@ Trick.prototype.score = function () {
 };
 
 Trick.prototype.start = function() {
-    if (game.ai) {
-        trick.play()
-    } else {
+    if (game.twoplayer) {
         if (trick.leadplayer.id === game.displayplayer.id) {
             display.buildListActive();
             display.buildDisplayTurn()
         } else {
             display.buildRemoteTurn()
         }
+    } else {
+        trick.play()
     }
+}
+
+Trick.prototype.resume = function() {
+    if (game.twoplayer) {
+        if (trick.followplayer.id === game.displayplayer.id) {
+            game.displayplayer.setFollowCards()
+            display.buildListActive();
+            display.buildDisplayTurn()
+        } else {
+            display.buildRemoteTurn()
+        }
+    } else {
+        if (trick.cards.length === 1) {
+            game.displayplayer.setFollowCards()
+        }
+        display.buildListActive
 }
 
 Trick.prototype.play = function () {
     display.buildTrick();
-    if (game.displayplayer !== trick.leadplayer) {
-        if (game.ai) {
+    if (game.displayplayer.id !== trick.leadplayer.id) {
+        if (!game.twoplayer) {
             trick.leadplayer.leadCard();
         }
         game.displayplayer.setFollowCards()
     }
-    if (!game.ai) {
+    if (game.twoplayer) {
         display.buildDisplayTurn()
     }
     display.buildListActive()
@@ -124,7 +140,21 @@ Trick.prototype.results = function(suit) {
 }
 
 Trick.prototype.end = function() {
-    if (game.ai) {
+    if (game.twoplayer) {
+        trick.cards = []
+        display.buildTrick()
+        if (player1.tricks.length + player2.tricks.length === 13) {
+            if (trick.leadplayer.id === game.displayplayer.id) {
+                socket.emit('roundcompleted')
+            }
+        } else {
+            if (document.getElementById('leader-checkBox').checked) {
+                display.buildResults("trick-leader", "lead the", trick.leadplayer)
+            } else {
+                trick.start()
+            }
+        }
+    } else {
         if (player1.tricks.length + player2.tricks.length === 13) {
             player1.getScores();
             player2.getScores();
@@ -150,20 +180,6 @@ Trick.prototype.end = function() {
             display.buildResults("trick-leader", "lead the", trick.leadplayer)
         } else {
             trick.start()
-        }
-    } else {
-        trick.cards = []
-        display.buildTrick()
-        if (player1.tricks.length + player2.tricks.length === 13) {
-            if (trick.leadplayer.id === game.displayplayer.id) {
-                socket.emit('roundcompleted')
-            }
-        } else {
-            if (document.getElementById('leader-checkBox').checked) {
-                display.buildResults("trick-leader", "lead the", trick.leadplayer)
-            } else {
-                trick.start()
-            }
         }
     }
 }

@@ -1,12 +1,12 @@
 function Game(choice, displayplayer, remoteplayer) {
-    this.ai = choice;
+    this.twoplayer = choice;
     this.displayplayer = displayplayer
     this.remoteplayer = remoteplayer
-    this.results = {
-        lead: "",
-        follow: "",
-        winner: ""
-    };
+    // this.results = {
+    //     lead: "",
+    //     follow: "",
+    //     winner: ""
+    // };
     this.gameOver = false; //game? or possibly round
     this.winner = ''; //game
 }
@@ -21,16 +21,44 @@ Game.prototype.resetPlayers = function () {
     }
 };
 
-Game.prototype.start2p = function (msg) {
+Game.prototype.start2p = function (state) {
     player1.tricks = []
     player2.tricks = []
-    round.decree = msg['decree'];
+    round.decree = state.decree;
     if (game.displayplayer.id === player1.id) {
-        game.displayplayer.hand = msg['player1hand'];
+        game.displayplayer.hand = state.player1.hand;
     } else {
-        game.displayplayer.hand = msg['player2hand'];
+        game.displayplayer.hand = state.player2.hand;
     }
     trick = new Trick(round.receiveplayer, round.dealplayer)
+}
+
+Game.prototype.resume2p = function (state) {
+    player1.tricks = state.player1.tricks
+    player2.tricks = state.player2.tricks
+    player1.score = state.player1.score
+    player2.score = state.player2.score
+    round.decree = state.decree
+    if (game.displayplayer.id === player1.id) {
+        game.displayplayer.hand = state.player1.hand
+    } else {
+        game.displayplayer.hand = state.player2.hand
+    }
+    if (state.trick.length === 1) {
+        if (state.turn === game.displayplayer.id) {
+            trick = new Trick(game.remoteplayer, game.displayplayer)
+        } else {
+            trick = new Trick(game.displayplayer, game.remoteplayer)
+        }
+        trick.cards = state.trick
+
+    } else {
+        if (state.turn === game.displayplayer.id) {
+            trick = new Trick(game.displayplayer, game.remoteplayer)
+        } else {
+            trick = new Trick(game.remoteplayer, game.displayplayer)
+        }
+    }
 }
 
 Game.prototype.setEventListeners = function() {

@@ -32,7 +32,7 @@ function Display() {
         document.getElementById("remote-name").innerHTML = game.remoteplayer.name;
         document.getElementById("remote-tricks").innerHTML = game.remoteplayer.tricks.length;
         document.getElementById("remote-score").innerHTML = game.remoteplayer.score
-        // if (game.ai) {
+        // if (!game.twoplayer) {
         //     document.getElementById("display-name").innerHTML = `<button>${game.displayplayer.name}</button>`;
         //     document.getElementById("display-tricks").innerHTML = game.displayplayer.tricks.length;
         //     document.getElementById("display-score").innerHTML = game.displayplayer.score;
@@ -46,6 +46,14 @@ function Display() {
         //     document.getElementById("remote-name").innerHTML =  `<button>${game.remoteplayer.name}</button>`;
         //     document.getElementById("remote-tricks").innerHTML = game.remoteplayer.tricks.length;
         //     document.getElementById("remote-score").innerHTML = game.remoteplayer.score
+    }
+
+    this.buildGame = function () {
+        document.getElementById("players-info").classList.toggle("setup");
+        document.getElementById("display-container").style.display = "contents";
+        document.getElementById("remote-info").style.display = "block";
+        document.getElementById("startup").style.display = "none";
+        document.getElementById("play").style.display = "block";
     }
 
     this.buildDecree = function (decreetemp) {
@@ -180,10 +188,15 @@ function Display() {
         display.buildDecree();
         display.buildListDeal();
         display.buildDisplayInfo();
-        if (document.getElementById('leader-checkBox').checked) {
-            display.buildResults("trick-leader", "lead the", trick.leadplayer)
+        display.buildTrick()
+        if (trick.cards.length === 0) {
+            if (document.getElementById('leader-checkBox').checked) {
+                display.buildResults("trick-leader", "lead the", trick.leadplayer)
+            } else {
+                trick.start()
+            }
         } else {
-            trick.start()
+            trick.resume()
         }
     }
 

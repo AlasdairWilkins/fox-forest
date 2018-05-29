@@ -83,10 +83,10 @@ Player.prototype.doFox = function (card) {
 Player.prototype.doWoodcutter = function (card) {
     let discard = this.hand[card];
     this.hand.splice(card, 1);
-    if (game.ai) {
-        round.deck.splice(0, 0, discard);
-    } else {
+    if (game.twoplayer) {
         //$.post("http://localhost:8000/woodcutterdiscard", {'discard': discard}, game.displayplayer(oldcount))
+    } else {
+        round.deck.splice(0, 0, discard);
     }
     if (this === game.displayplayer) {
         display.buildListInactive(card)
@@ -121,7 +121,7 @@ Player.prototype.playCard = function (cardtemp) {
     let tricknum = trick.cards.length - 1;
     this.hand.splice(cardtemp, 1);
     if (this.hand.length > 0) {
-        if (game.ai) {
+        if (!game.twoplayer) {
             if (this !== game.displayplayer) {
                 if (trick.cards[tricknum].value === 3) {
                     this.doFoxAI()
@@ -153,14 +153,14 @@ Player.prototype.doWoodcutterHuman = function (card) {
         this.resetCards();
     }
     this.resetCards()
-    if (game.ai) {
-        let newcard = round.deck.pop()
-        this.insertWoodcutter(newcard)
-    } else {
+    if (game.twoplayer) {
         $.post("http://localhost:8000/woodcutterdraw", null, function (data, status) {
             let card = data['newcard']
             game.displayplayer.insertWoodcutter(card)
         })
+    } else {
+        let newcard = round.deck.pop()
+        this.insertWoodcutter(newcard)
     }
 };
 
@@ -180,20 +180,21 @@ Player.prototype.clicked = function(card) {
 }
 
 Player.prototype.finishTurn = function (card) {
-    if (game.ai) {
-        if (this === trick.leadplayer) {
-            trick.followplayer.followCard()
-        }
-        trick.score(trick.leadplayer, trick.followplayer)
-        trick.results(card)
-    } else {
-        state = {'decree': round.decree, 'trick': trick.cards, 'turn': this.id, 'name': this.name, 'hand': this.hand, 'completed': true};
+    if (game.twoplayer) {
+        state = {'decree': round.decree, 'trick': trick.cards, 'turn': this.id, 'hand': this.hand};
+        // 'name': this.name, 'completed': true
         if (trick.cards.length === 2) {
             socket.emit('trickcompleted', state)
         } else {
             display.buildRemoteTurn()
             socket.emit('turncompleted', state)
         }
+    } else {
+        if (this === trick.leadplayer) {
+            trick.followplayer.followCard()
+        }
+        trick.score(trick.leadplayer, trick.followplayer)
+        trick.results(card)
     }
 }
 
@@ -277,25 +278,35 @@ Player.prototype.hasSuit = function () {
     return false
 };
 
-Player.prototype.receiveScores = function (datatemp, suit) {
-    if (round.decree != datatemp['decree']) {
-        round.decree = datatemp['decree'];
+Player.prototype.receiveScores = function (state, suit) {
+    if (round.decree !== state.decree) {
+        round.decree = state.decree;
         let decree = `<img src=${round.decree.image} class="card">`;
         display.buildDecree(decree);
     }
-    if (game.displayplayer.id === datatemp['turn']) {
+    if (game.displayplayer.id === state.turn) {
         trick.leadplayer = game.displayplayer
         trick.followplayer = game.remoteplayer
     } else {
         trick.leadplayer = game.remoteplayer
         trick.followplayer = game.displayplayer
     }
-    trick.cards = datatemp['trick'];
-    player1.tricks = datatemp['player1tricks']
-    player1.score = datatemp['player1score']
-    player2.tricks = datatemp['player2tricks']
-    player2.score = datatemp['player2score']
-    trick.winner = datatemp['result']
+    trick.cards = state.trick;
+    player1.tricks = state.player1.tricks
+    player2.tricks = state.player2.tricks
+    if (player1.score !== state.player1.score || player2.score !== state.player2.score) {
+        console.log("Made it here!")
+        player1.score = state.player1.score
+        player2.score = state.player2.score
+        display.buildDisplayInfo()
+    }
+    if (state.player1.wonLast) {
+        trick.winner = player1
+    } else {
+        trick.winner = player2
+    }
+
+
     display.buildTrick()
     trick.results(suit)
 }
