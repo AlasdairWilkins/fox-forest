@@ -2,7 +2,6 @@ function Trick(leadplayer, followplayer) {
     this.cards = []
     this.leadplayer = leadplayer
     this.followplayer = followplayer
-    this.trickwinner = null;
     this.witchReset = false;
     this.hasSwan = false;
     this.winner = null
@@ -111,7 +110,8 @@ Trick.prototype.resume = function() {
         if (trick.cards.length === 1) {
             game.displayplayer.setFollowCards()
         }
-        display.buildListActive
+        display.buildListActive()
+    }
 }
 
 Trick.prototype.play = function () {
@@ -124,6 +124,10 @@ Trick.prototype.play = function () {
     }
     if (game.twoplayer) {
         display.buildDisplayTurn()
+    } else {
+        let state = new State(player1, player2, trick, round, game)
+        console.log("To send:", state)
+        socket.emit('updatestate', state)
     }
     display.buildListActive()
 };

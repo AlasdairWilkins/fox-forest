@@ -7,10 +7,13 @@ function Gameroom (choice, socket, cookie) {
     this.state = null
 }
 
-function State(player1, player2, round) {
+function State(player1, player2, round, game) {
     this.player1 = player1
     this.player2 = player2
+    this.id = game.id
+    this.deal = round.dealplayer.id
     this.decree = round.decree
+    this.deck = round.deck
     this.trick = []
     this.turn = round.receiveplayer.id
 }
@@ -70,7 +73,7 @@ Round.prototype.start = function () {
     player2.createHand()
     round.setDecree()
     trick = new Trick(round.receiveplayer, round.dealplayer)
-    state = new State(player1, player2, round)
+    state = new State(player1, player2, round, game)
     return state
 }
 
@@ -160,8 +163,9 @@ Trick.prototype.score = function () {
     trick.winner.tricks.push(trick.cards);
 };
 
-function Game(choice) {
+function Game(choice, id) {
     this.ai = choice
+    this.id = id
     this.swan = `Swan: If you play this and lose the trick, you lead the next trick.`;
     this.fox = `Fox: When you play this, you may exchange the decree card with a card from your hand.`;
     this.woodcutter = `Woodcutter: When you play this, draw 1 card. Then discard any 1 card to the bottom of the deck.`;
@@ -320,22 +324,22 @@ io.on('connection', function(socket){
         let game = games[gameroom]
         console.log('Game ID', gameroom)
         console.log("Resumable game", game)
-        if (game.twoplayer) {
-            if (cookie === game.p1cookie && !game.p1socket) {
-                game.p1socket = socket.id
-                socket.join(gameroom)
-                console.log("This is player 1!", game)
-                console.log("What will be sent:", game.state)
-                socket.emit("resumegame", game.state)
-            } else if (cookie === game['p2cookie'] && !game['p2socket']) {
-                game.p2socket = socket.id
-                socket.join(gameroom)
-                console.log("This is player 2!", game)
-                console.log("What will be sent:", game.state)
-                socket.emit("resumegame", game.state)
-            } else {
-                console.log("That's an error!")
-            }
+        if (cookie === game.p1cookie && !game.p1socket) {
+            game.p1socket = socket.id
+            socket.join(gameroom)
+            console.log("This is player 1!", game)
+            console.log("What will be sent:", game.state)
+            let startup = {'twoplayer': game.twoplayer, 'state': game.state}
+            socket.emit("resumegame", startup)
+        } else if (cookie === game['p2cookie'] && !game['p2socket']) {
+            game.p2socket = socket.id
+            socket.join(gameroom)
+            console.log("This is player 2!", game)
+            console.log("What will be sent:", game.state)
+            let startup = {'twoplayer': game.twoplayer, 'state': game.state}
+            socket.emit("resumegame", startup)
+        } else {
+            console.log("That's an error!")
         }
     }
 
@@ -447,7 +451,8 @@ io.on('connection', function(socket){
     })
 
     socket.on('updatestate', function (msg) {
-        // games[]
+        let game = games[msg.id]
+        game.state = msg
     })
 
     //FIX THIS!!!!! ------>>>>>
@@ -489,12 +494,12 @@ function start1p(gameroom, socket, name) {
     games[gameroom]['p2socket'] = socket.id
     newPlayer(gameroom, socket)
     player1 = new Player('Alasdair', games[gameroom]['p1cookie'])
-    player2 = new Player(name)
-    startGame(gameroom)
+    player2 = new Player(name, 'computer')
+    startGame(false, gameroom)
 }
 
-function startGame(gameroom) {
-    game = new Game()
+function startGame(choice, gameroom) {
+    game = new Game(choice, gameroom)
     round = new Round(player1, player2)
     state = round.start()
     games[gameroom]['state'] = state
@@ -508,7 +513,7 @@ function start2p(gameroom, socket) {
     newPlayer(gameroom, socket)
     player1 = new Player('Alasdair', games[gameroom]['p1cookie'])
     player2 = new Player('Kaley', games[gameroom]['p2cookie'])
-    startGame(gameroom)
+    startGame(true, gameroom)
 }
 
 function newPlayer(gameroom, socket, choice) {
@@ -516,8 +521,13 @@ function newPlayer(gameroom, socket, choice) {
     if (!games[gameroom]) {
         games[gameroom] = new Gameroom(choice, socket.id, newcookie)
     } else {
-        games[gameroom].p2socket = socket.id
-        games[gameroom].p2cookie = newcookie
+        if (games[gameroom].twoplayer) {
+            games[gameroom].p2socket = socket.id
+            games[gameroom].p2cookie = newcookie
+        } else {
+            games[gameroom].p2socket = 'computer'
+            games[gameroom].p2cookie = 'computer'
+        }
     }
     if (!players[newcookie]) {
         players[newcookie] = [gameroom]

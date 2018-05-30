@@ -1,5 +1,6 @@
-function Game(choice, displayplayer, remoteplayer) {
+function Game(choice, id, displayplayer, remoteplayer) {
     this.twoplayer = choice;
+    this.id = id
     this.displayplayer = displayplayer
     this.remoteplayer = remoteplayer
     // this.results = {
@@ -21,43 +22,45 @@ Game.prototype.resetPlayers = function () {
     }
 };
 
-Game.prototype.start2p = function (state) {
+Game.prototype.start = function (state) {
     player1.tricks = []
     player2.tricks = []
     round.decree = state.decree;
-    if (game.displayplayer.id === player1.id) {
-        game.displayplayer.hand = state.player1.hand;
+    if (game.twoplayer) {
+        if (game.displayplayer.id === player1.id) {
+            game.displayplayer.hand = state.player1.hand;
+        } else {
+            game.displayplayer.hand = state.player2.hand;
+        }
     } else {
-        game.displayplayer.hand = state.player2.hand;
+        player1.hand = state.player1.hand
+        player2.hand = state.player2.hand
     }
+
     trick = new Trick(round.receiveplayer, round.dealplayer)
 }
 
-Game.prototype.resume2p = function (state) {
+Game.prototype.resume = function (state) {
     player1.tricks = state.player1.tricks
     player2.tricks = state.player2.tricks
     player1.score = state.player1.score
     player2.score = state.player2.score
     round.decree = state.decree
-    if (game.displayplayer.id === player1.id) {
-        game.displayplayer.hand = state.player1.hand
+    if (game.twoplayer) {
+        if (game.displayplayer.id === player1.id) {
+            game.displayplayer.hand = state.player1.hand;
+        } else {
+            game.displayplayer.hand = state.player2.hand;
+        }
     } else {
-        game.displayplayer.hand = state.player2.hand
+        player1.hand = state.player1.hand
+        player2.hand = state.player2.hand
     }
     if (state.trick.length === 1) {
-        if (state.turn === game.displayplayer.id) {
-            trick = new Trick(game.remoteplayer, game.displayplayer)
-        } else {
-            trick = new Trick(game.displayplayer, game.remoteplayer)
-        }
+        trick = new Trick(game.remoteplayer, game.displayplayer)
         trick.cards = state.trick
-
     } else {
-        if (state.turn === game.displayplayer.id) {
-            trick = new Trick(game.displayplayer, game.remoteplayer)
-        } else {
-            trick = new Trick(game.remoteplayer, game.displayplayer)
-        }
+        trick = new Trick(game.displayplayer, game.remoteplayer)
     }
 }
 

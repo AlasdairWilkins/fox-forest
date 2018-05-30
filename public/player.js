@@ -49,9 +49,9 @@ Player.prototype.createHand = function (decktemp) {
         this.hand.push(newcard)
     }
     this.sortHand()
-    if (this === game.displayplayer) {
-        display.buildListActive()
-    }
+    // if (this === game.displayplayer) {
+    //     display.buildListActive()
+    // }
 };
 
 Player.prototype.insertCard = function (card) {
@@ -72,7 +72,7 @@ Player.prototype.doFox = function (card) {
     display.buildDecree(decree);
     this.hand.splice(card, 1);
     this.insertCard(newcard);
-    if (this === game.displayplayer) {
+    if (this.id === game.displayplayer.id) {
         let passbutton = "";
         display.buildPassButton(passbutton);
         display.buildListInactive(card)
@@ -88,7 +88,7 @@ Player.prototype.doWoodcutter = function (card) {
     } else {
         round.deck.splice(0, 0, discard);
     }
-    if (this === game.displayplayer) {
+    if (this.id === game.displayplayer.id) {
         display.buildListInactive(card)
         this.finishTurn(card)
     }
@@ -137,7 +137,7 @@ Player.prototype.playCard = function (cardtemp) {
 Player.prototype.doFoxHuman = function (card) {
     this.playCard(card);
     display.buildTrick();
-    if (game.displayplayer === game.followplayer) {
+    if (game.displayplayer.id === trick.followplayer.id) {
         this.resetCards();
     }
     display.buildFoxList(card);
@@ -149,7 +149,7 @@ Player.prototype.doFoxHuman = function (card) {
 Player.prototype.doWoodcutterHuman = function (card) {
     this.playCard(card);
     display.buildTrick();
-    if (game.displayplayer === game.followplayer) {
+    if (game.displayplayer.id === trick.followplayer.id) {
         this.resetCards();
     }
     this.resetCards()
@@ -295,7 +295,6 @@ Player.prototype.receiveScores = function (state, suit) {
     player1.tricks = state.player1.tricks
     player2.tricks = state.player2.tricks
     if (player1.score !== state.player1.score || player2.score !== state.player2.score) {
-        console.log("Made it here!")
         player1.score = state.player1.score
         player2.score = state.player2.score
         display.buildDisplayInfo()

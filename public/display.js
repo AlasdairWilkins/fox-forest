@@ -56,7 +56,7 @@ function Display() {
         document.getElementById("play").style.display = "block";
     }
 
-    this.buildDecree = function (decreetemp) {
+    this.buildDecree = function () {
         document.getElementById("decree-card").innerHTML = `<img src=${round.decree.image} class="card" onmouseover="display.buildMechanic('${round.decree.value}')" onmouseout='display.clearMechanic()'>`;
     };
 
@@ -184,7 +184,7 @@ function Display() {
         document.getElementById("hand").innerHTML = handarray
     };
 
-    this.build2p = function() {
+    this.build = function() {
         display.buildDecree();
         display.buildListDeal();
         display.buildDisplayInfo();
@@ -244,3 +244,61 @@ function Display() {
         document.getElementById('turn').innerHTML = ''
     }
 }
+
+window.onclick = function(event) {
+    if (!event.target.matches('#scoring-dropdown')) {
+        document.getElementById('scoring-dropdown-content').classList.remove('show')
+    }
+    if (!event.target.matches('#cards-dropdown')) {
+        document.getElementById('cards-dropdown-content').classList.remove('show')
+    }
+
+    if (!event.target.matches('#rules-dropdown')) {
+        document.getElementById('rules-dropdown-content').classList.remove('show')
+    }
+
+    if (!event.target.matches('#user-dropdown')) {
+        document.getElementById('user-dropdown-content').classList.remove('show')
+    }
+
+    if (event.target.matches('.bars')) {
+        document.getElementById('user-dropdown-content').classList.toggle('show')
+    }
+
+    if (event.target.matches('.modal')) {
+        document.getElementById('video-tutorial-modal').style.display = "none"
+        document.getElementById('rulebook-modal').style.display = "none"
+        document.getElementById('settings-modal').style.display = "none"
+        pauseVideo()
+    }
+}
+
+
+const tag = document.createElement('script');
+
+tag.src = "https://www.youtube.com/iframe_api";
+const firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+function onYouTubeIframeAPIReady() {
+    const video = new YT.Player('player', {
+        height: '390',
+        width: '640',
+        videoId: 'XTvSyn09KlY',
+    });
+}
+
+
+function pauseVideo() {
+    video.pauseVideo();
+}
+
+$(function(){
+
+    $("#flipbook").turn({
+        width: 800,
+        height: 592,
+        autoCenter: true
+    });
+
+})

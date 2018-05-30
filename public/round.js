@@ -1,6 +1,6 @@
-function Round(dealplayer, receiveplayer) {
+function Round(dealplayer, receiveplayer, choice, state) {
     this.decree = null
-    this.deck = []
+    this.deck = choice ? [] : state.deck
     this.dealplayer = dealplayer;
     this.receiveplayer = receiveplayer
 }
@@ -30,8 +30,6 @@ Round.prototype.shuffleDeck = function () {
 
 Round.prototype.setDecree = function () {
     this.decree = this.deck.pop();
-    let decree = `<img src=${this.decree.image} class="card">`;
-    display.buildDecree(decree)
 };
 
 Round.prototype.start = function () {
