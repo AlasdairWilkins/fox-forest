@@ -2,6 +2,54 @@ const Player = require("./player")
 const Card = require("./card")
 const Trick = require("./trick")
 
+const url = 'http://localhost:8000/'
+
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors')
+const uniqid = require('uniqid');
+const app = express();
+const util = require('util')
+const fs = require('fs')
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+const nodemailer = require('nodemailer');
+const cookieParser = require('cookie-parser')
+const request = require('request')
+const Promise = require('bluebird')
+const rp = require('request-promise')
+
+const credentials = {
+    client: {
+        id: 'fe8bb8dba4ab9d66bfc19544d4fba61a453492c0c437ee1c6890996e9c9b26ac',
+        secret: 'faa0e825b09c5a155115261a0fb81f97524b583f4c4413d0487799ac43088342'
+    },
+    auth: {
+        tokenHost: 'https://www.recurse.com'
+    }
+};
+const oauth2 = require('simple-oauth2').create(credentials);
+const authorizationUri = oauth2.authorizationCode.authorizeURL({
+    redirect_uri: 'http://fox-forest.alasdairwilkins.com/login',
+});
+
+let player1 = null
+let player2 = null
+let user = null
+let username = null
+let game = null
+let round = null
+let trick = null
+let games = {}
+let gameroom = null
+let state = null
+let scores = null
+let active = {}
+let players = {}
+let connected = false
+const suits = ['Bells', 'Keys', 'Moons']
+
+
 function Gameroom (choice, socket, cookie) {
     this.twoplayer = choice
     this.p1socket = socket
@@ -81,92 +129,6 @@ Round.prototype.start = function () {
     return state
 }
 
-// function Trick(leadplayer, followplayer) {
-//     this.cards = []
-//     this.leadplayer = leadplayer
-//     this.followplayer = followplayer
-//     this.winner = null;
-//     this.witchReset = false;
-//     this.hasSwan = false;
-//     this.loser = null
-// }
-//
-// Trick.prototype.doWitch = function (state) {
-//     let oldsuittemp = "";
-//     let position = 0;
-//     if (this.cards[0].value === 9) {
-//         oldsuittemp = this.cards[0].suit;
-//         this.cards[0].suit = state.decree.suit
-//     } else {
-//         oldsuittemp = this.cards[1].suit;
-//         position = 1;
-//         this.cards[1].suit = state.decree.suit
-//     }
-//     this.witchReset = true;
-//     return {
-//         suit: oldsuittemp,
-//         position: position
-//     }
-// };
-//
-// Trick.prototype.hasSevens = function() {
-//     let sevens = 0
-//     for (let i = 0; i < 2; i++) {
-//         if (this.cards[i].value === 7) {
-//             sevens += 1
-//         }
-//     }
-//     return sevens
-// };
-//
-// Trick.prototype.score = function (state) {
-//     let olddata = this.cards[0].value === 9 ^ this.cards[1].value === 9 ? this.doWitch(state) : null
-//     if (this.cards[0].suit === this.cards[1].suit) {
-//         if (this.cards[0].value > this.cards[1].value) {
-//             if (this.witchReset) {
-//                 this.cards[olddata.position].suit = olddata.suit;
-//             }
-//             if (this.cards[1].value === 1) {
-//                 this.hasSwan = true
-//             }
-//             this.winner = this.leadplayer
-//             this.loser = this.followplayer
-//         } else {
-//             if (this.witchReset) {
-//                 this.cards[olddata.position].suit = olddata.suit;
-//             }
-//             if (this.cards[0].value === 1) {
-//                 this.hasSwan = true
-//             }
-//             this.winner = this.followplayer
-//             this.loser = this.leadplayer
-//         }
-//     } else {
-//         if (this.cards[1].suit === state.decree.suit) {
-//             if (this.witchReset) {
-//                 this.cards[olddata.position].suit = olddata.suit;
-//             }
-//             if (this.cards[0].value === 1) {
-//                 this.hasSwan = true
-//             }
-//             this.winner = this.followplayer
-//             this.loser = this.leadplayer
-//         } else {
-//             if (this.witchReset) {
-//                 this.cards[olddata.position].suit = olddata.suit;
-//             }
-//             if (this.cards[1].value === 1) {
-//                 this.hasSwan = true
-//             }
-//             this.winner = this.leadplayer
-//             this.loser = this.followplayer
-//         }
-//     }
-//     this.winner.score += this.hasSevens()
-//     this.winner.treasure += this.hasSevens()
-//     this.winner.tricks.push(this.cards);
-// };
-
 function Game(choice, id) {
     this.ai = choice
     this.id = id
@@ -207,132 +169,6 @@ Game.prototype.whoWinning = function () {
     }
 
 };
-
-// function Card(value, suit) {
-//     this.value = value;
-//     this.suit = suit;
-//     this.playable = true;
-//     this.mechanic = null;
-//     this.image = `images/${this.suit.toLowerCase()}${this.value}.jpg`
-// }
-
-// function Player(name, id) {
-//     this.name = name;
-//     this.id = id;
-//     this.hand = [];
-//     this.tricks = [];
-//     this.score = 0;
-//     this.treasure = 0;
-//     this.wonLast = false
-//     this.roundResult = null;
-// }
-//
-// Player.prototype.sortHand = function() {
-//     this.hand.sort(function(a, b) {
-//         if (a.suit === b.suit) {
-//             return a.value - b.value
-//         } else {
-//             if (a.suit > b.suit) {
-//                 return 1
-//             } else {
-//                 return -1
-//             }
-//         }
-//     })
-// }
-//
-// Player.prototype.createHand = function () {
-//     for (let i = 0; i < 13; i++) {
-//         let newcard = round.deck.pop();
-//         this.hand.push(newcard)
-//     }
-//     this.sortHand()
-// };
-//
-// Player.prototype.getScores = function () {
-//     let tricks = this.tricks.length;
-//     let score = 0;
-//     if (tricks <= 3) {
-//         score = 6
-//     } else if (tricks === 4) {
-//         score = 1
-//     } else if (tricks === 5) {
-//         score = 2
-//     } else if (tricks === 6) {
-//         score += 3
-//     } else if (7 <= tricks && tricks <= 9) {
-//         score += 6
-//     }
-//     if (this.treasure === 0) {
-//         if (tricks === 1) {
-//             this.roundResult = `${this.name} won  1 trick and scored 6 points.`
-//         } else if (score === 1) {
-//             this.roundResult = `${this.name} won 4 tricks and scored 1 point.`
-//         } else {
-//             this.roundResult = `${this.name} won ${this.tricks.length} tricks and scored ${score} points.`
-//         }
-//     } else if (this.treasure === 1) {
-//         if (tricks === 1) {
-//             this.roundResult = `${this.name} won  1 trick, collected 1 treasure, and scored 7 points.`
-//         } else if (tricks >= 10) {
-//             this.roundResult = `${this.name} won  ${this.tricks.length} tricks, collected 1 treasure, and scored 1 point.`
-//         }
-//         else {
-//             let treasurescore = score + 1;
-//             this.roundResult = `${this.name} won ${this.tricks.length} tricks, collected 1 treasure, and scored ${treasurescore} points.`
-//         }
-//     } else {
-//         let treasurescore = score + this.treasure;
-//         if (tricks === 1) {
-//             this.roundResult = `${this.name} won 1 trick, collected ${this.treasure} treasures, and scored ${treasurescore} points.`
-//         } else {
-//             this.roundResult = `${this.name} won ${this.tricks.length} tricks, collected ${this.treasure} treasures, and scored ${treasurescore} points.`
-//         }
-//     }
-//     this.score += score;
-//     this.treasure = 0;
-//     this.tricks = []
-// };
-
-function findPlayer(response) {
-    for (let player in players) {
-        if (players[player].recurse === response.id)
-            return player
-    }
-    let player = uniqid()
-    players[player] = {'recurse': response.id, 'first': response.first_name, 'last': response.last_name, 'email': response.email}
-    return player
-}
-
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors')
-const uniqid = require('uniqid');
-const app = express();
-const util = require('util')
-const fs = require('fs')
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
-const nodemailer = require('nodemailer');
-const cookieParser = require('cookie-parser')
-const request = require('request')
-const Promise = require('bluebird')
-const rp = require('request-promise')
-
-const credentials = {
-    client: {
-        id: 'fe8bb8dba4ab9d66bfc19544d4fba61a453492c0c437ee1c6890996e9c9b26ac',
-        secret: 'faa0e825b09c5a155115261a0fb81f97524b583f4c4413d0487799ac43088342'
-    },
-    auth: {
-        tokenHost: 'https://www.recurse.com'
-    }
-};
-const oauth2 = require('simple-oauth2').create(credentials);
-const authorizationUri = oauth2.authorizationCode.authorizeURL({
-    redirect_uri: 'http://localhost:8000/login',
-});
-
 
 app.use(express.static('public'))
 app.use(cookieParser())
@@ -394,6 +230,31 @@ app.get('/login',  (req, res) => {
         })
 });
 
+app.post('/codesent', function(req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    console.log(req.body)
+})
+
+app.post('/woodcutterdraw', function(req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    var card = round.deck.pop()
+    res.send({'newcard': card})
+})
+
+app.post('/computername', function(req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    fs.readFile('./names.json', 'utf8', function(err, data) {
+        let json = JSON.parse(data)
+        let names = json['names']
+        let num = Math.floor(Math.random() * 202)
+        let name = names[num]
+        res.send({'name': name})
+    })
+})
+
+http.listen(8000, function() {
+    console.log('Example app listening on port 8000!');
+});
 
 io.on('connection', function(socket){
     let cookie = parseCookie(socket.request.headers.cookie).id
@@ -635,49 +496,14 @@ function parseCookie(cookie) {
         object[cookie[i][0]] = decodeURIComponent(cookie[i][1])
     }
     return object
-
 }
 
-http.listen(8000, function() {
-    console.log('Example app listening on port 8000!');
-});
-
-app.post('/codesent', function(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    console.log(req.body)
-})
-
-app.post('/woodcutterdraw', function(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    var card = round.deck.pop()
-    res.send({'newcard': card})
-})
-
-app.post('/computername', function(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    fs.readFile('./names.json', 'utf8', function(err, data) {
-        let json = JSON.parse(data)
-        let names = json['names']
-        let num = Math.floor(Math.random() * 202)
-        let name = names[num]
-        res.send({'name': name})
-    })
-})
-
-let player1 = null
-let player2 = null
-let user = null
-let username = null
-let game = null
-let round = null
-let trick = null
-let games = {}
-let gameroom = null
-let state = null
-let scores = null
-let jsonstate = null
-let active = {}
-let players = {}
-let connected = false
-const suits = ['Bells', 'Keys', 'Moons']
-const url = 'http://localhost:8000/'
+function findPlayer(response) {
+    for (let player in players) {
+        if (players[player].recurse === response.id)
+            return player
+    }
+    let player = uniqid()
+    players[player] = {'recurse': response.id, 'first': response.first_name, 'last': response.last_name, 'email': response.email}
+    return player
+}
