@@ -4,6 +4,10 @@
 // Set the configuration settings
 const express = require('express')
 const app = express()
+const request = require('request')
+const Promise = require('bluebird')
+const rp = require('request-promise')
+const uniqid = require('uniqid')
 const credentials = {
     client: {
         id: 'fe8bb8dba4ab9d66bfc19544d4fba61a453492c0c437ee1c6890996e9c9b26ac',
@@ -13,47 +17,47 @@ const credentials = {
         tokenHost: 'https://www.recurse.com'
     }
 };
-
-// Initialize the OAuth2 Library
 const oauth2 = require('simple-oauth2').create(credentials);
-
-// Authorization oauth2 URI
 const authorizationUri = oauth2.authorizationCode.authorizeURL({
     redirect_uri: 'http://localhost:8000/login',
 });
+const cookieParser = require('cookie-parser')
+
+app.use(cookieParser())
 
 app.get('/auth', (req, res) => {
-    console.log('ahoy hoy')
-    console.log(authorizationUri);
     res.redirect(authorizationUri);
 });
 
 // Callback service parsing the authorization token and asking for the access token
-app.get('/login', async (req, res) => {
-    console.log("Made it here!")
-    debugger
+app.get('/login',  (req, res) => {
     const code = req.query.code;
-    const options = {
+    let options = {
         code: code,
         redirect_uri: 'http://localhost:8000/login'
     };
-    console.log("What is being sent: ", options)
 
-    try {
-        const result = await oauth2.authorizationCode.getToken(options);
+    return oauth2.authorizationCode.getToken(options)
+        .then(function(token) {
+            console.log(token)
+            let header = token.token_type + " " + token.access_token
+            let options = {
+                url: 'http://www.recurse.com/api/v1/profiles/me',
+                headers: {'Authorization': header},
+                json: true
+            }
+            return rp(options)
+        })
+        .then(function(response) {
+            console.log("And here we are!", response.id, response.first_name, response.last_name, response.email)
+            active[req.cookies.id] = {'id': response.id, 'first': response.first_name, 'last': response.last_name, 'email': response.email}
 
-        // console.log('The resulting token: ', result);
-
-        const token = oauth2.accessToken.create(result);
-        // console.log("What's about to appear on the page", res.status(200).json(token))
-
-        // return res.status(200).json(token)
-        console.log('ze stuff', token)
-        return res.status(200).json(token)
-    } catch(error) {
-        console.error('Access Token Error', error.message);
-        return res.status(500).json('Authentication failed');
-    }
+            res.redirect('/')
+        })
+        .catch(function (err) {
+            console.log(err)
+            return res.status(500).json('Authentication failed')
+        })
 });
 
 app.get('/success', (req, res) => {
@@ -61,12 +65,24 @@ app.get('/success', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.send('Hello<br><a href="/auth">Log in with RC :)</a>');
+    if (!req.cookies.id) {
+        let cookie = uniqid()
+        res.setHeader('Set-Cookie', 'id=' + cookie)
+    }
+    if (!active[req.cookies.id]) {
+        res.send('Hello<br><a href="/auth">Log in with RC :)</a>');
+    } else {
+        res.send("You've logged in, " + active[req.cookies.id].first + "!")
+    }
+
 });
 
 app.listen(8000, () => {
     console.log('Express server started on port 8000');
 });
+
+const active = {}
+const users = {}
 
 //
 //

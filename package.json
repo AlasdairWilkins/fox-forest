@@ -4,6 +4,7 @@
   "description": "",
   "main": "main.js",
   "dependencies": {
+    "bluebird": "^3.5.1",
     "body-parser": "^1.18.2",
     "client-oauth2": "^4.2.0",
     "cookie-parser": "^1.4.3",
@@ -11,6 +12,8 @@
     "express": "^4.16.3",
     "nodemailer": "^4.6.4",
     "oauth20-provider": "^0.6.0",
+    "request": "^2.87.0",
+    "request-promise": "^4.2.2",
     "simple-oauth2": "^1.5.2",
     "socket.io": "^2.1.0",
     "uniqid": "^4.1.1"
