@@ -1,7 +1,5 @@
 //server-side file
 
-console.log("Yo wassup")
-
 function Player(name, id) {
     this.name = name;
     this.id = id;

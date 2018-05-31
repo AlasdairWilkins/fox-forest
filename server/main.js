@@ -1,4 +1,6 @@
 const Player = require("./player")
+const Card = require("./card")
+const Trick = require("./trick")
 
 function Gameroom (choice, socket, cookie) {
     this.twoplayer = choice
@@ -28,7 +30,7 @@ State.prototype.update = function () {
     } else {
         trick = new Trick(trick.winner, trick.loser)
     }
-    state.turn = trick.leadplayer.id
+    this.turn = trick.leadplayer.id
 }
 
 function Round(dealplayer, receiveplayer) {
@@ -79,91 +81,91 @@ Round.prototype.start = function () {
     return state
 }
 
-function Trick(leadplayer, followplayer) {
-    this.cards = []
-    this.leadplayer = leadplayer
-    this.followplayer = followplayer
-    this.winner = null;
-    this.witchReset = false;
-    this.hasSwan = false;
-    this.loser = null
-}
-
-Trick.prototype.doWitch = function () {
-    let oldsuittemp = "";
-    let position = 0;
-    if (trick.cards[0].value === 9) {
-        oldsuittemp = trick.cards[0].suit;
-        trick.cards[0].suit = state.decree.suit
-    } else {
-        oldsuittemp = trick.cards[1].suit;
-        position = 1;
-        trick.cards[1].suit = state.decree.suit
-    }
-    trick.witchReset = true;
-    return {
-        suit: oldsuittemp,
-        position: position
-    }
-};
-
-Trick.prototype.hasSevens = function() {
-    let sevens = 0
-    for (let i = 0; i < 2; i++) {
-        if (trick.cards[i].value === 7) {
-            sevens += 1
-        }
-    }
-    return sevens
-};
-
-Trick.prototype.score = function () {
-    let olddata = trick.cards[0].value === 9 ^ trick.cards[1].value === 9 ? trick.doWitch() : null
-    if (trick.cards[0].suit === trick.cards[1].suit) {
-        if (trick.cards[0].value > trick.cards[1].value) {
-            if (trick.witchReset) {
-                trick.cards[olddata.position].suit = olddata.suit;
-            }
-            if (trick.cards[1].value === 1) {
-                trick.hasSwan = true
-            }
-            trick.winner = trick.leadplayer
-            trick.loser = trick.followplayer
-        } else {
-            if (trick.witchReset) {
-                trick.cards[olddata.position].suit = olddata.suit;
-            }
-            if (trick.cards[0].value === 1) {
-                trick.hasSwan = true
-            }
-            trick.winner = trick.followplayer
-            trick.loser = trick.leadplayer
-        }
-    } else {
-        if (trick.cards[1].suit === state.decree.suit) {
-            if (trick.witchReset) {
-                trick.cards[olddata.position].suit = olddata.suit;
-            }
-            if (trick.cards[0].value === 1) {
-                trick.hasSwan = true
-            }
-            trick.winner = trick.followplayer
-            trick.loser = trick.leadplayer
-        } else {
-            if (trick.witchReset) {
-                trick.cards[olddata.position].suit = olddata.suit;
-            }
-            if (trick.cards[1].value === 1) {
-                trick.hasSwan = true
-            }
-            trick.winner = trick.leadplayer
-            trick.loser = trick.followplayer
-        }
-    }
-    trick.winner.score += trick.hasSevens()
-    trick.winner.treasure += trick.hasSevens()
-    trick.winner.tricks.push(trick.cards);
-};
+// function Trick(leadplayer, followplayer) {
+//     this.cards = []
+//     this.leadplayer = leadplayer
+//     this.followplayer = followplayer
+//     this.winner = null;
+//     this.witchReset = false;
+//     this.hasSwan = false;
+//     this.loser = null
+// }
+//
+// Trick.prototype.doWitch = function (state) {
+//     let oldsuittemp = "";
+//     let position = 0;
+//     if (this.cards[0].value === 9) {
+//         oldsuittemp = this.cards[0].suit;
+//         this.cards[0].suit = state.decree.suit
+//     } else {
+//         oldsuittemp = this.cards[1].suit;
+//         position = 1;
+//         this.cards[1].suit = state.decree.suit
+//     }
+//     this.witchReset = true;
+//     return {
+//         suit: oldsuittemp,
+//         position: position
+//     }
+// };
+//
+// Trick.prototype.hasSevens = function() {
+//     let sevens = 0
+//     for (let i = 0; i < 2; i++) {
+//         if (this.cards[i].value === 7) {
+//             sevens += 1
+//         }
+//     }
+//     return sevens
+// };
+//
+// Trick.prototype.score = function (state) {
+//     let olddata = this.cards[0].value === 9 ^ this.cards[1].value === 9 ? this.doWitch(state) : null
+//     if (this.cards[0].suit === this.cards[1].suit) {
+//         if (this.cards[0].value > this.cards[1].value) {
+//             if (this.witchReset) {
+//                 this.cards[olddata.position].suit = olddata.suit;
+//             }
+//             if (this.cards[1].value === 1) {
+//                 this.hasSwan = true
+//             }
+//             this.winner = this.leadplayer
+//             this.loser = this.followplayer
+//         } else {
+//             if (this.witchReset) {
+//                 this.cards[olddata.position].suit = olddata.suit;
+//             }
+//             if (this.cards[0].value === 1) {
+//                 this.hasSwan = true
+//             }
+//             this.winner = this.followplayer
+//             this.loser = this.leadplayer
+//         }
+//     } else {
+//         if (this.cards[1].suit === state.decree.suit) {
+//             if (this.witchReset) {
+//                 this.cards[olddata.position].suit = olddata.suit;
+//             }
+//             if (this.cards[0].value === 1) {
+//                 this.hasSwan = true
+//             }
+//             this.winner = this.followplayer
+//             this.loser = this.leadplayer
+//         } else {
+//             if (this.witchReset) {
+//                 this.cards[olddata.position].suit = olddata.suit;
+//             }
+//             if (this.cards[1].value === 1) {
+//                 this.hasSwan = true
+//             }
+//             this.winner = this.leadplayer
+//             this.loser = this.followplayer
+//         }
+//     }
+//     this.winner.score += this.hasSevens()
+//     this.winner.treasure += this.hasSevens()
+//     this.winner.tricks.push(this.cards);
+// };
 
 function Game(choice, id) {
     this.ai = choice
@@ -206,13 +208,13 @@ Game.prototype.whoWinning = function () {
 
 };
 
-function Card(value, suit) {
-    this.value = value;
-    this.suit = suit;
-    this.playable = true;
-    this.mechanic = null;
-    this.image = `images/${this.suit.toLowerCase()}${this.value}.jpg`
-}
+// function Card(value, suit) {
+//     this.value = value;
+//     this.suit = suit;
+//     this.playable = true;
+//     this.mechanic = null;
+//     this.image = `images/${this.suit.toLowerCase()}${this.value}.jpg`
+// }
 
 // function Player(name, id) {
 //     this.name = name;
@@ -500,14 +502,14 @@ io.on('connection', function(socket){
         trick.followplayer.hand = msg.hand
         state.turn = msg.turn
         trick.cards = msg.trick
-        if (state.turn === player1.id) {
-            game.leadplayer = player2
-            game.followplayer = player1
-        } else {
-            game.leadplayer = player1
-            game.followplayer = player2
-        }
-        trick.score(game.leadplayer, game.followplayer)
+        // if (state.turn === player1.id) {
+        //     game.leadplayer = player2
+        //     game.followplayer = player1
+        // } else {
+        //     game.leadplayer = player1
+        //     game.followplayer = player2
+        // }
+        trick.score(state)
         state.update()
         io.in(gameroom).emit('trickresults', state)
     })
