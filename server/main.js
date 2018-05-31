@@ -19,10 +19,12 @@ const request = require('request')
 const Promise = require('bluebird')
 const rp = require('request-promise')
 
+//https://www.recurse.com/settings/apps
+
 const credentials = {
     client: {
-        id: 'fe8bb8dba4ab9d66bfc19544d4fba61a453492c0c437ee1c6890996e9c9b26ac',
-        secret: 'faa0e825b09c5a155115261a0fb81f97524b583f4c4413d0487799ac43088342'
+        id: '0b974ddeacd24f0b30a60738d27c8121c8bacc6cf38d0d79916275b5a9eb5952',
+        secret: 'd270c15a97785250da3fe03fd8c1677ab8434090dd5ef08a5f8237f09f38c64a'
     },
     auth: {
         tokenHost: 'https://www.recurse.com'
@@ -201,7 +203,7 @@ app.get('/login',  (req, res) => {
     const code = req.query.code;
     let options = {
         code: code,
-        redirect_uri: 'http://localhost:8000/login'
+        redirect_uri: 'http://fox-forest.alasdairwilkins.com/login'
     };
 
     return oauth2.authorizationCode.getToken(options)
