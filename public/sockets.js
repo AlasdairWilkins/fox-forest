@@ -11,6 +11,10 @@ socket.on('gamecode', function(msg) {
 //
 // socket.on('gamebeginning')
 
+socket.on('playername', function(msg) {
+    display.buildDisplayPlayer(msg)
+})
+
 socket.on('startupinfo', function(msg) {
         start(msg.state, msg.twoplayer)
 })

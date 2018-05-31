@@ -25,7 +25,19 @@ function Display() {
         document.getElementById("entercode").style.display = 'block'
     }
 
+    this.buildDisplayPlayer = function(name) {
+        document.getElementById("players-info").classList.remove("setup");
+        document.getElementById("players-info").classList.add("player");
+        document.getElementById("display-container").style.display = "contents";
+        document.getElementById("display-info").style.display = "none"
+        document.getElementById("player-name").innerHTML = `<span>${name}</span>`;
+    }
+
     this.buildDisplayInfo = function () {
+        document.getElementById("players-info").classList.remove("player");
+        document.getElementById("players-info").classList.add("game");
+        document.getElementById("player-name").style.display = "none"
+        document.getElementById("display-info").style.display = "block"
         document.getElementById("display-name").innerHTML = game.displayplayer.name;
         document.getElementById("display-tricks").innerHTML = game.displayplayer.tricks.length;
         document.getElementById("display-score").innerHTML = game.displayplayer.score;
@@ -49,7 +61,7 @@ function Display() {
     }
 
     this.buildGame = function () {
-        document.getElementById("players-info").classList.toggle("setup");
+        document.getElementById("players-info").classList.remove("setup");
         document.getElementById("display-container").style.display = "contents";
         document.getElementById("remote-info").style.display = "block";
         document.getElementById("startup").style.display = "none";

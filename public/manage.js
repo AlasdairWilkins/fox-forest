@@ -15,14 +15,6 @@ function start(state, twoplayer) {
     game.start(state, twoplayer)
     display.build()
 }
-//
-//     // round.start()
-//     if (document.getElementById('leader-checkBox').checked) {
-//             display.buildResults("trick-leader", "lead the", trick.leadplayer)
-//         } else {
-//             trick.start()
-//         }
-// }
 
 function prepare(state, twoplayer) {
     player1 = new Player(state.player1.name, state.player1.id)

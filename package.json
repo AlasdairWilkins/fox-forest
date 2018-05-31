@@ -16,7 +16,8 @@
     "request-promise": "^4.2.2",
     "simple-oauth2": "^1.5.2",
     "socket.io": "^2.1.0",
-    "uniqid": "^4.1.1"
+    "uniqid": "^4.1.1",
+    "zulip-js": "^2.0.4"
   },
   "devDependencies": {},
   "scripts": {

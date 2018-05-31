@@ -8,6 +8,10 @@ const request = require('request')
 const Promise = require('bluebird')
 const rp = require('request-promise')
 const uniqid = require('uniqid')
+
+
+
+
 const credentials = {
     client: {
         id: 'fe8bb8dba4ab9d66bfc19544d4fba61a453492c0c437ee1c6890996e9c9b26ac',
@@ -20,49 +24,15 @@ const credentials = {
 const oauth2 = require('simple-oauth2').create(credentials);
 const authorizationUri = oauth2.authorizationCode.authorizeURL({
     redirect_uri: 'http://localhost:8000/login',
+
 });
 const cookieParser = require('cookie-parser')
 
 app.use(cookieParser())
 
-app.get('/auth', (req, res) => {
-    res.redirect(authorizationUri);
-});
 
-// Callback service parsing the authorization token and asking for the access token
-app.get('/login',  (req, res) => {
-    const code = req.query.code;
-    let options = {
-        code: code,
-        redirect_uri: 'http://localhost:8000/login'
-    };
 
-    return oauth2.authorizationCode.getToken(options)
-        .then(function(token) {
-            console.log(token)
-            let header = token.token_type + " " + token.access_token
-            let options = {
-                url: 'http://www.recurse.com/api/v1/profiles/me',
-                headers: {'Authorization': header},
-                json: true
-            }
-            return rp(options)
-        })
-        .then(function(response) {
-            console.log("And here we are!", response.id, response.first_name, response.last_name, response.email)
-            active[req.cookies.id] = {'id': response.id, 'first': response.first_name, 'last': response.last_name, 'email': response.email}
 
-            res.redirect('/')
-        })
-        .catch(function (err) {
-            console.log(err)
-            return res.status(500).json('Authentication failed')
-        })
-});
-
-app.get('/success', (req, res) => {
-    res.send('');
-});
 
 app.get('/', (req, res) => {
     if (!req.cookies.id) {

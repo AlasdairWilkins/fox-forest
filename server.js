@@ -290,6 +290,16 @@ Player.prototype.getScores = function () {
     this.tricks = []
 };
 
+function findPlayer(response) {
+    for (let player in players) {
+        if (players[player].recurse === response.id)
+            return player
+    }
+    let player = uniqid()
+    players[player] = {'recurse': response.id, 'first': response.first_name, 'last': response.last_name, 'email': response.email}
+    return player
+}
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors')
@@ -302,41 +312,104 @@ const io = require('socket.io')(http);
 const nodemailer = require('nodemailer');
 const cookieParser = require('cookie-parser')
 const request = require('request')
+const Promise = require('bluebird')
+const rp = require('request-promise')
+
+const credentials = {
+    client: {
+        id: 'fe8bb8dba4ab9d66bfc19544d4fba61a453492c0c437ee1c6890996e9c9b26ac',
+        secret: 'faa0e825b09c5a155115261a0fb81f97524b583f4c4413d0487799ac43088342'
+    },
+    auth: {
+        tokenHost: 'https://www.recurse.com'
+    }
+};
+const oauth2 = require('simple-oauth2').create(credentials);
+const authorizationUri = oauth2.authorizationCode.authorizeURL({
+    redirect_uri: 'http://localhost:8000/login',
+});
+
 
 app.use(express.static('public'))
 app.use(cookieParser())
 
-app.get('/', function(req, res){
+app.get('/', (req, res) => {
     if (!req.cookies.id) {
         let cookie = uniqid()
         res.setHeader('Set-Cookie', 'id=' + cookie)
     }
-    res.sendFile(__dirname + '/main.html')
-    console.log('here comes a user');
+    if (!active[req.cookies.id]) {
+        res.sendFile(__dirname + '/login.html')
+    } else {
+        res.sendFile(__dirname + '/main.html')
+        console.log('here comes a user');
+    }
+
 });
+
+app.get('/auth', (req, res) => {
+    res.redirect(authorizationUri);
+});
+
+app.get('/nologin', (req, res) => {
+    active[req.cookies.id] = 'temporary'
+    res.redirect('/')
+})
+
+// Callback service parsing the authorization token and asking for the access token
+app.get('/login',  (req, res) => {
+    const code = req.query.code;
+    let options = {
+        code: code,
+        redirect_uri: 'http://localhost:8000/login'
+    };
+
+    return oauth2.authorizationCode.getToken(options)
+        .then(function(token) {
+            console.log(token)
+            let header = token.token_type + " " + token.access_token
+            let options = {
+                url: 'http://www.recurse.com/api/v1/profiles/me',
+                headers: {'Authorization': header},
+                json: true
+            }
+            return rp(options)
+        })
+        .then(function(response) {
+            console.log("And here we are!", response.id, response.first_name, response.last_name, response.email)
+
+
+            active[req.cookies.id] = findPlayer(response)
+            console.log(active)
+            console.log(players)
+            res.redirect('/')
+        })
+        .catch(function (err) {
+            console.log(err)
+            return res.status(500).json('Authentication failed')
+        })
+});
+
 
 io.on('connection', function(socket){
     let cookie = parseCookie(socket.request.headers.cookie).id
-    console.log(players)
+    if (active[cookie] && active[cookie] !== 'temporary') {
+        user = active[cookie]
+        username = players[user].first
+        socket.emit("playername", username)
+    }
 
     if (players[cookie]) {
-        //resume first game in array
         let gameroom = players[cookie][0]
         let game = games[gameroom]
-        console.log('Game ID', gameroom)
-        console.log("Resumable game", game)
         if (cookie === game.p1cookie && !game.p1socket) {
             game.p1socket = socket.id
             socket.join(gameroom)
-            console.log("This is player 1!", game)
-            console.log("What will be sent:", game.state)
             let startup = {'twoplayer': game.twoplayer, 'state': game.state}
             socket.emit("resumegame", startup)
         } else if (cookie === game['p2cookie'] && !game['p2socket']) {
             game.p2socket = socket.id
             socket.join(gameroom)
-            console.log("This is player 2!", game)
-            console.log("What will be sent:", game.state)
             let startup = {'twoplayer': game.twoplayer, 'state': game.state}
             socket.emit("resumegame", startup)
         } else {
@@ -416,8 +489,6 @@ io.on('connection', function(socket){
         } else {
             state.turn = state.player1.id
         }
-        console.log("Mid-trick update:", state)
-        //update gameroom's state information for reload here
         socket.to(gameroom).emit('turninfo', msg)
     })
 
@@ -591,6 +662,8 @@ app.post('/computername', function(req, res) {
 
 let player1 = null
 let player2 = null
+let user = null
+let username = null
 let game = null
 let round = null
 let trick = null
@@ -599,6 +672,7 @@ let gameroom = null
 let state = null
 let scores = null
 let jsonstate = null
+let active = {}
 let players = {}
 let connected = false
 const suits = ['Bells', 'Keys', 'Moons']
