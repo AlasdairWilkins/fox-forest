@@ -1,3 +1,13 @@
+const forms = {username:
+        {id: 'loginselect',
+            formId: 'username',
+            action: "action='/nologin' method='get'",
+            // inputId: 'usernameentry',
+            text: 'Enter your display name.',
+            default: 'Your name'
+            }}
+
+
 function Display() {
     this.swan = `Swan: If you play this and lose the trick, you lead the next trick.`;
     this.fox = `Fox: When you play this, you may exchange the decree card with a card from your hand.`;
@@ -6,6 +16,21 @@ function Display() {
     this.witch = `Witch: When determining the winner of a trick with only one 9, treat the 9 as if it were in the trump suit.`;
     this.monarch = `Monarch: When you lead this, if your opponent has any cards of the same suit, they must play either the 1 or their highest card from that suit.`;
     this.mechanics = [null, this.swan, null, this.fox, null, this.woodcutter, null, this.treasure, null, this.witch, null, this.monarch]
+
+    this.buildForm = function(value) {
+        let form = forms[value]
+        document.getElementById(form.id).innerHTML =
+            `<form id="${form.formId}" ${form.action}>
+                ${form.text}<br>
+                <input name="${form.formId}" type="text" onfocus="this.value=''" value='${form.default}'><br><br>
+                <input type="submit" value="Submit">
+            </form>`
+        if (!form.action) {
+            console.log('Hello!')
+        }
+    }
+
+
 
     this.buildGameCode = function(code) {
         document.getElementById("newcode").innerHTML = `Your game code is ${code}.`
@@ -313,4 +338,20 @@ $(function(){
         autoCenter: true
     });
 
+})
+
+$('#email').on('submit', function(submit) {
+    submit.preventDefault()
+    let email = document.getElementById('emailentry').value
+    socket.emit('sendcode', {'gameroom': gameroom, 'email': email})
+    display.buildEmailSent(email)
+    document.getElementById('createcode').style.display = 'none'
+    document.getElementById('emailsent').style.display = 'block'
+
+})
+
+$('#entercode').on('submit', function(submit) {
+    submit.preventDefault()
+    let code = document.getElementById('codeentry').value
+    socket.emit('startgame', code)
 })

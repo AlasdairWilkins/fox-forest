@@ -85,7 +85,7 @@ body {
 }
 
 #user-dropdown-content {
-    margin-left: -10px;
+    margin-left: 1px;
     width: 125px;
     top: 30px;
     padding-left: 0;
@@ -142,10 +142,12 @@ body {
 }
 
 #rules-dropdown-content{
+    top: 25px;
     width: 150px;
-    margin-left: -4%;
-    padding-left: 0;
-    padding-right: 0;
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .modal {
@@ -271,10 +273,6 @@ table {
     margin-bottom: 10px
 }
 
-#rules-dropdown-content {
-    top: 25px;
-}
-
 #rules-dropdown-content div {
     background-color: saddlebrown;
     border: none;
@@ -331,17 +329,18 @@ table {
     display: none;
     position: absolute;
     z-index: 20;
-    width: 500px;
 }
 
 .show {
+    left: 0;
+    right: 0;
+    margin-left: -30%;
+    margin-right: -30%;
     top: 25px;
     display: block;
     background-color: saddlebrown;
     padding-left: 15px;
-    padding-color: black;
     padding-right: 15px;
-    margin-left: -200px;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
     border-bottom: double 5px white;

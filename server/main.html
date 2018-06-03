@@ -151,11 +151,11 @@
 <div id="startup">
     <p>Welcome to The Fox in the Forest!</p>
     <div id ="playerstartup">
-        <button id="ai" onclick="clickedAI()">Play against the computer.</button>
-        <button id="human" onclick="clicked2P()">Play against another person.</button>
+        <button id="ai" onclick="client.clickedAI()">Play against the computer.</button>
+        <button id="human" onclick="client.clicked2P()">Play against another person.</button>
     </div>
     <div id="twoplayer">
-        <button id="creategame" onclick="clickedNew()">Get a new game code.</button>
+        <button id="creategame" onclick="client.clickedNew()">Get a new game code.</button>
         <button id="joingame" onclick="display.enterCode()">Enter an existing code.</button>
     </div>
     <div id="createcode">
@@ -181,7 +181,6 @@
 </div>
 
 <div id="play">
-    <!--<div id="name">Hi, time to enter your name!</div>-->
     <div id="game">
         <div id="trick-container">
             <div id="decree">

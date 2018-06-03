@@ -3,11 +3,12 @@ const Card = require("./card")
 const Trick = require("./trick")
 
 const url = 'http://localhost:8000/'
+// const url = 'http://fox-forest.alasdairwilkins.com/'
 
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors')
-const uniqid = require('uniqid');
+const shortid = require('shortid');
 const app = express();
 const util = require('util')
 const fs = require('fs')
@@ -23,8 +24,13 @@ const rp = require('request-promise')
 
 const credentials = {
     client: {
-        id: '0b974ddeacd24f0b30a60738d27c8121c8bacc6cf38d0d79916275b5a9eb5952',
-        secret: 'd270c15a97785250da3fe03fd8c1677ab8434090dd5ef08a5f8237f09f38c64a'
+        //development
+        id: 'fe8bb8dba4ab9d66bfc19544d4fba61a453492c0c437ee1c6890996e9c9b26ac',
+        secret: 'faa0e825b09c5a155115261a0fb81f97524b583f4c4413d0487799ac43088342'
+
+        //production
+        // id: '0b974ddeacd24f0b30a60738d27c8121c8bacc6cf38d0d79916275b5a9eb5952',
+        // secret: 'd270c15a97785250da3fe03fd8c1677ab8434090dd5ef08a5f8237f09f38c64a'
     },
     auth: {
         tokenHost: 'https://www.recurse.com'
@@ -32,25 +38,22 @@ const credentials = {
 };
 const oauth2 = require('simple-oauth2').create(credentials);
 const authorizationUri = oauth2.authorizationCode.authorizeURL({
-    redirect_uri: 'http://fox-forest.alasdairwilkins.com/login',
+    redirect_uri: 'http://localhost:8000/login'
+    // redirect_uri: 'http://fox-forest.alasdairwilkins.com/login',
 });
+
+// this is such a problem, SOLVE IT!!!
 
 let player1 = null
 let player2 = null
-let user = null
-let username = null
 let game = null
 let round = null
 let trick = null
-let games = {}
 let gameroom = null
 let state = null
 let scores = null
-let active = {}
-let players = {}
-let connected = false
-const suits = ['Bells', 'Keys', 'Moons']
 
+const suits = ['Bells', 'Keys', 'Moons']
 
 function Gameroom (choice, socket, cookie) {
     this.twoplayer = choice
@@ -60,6 +63,48 @@ function Gameroom (choice, socket, cookie) {
     this.p2cookie = null
     this.state = null
 }
+
+function Game(choice, id) {
+    this.ai = choice
+    this.id = id
+    //WORTH MOVING THIS OUT OF HERE INTO A CONSTANT
+    this.swan = `Swan: If you play this and lose the trick, you lead the next trick.`;
+    this.fox = `Fox: When you play this, you may exchange the decree card with a card from your hand.`;
+    this.woodcutter = `Woodcutter: When you play this, draw 1 card. Then discard any 1 card to the bottom of the deck.`;
+    this.treasure = `Treasure: The winner of the trick receives 1 point for each 7 in the trick.`;
+    this.witch = `Witch: When determining the winner of a trick with only one 9, treat the 9 as if it were in the trump suit.`;
+    this.monarch = `Monarch: When you lead this, if your opponent has any cards of the same suit, they must play either the 1 or their highest card from that suit.`;
+    this.mechanics = [this.swan, this.fox, this.woodcutter, this.treasure, this.witch, this.monarch];
+    this.gameOver = false; //game? or possibly round
+    this.winner = ''; //game
+}
+
+Game.prototype.whoWinning = function () {
+    if (player1.score > player2.score) {
+        if (player2.score === 1) {
+            game.currentWinner = `${player1.name} is winning with ${player1.score} points to ${player2.name}'s 1 point.`
+        } else {
+            game.currentWinner = `${player1.name} is winning with ${player1.score} points to ${player2.name}'s ${player2.score} points.`
+        }
+    } else if (player2.score > player1.score) {
+        if (player1.score === 1) {
+            game.currentWinner = `${player2.name} is winning with ${player2.score} points to ${player1.name}'s 1 point.`
+        } else {
+            game.currentWinner = `${player2.name} is winning with ${player2.score} points to ${player1.name}'s ${player1.score} points.`
+        }
+    } else {
+        game.currentWinner = `${player1.name} and ${player2.name} are tied with ${player1.score} points each.`
+    }
+    if (player1.score >= 21 || player2.score >= 21) {
+        game.gameOver = true;
+        if (player1.score > player2.score) {
+            game.winner = `${player1.name} wins!`
+        } else {
+            game.winner = `${player2.name} wins!`
+        }
+    }
+
+};
 
 function State(player1, player2, round, game) {
     this.player1 = player1
@@ -131,53 +176,14 @@ Round.prototype.start = function () {
     return state
 }
 
-function Game(choice, id) {
-    this.ai = choice
-    this.id = id
-    this.swan = `Swan: If you play this and lose the trick, you lead the next trick.`;
-    this.fox = `Fox: When you play this, you may exchange the decree card with a card from your hand.`;
-    this.woodcutter = `Woodcutter: When you play this, draw 1 card. Then discard any 1 card to the bottom of the deck.`;
-    this.treasure = `Treasure: The winner of the trick receives 1 point for each 7 in the trick.`;
-    this.witch = `Witch: When determining the winner of a trick with only one 9, treat the 9 as if it were in the trump suit.`;
-    this.monarch = `Monarch: When you lead this, if your opponent has any cards of the same suit, they must play either the 1 or their highest card from that suit.`;
-    this.mechanics = [this.swan, this.fox, this.woodcutter, this.treasure, this.witch, this.monarch];
-    this.gameOver = false; //game? or possibly round
-    this.winner = ''; //game
-}
-
-Game.prototype.whoWinning = function () {
-    if (player1.score > player2.score) {
-        if (player2.score === 1) {
-            game.currentWinner = `${player1.name} is winning with ${player1.score} points to ${player2.name}'s 1 point.`
-        } else {
-            game.currentWinner = `${player1.name} is winning with ${player1.score} points to ${player2.name}'s ${player2.score} points.`
-        }
-    } else if (player2.score > player1.score) {
-        if (player1.score === 1) {
-            game.currentWinner = `${player2.name} is winning with ${player2.score} points to ${player1.name}'s 1 point.`
-        } else {
-            game.currentWinner = `${player2.name} is winning with ${player2.score} points to ${player1.name}'s ${player1.score} points.`
-        }
-    } else {
-        game.currentWinner = `${player1.name} and ${player2.name} are tied with ${player1.score} points each.`
-    }
-    if (player1.score >= 21 || player2.score >= 21) {
-        game.gameOver = true;
-        if (player1.score > player2.score) {
-            game.winner = `${player1.name} wins!`
-        } else {
-            game.winner = `${player2.name} wins!`
-        }
-    }
-
-};
-
 app.use(express.static('public'))
 app.use(cookieParser())
 
 app.get('/', (req, res) => {
+    console.log('Body', req.body)
+    console.log('Cookie', req.cookies)
     if (!req.cookies.id) {
-        let cookie = uniqid()
+        let cookie = shortid.generate()
         res.setHeader('Set-Cookie', 'id=' + cookie)
     }
     if (!active[req.cookies.id]) {
@@ -194,16 +200,33 @@ app.get('/auth', (req, res) => {
 });
 
 app.get('/nologin', (req, res) => {
-    active[req.cookies.id] = 'temporary'
+    console.log(req.query)
+    active[req.cookies.id] = {
+        id: null,
+        name: req.query.username
+    }
+    console.log(active)
     res.redirect('/')
 })
+
+function Server () {
+    this.active = {}
+    this.users = {}
+    this.games = {}
+}
+
+const server = new Server()
+const active = server.active
+const users = server.users
+const games = server.games
 
 // Callback service parsing the authorization token and asking for the access token
 app.get('/login',  (req, res) => {
     const code = req.query.code;
     let options = {
         code: code,
-        redirect_uri: 'http://fox-forest.alasdairwilkins.com/login'
+        redirect_uri: 'http://localhost:8000/login'
+        // redirect_uri: 'http://fox-forest.alasdairwilkins.com/login'
     };
 
     return oauth2.authorizationCode.getToken(options)
@@ -220,28 +243,33 @@ app.get('/login',  (req, res) => {
         .then(function(response) {
             console.log("And here we are!", response.id, response.first_name, response.last_name, response.email)
 
+            // review findPlayer function
 
             active[req.cookies.id] = findPlayer(response)
-            console.log(active)
-            console.log(players)
             res.redirect('/')
         })
         .catch(function (err) {
-            console.log(err)
-            return res.status(500).json('Authentication failed')
+            alert('Authentication failed!')
+            res.redirect('/')
         })
 });
+
+//review purpose of this function?
 
 app.post('/codesent', function(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*')
     console.log(req.body)
 })
 
+//review purpose of this function?
+
 app.post('/woodcutterdraw', function(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*')
     var card = round.deck.pop()
     res.send({'newcard': card})
 })
+
+//review purpose of this function?
 
 app.post('/computername', function(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*')
@@ -259,15 +287,20 @@ http.listen(8000, function() {
 });
 
 io.on('connection', function(socket){
+
     let cookie = parseCookie(socket.request.headers.cookie).id
-    if (active[cookie] && active[cookie] !== 'temporary') {
-        user = active[cookie]
-        username = players[user].first
-        socket.emit("playername", username)
+    console.log('a user connected', socket.id, cookie);
+    //check if player has display name
+
+    if (active[cookie]) {
+        let user = active[cookie]
+        socket.emit("startup", user)
     }
 
-    if (players[cookie]) {
-        let gameroom = players[cookie][0]
+    //resume a game
+
+    if (users[cookie]) {
+        let gameroom = users[cookie][0]
         let game = games[gameroom]
         if (cookie === game.p1cookie && !game.p1socket) {
             game.p1socket = socket.id
@@ -284,29 +317,46 @@ io.on('connection', function(socket){
         }
     }
 
-    console.log('a user connected', socket.id, cookie);
+    // check for email link -- will need to be fixed for login and Zulip
 
-    let referer = socket.request.headers.referer
-    let query = referer.substr(url.length)
-    if (query.substr(0, 5) === '?code') {
-        let code = query.substr(6)
-        start2p(code, socket)
-    }
+    // if (!socket.request.headers.referer === url) {
+    //     console.log("A game code incoming!", console.log(socket.request.headers.referer))
+    //     // let referer = socket.request.headers.referer
+    //     // let query = referer.substr(url.length)
+    //     // if (query.substr(0, 5) === '?code') {
+    //     //     let code = query.substr(6)
+    //     //     start2p(code, socket)
+    //     // }
+    // } else {
+    //     console.log("Normal load up!", socket.request.headers.referer)
+    // }
 
-    socket.on('1pgame', function(msg){
-        gameroom = uniqid()
-        newPlayer(gameroom, socket, false)
-        nameAIPlayer(gameroom, socket)
+
+
+    socket.on('start1p', function(msg){
+        let gameroom = shortid.generate()
+        // gameroom = shortid.generate()
+        // newPlayer(gameroom, socket, false)
+        // nameAIPlayer(gameroom, socket, username)
     })
 
-    socket.on('2pgame', function(msg){
-        gameroom = uniqid()
+    socket.on('start2p', function(msg){
+        let gameroom = shortid.generate()
+        gameroom = shortid.generate()
         newPlayer(gameroom, socket, true)
         socket.emit('gamecode', gameroom)
     })
 
+    socket.on('join1p', function(msg){
+        if (games[msg].p1socket) {
+            start2p(msg, socket)
+        }
+    })
+
+
     socket.on('sendcode', function(msg){
         let link = `http://localhost:8000/?code=${msg.gameroom}`
+        //let link = `http://fox-forest.alasdairwilkins.com/?code=${msg.gameroom}`
         let transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
@@ -330,19 +380,9 @@ io.on('connection', function(socket){
                 return console.log(error);
             }
             console.log('Message sent: %s', info.messageId);
-            // Preview only available when sending through an Ethereal account
             console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
 
-            // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-            // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
         });
-    })
-
-    socket.on('startgame', function(msg){
-        if (games[msg].p1socket) {
-            start2p(msg, socket)
-        }
-
     })
 
     socket.on('turncompleted', function(msg){
@@ -414,9 +454,9 @@ io.on('connection', function(socket){
     })
 
     socket.on('disconnect', function(){
-        if (players[cookie]) {
-            for (let i = 0; i < players[cookie].length; i++) {
-                let game = games[players[cookie][i]]
+        if (users[cookie]) {
+            for (let i = 0; i < users[cookie].length; i++) {
+                let game = games[users[cookie][i]]
                 if (socket.id === game['p1socket']) {
                     game['p1socket'] = null
                 } else {
@@ -468,10 +508,10 @@ function newPlayer(gameroom, socket, choice) {
             games[gameroom].p2cookie = 'computer'
         }
     }
-    if (!players[newcookie]) {
-        players[newcookie] = [gameroom]
+    if (!users[newcookie]) {
+        users[newcookie] = [gameroom]
     } else {
-        players[newcookie].push(gameroom)
+        users[newcookie].push(gameroom)
     }
     socket.join(gameroom)
 
@@ -501,11 +541,14 @@ function parseCookie(cookie) {
 }
 
 function findPlayer(response) {
-    for (let player in players) {
-        if (players[player].recurse === response.id)
-            return player
+    for (let user in users) {
+        if (users[user].recurse === response.id)
+            return user
     }
-    let player = uniqid()
-    players[player] = {'recurse': response.id, 'first': response.first_name, 'last': response.last_name, 'email': response.email}
-    return player
+    let user = shortid.generate()
+    users[user] = {'recurse': response.id, 'first': response.first_name, 'last': response.last_name, 'email': response.email}
+    return {
+        id: user,
+        name: response.first_name
+    }
 }

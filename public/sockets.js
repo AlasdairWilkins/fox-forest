@@ -1,3 +1,8 @@
+socket.on('startup', function(msg) {
+    client = new Client(msg)
+    display.buildDisplayPlayer(client.name)
+})
+
 
 socket.on('gamecode', function(msg) {
     gameroom = msg
@@ -5,14 +10,6 @@ socket.on('gamecode', function(msg) {
     document.getElementById("twoplayer").style.display = "none";
     document.getElementById("createcode").style.display = "block";
     document.getElementById("email").style.display = "block"
-})
-//
-// socket.on('startup')
-//
-// socket.on('gamebeginning')
-
-socket.on('playername', function(msg) {
-    display.buildDisplayPlayer(msg)
 })
 
 socket.on('startupinfo', function(msg) {
@@ -70,21 +67,4 @@ socket.on('roundresults', function(msg) {
     } else {
         round.end()
     }
-})
-
-
-$('#email').on('submit', function(submit) {
-    submit.preventDefault()
-    let email = document.getElementById('emailentry').value
-    socket.emit('sendcode', {'gameroom': gameroom, 'email': email})
-    display.buildEmailSent(email)
-    document.getElementById('createcode').style.display = 'none'
-    document.getElementById('emailsent').style.display = 'block'
-
-})
-
-$('#entercode').on('submit', function(submit) {
-    submit.preventDefault()
-    let code = document.getElementById('codeentry').value
-    socket.emit('startgame', code)
 })

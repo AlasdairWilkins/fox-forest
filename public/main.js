@@ -1,7 +1,9 @@
+function Client(info) {
+    this.name = info.name
+}
 
-
-function clickedAI() {
-    socket.emit('1pgame', "I'd like to start a game.")
+Client.prototype.clickedAI = function() {
+    socket.emit('start1p', "I'd like to start a game.")
     // player1 = new Player("Alasdair", socket.id);
     // let name = $.post("/computername", null, function (data, status) {
     //     player2 = new Player(data.name);
@@ -20,18 +22,18 @@ function clickedAI() {
     // })
 }
 
-
-
-function clicked2P() {
+Client.prototype.clicked2P = function() {
     document.getElementById("playerstartup").style.display = "none";
     document.getElementById("twoplayer").style.display = "block";
 }
 
-function clickedNew() {
+Client.prototype.clickedNew = function() {
     console.log('Got here!')
-    socket.emit('2pgame', "I'd like to start a game.")
+    socket.emit('start2p', "I'd like to start a game.")
 }
 
+
+let client = null
 let player1 = null;
 let player2 = null;
 let game = null;

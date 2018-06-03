@@ -154,7 +154,7 @@ Player.prototype.doWoodcutterHuman = function (card) {
     }
     this.resetCards()
     if (game.twoplayer) {
-        $.post("http://localhost:8000/woodcutterdraw", null, function (data, status) {
+        $.post("/woodcutterdraw", null, function (data, status) {
             let card = data['newcard']
             game.displayplayer.insertWoodcutter(card)
         })
