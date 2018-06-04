@@ -71,3 +71,41 @@ function findPlayer(response) {
         name: response.first_name
     }
 }
+
+// State.prototype.update = function () {
+//     trick.winner.wonLast = true
+//     trick.loser.wonLast = false
+//     if (trick.hasSwan) {
+//         trick = new Trick(trick.loser, trick.winner)
+//     } else {
+//         trick = new Trick(trick.winner, trick.loser)
+//     }
+//     this.turn = trick.leadplayer.id
+// }
+
+// player1 = new Player("Alasdair", socket.id);
+// let name = $.post("/computername", null, function (data, status) {
+//     player2 = new Player(data.name);
+//     game = new Game(true, player1, player2);
+//     display.buildGame()
+//     // document.getElementById("chat-dropdown").style.display = "block";
+//     game.setEventListeners()
+//     display.buildDisplayInfo();
+//     round = new Round(player1, player2)
+//     round.start();
+//     if (document.getElementById('leader-checkBox').checked) {
+//         display.buildResults("trick-leader", "lead the", trick.leadplayer)
+//     } else {
+//         trick.start()
+//     }
+// })
+
+// Round.prototype.start = function () {
+//     // this.createDeck()
+//     // this.shuffleDeck()
+//     // this.receiveplayer.createHand(round.deck)
+//     // this.dealplayer.createHand(round.deck)
+//     // this.setDecree()
+//     let state = new State(player1, player2, round, game)
+//     return state
+// }

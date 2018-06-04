@@ -1,25 +1,24 @@
-function Client(info) {
-    this.name = info.name
+function Client() {
+    this.cookie = this.parseCookie(document.cookie).id
+    this.active = null
+    this.games = {}
+}
+
+Client.prototype.parseCookie = function(cookie) {
+    cookie = cookie.split("; ").join(";")
+    cookie = cookie.split(" =").join("=")
+    cookie = cookie.split(";")
+
+    let object = {}
+    for (let i = 0; i < cookie.length; i++) {
+        cookie[i] = cookie[i].split("=");
+        object[cookie[i][0]] = decodeURIComponent(cookie[i][1])
+    }
+    return object
 }
 
 Client.prototype.clickedAI = function() {
     socket.emit('start1p')
-    // player1 = new Player("Alasdair", socket.id);
-    // let name = $.post("/computername", null, function (data, status) {
-    //     player2 = new Player(data.name);
-    //     game = new Game(true, player1, player2);
-    //     display.buildGame()
-    //     // document.getElementById("chat-dropdown").style.display = "block";
-    //     game.setEventListeners()
-    //     display.buildDisplayInfo();
-    //     round = new Round(player1, player2)
-    //     round.start();
-    //     if (document.getElementById('leader-checkBox').checked) {
-    //         display.buildResults("trick-leader", "lead the", trick.leadplayer)
-    //     } else {
-    //         trick.start()
-    //     }
-    // })
 }
 
 Client.prototype.clicked2P = function() {
@@ -32,15 +31,26 @@ Client.prototype.clickedNew = function() {
     socket.emit('start2p', "I'd like to start a game.")
 }
 
+// Client.prototype.start = function(game) {
+//     prepare(state, twoplayer)
+//     game.start(state, twoplayer)
+// }
 
-let client = null
+
+const client = new Client()
+const games = client.games
+// const game = client.active
+// const round = game.round
+// const trick = round.trick
+
 let player1 = null;
 let player2 = null;
-let game = null;
+// let game = null;
 let state = null;
-let round = null;
-let trick = null;
+// let round = null;
+// let trick = null;
 let gameroom = null
+
 const suits = ['Bells', 'Keys', 'Moons']
 const stylesheet = document.documentElement.style
 const display = new Display()

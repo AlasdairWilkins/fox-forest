@@ -1,8 +1,8 @@
-function Round(dealplayer, receiveplayer, choice, state) {
-    this.decree = null
-    this.deck = choice ? [] : state.deck
-    this.dealplayer = dealplayer;
-    this.receiveplayer = receiveplayer
+function Round(round) {
+    this.decree = round.decree
+    this.dealplayer = round.dealplayer;
+    this.receiveplayer = round.receiveplayer
+    this.trick = new Trick(round.trick)
 }
 
 Round.prototype.createDeck = function () {
@@ -33,12 +33,12 @@ Round.prototype.setDecree = function () {
 };
 
 Round.prototype.start = function () {
-    round.createDeck();
-    round.shuffleDeck();
+    this.createDeck();
+    this.shuffleDeck();
     player1.createHand(round.deck);
     player2.createHand(round.deck);
-    round.setDecree();
-    trick = new Trick(round.receiveplayer, round.dealplayer)
+    this.setDecree();
+    trick = new Trick(this.receiveplayer, this.dealplayer)
 };
 
 Round.prototype.end = function() {
@@ -47,14 +47,14 @@ Round.prototype.end = function() {
             socket.emit('roundstartup')
         }
     } else {
-        round.reset()
+        this.reset()
     }
 }
 
 Round.prototype.reset = function () {
     display.buildDisplayInfo();
-    round = new Round(round.receiveplayer, round.dealplayer)
-    round.start();
+    // this = new Round(this.receiveplayer, this.dealplayer)
+    // this.start();
     display.buildTrick();
     display.buildListActive();
 };

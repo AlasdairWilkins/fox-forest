@@ -1,11 +1,11 @@
-function Trick(leadplayer, followplayer) {
-    this.cards = []
-    this.leadplayer = leadplayer
-    this.followplayer = followplayer
-    this.witchReset = false;
-    this.hasSwan = false;
-    this.winner = null
-    this.loser = null
+function Trick(trick) {
+    this.cards = trick.cards
+    this.leadplayer = trick.leadplayer
+    this.followplayer = trick.followplayer
+    this.witchReset = trick.witchReset;
+    this.hasSwan = trick.hasSwan;
+    this.winner = trick.winner
+    this.loser = trick.loser
 }
 
 Trick.prototype.doWitch = function () {

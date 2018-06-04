@@ -54,29 +54,14 @@ let scores = null
 
 const suits = ['Bells', 'Keys', 'Moons']
 
-function Game(choice, p1cookie, p1socket, p2cookie, p2socket) {
-
+function Game(choice, id, p1cookie, p1socket, p2cookie, p2socket) {
     this.twoplayer = choice
+    this.id = id
     this.deck = this.createDeck()
     this.player1 = new Player(this.deck, active[p1cookie].name, active[p1cookie].id, p1cookie, p1socket)
     this.player2 = choice ? new Player(this.deck, active[p2cookie].name, active[p2cookie].id, p2cookie, p2socket) : new Player(this.deck)
     this.round = new Round(this.player1, this.player2, this.deck)
     // this.state = new State(this.player1, this.player2, this.round, this.deck)
-// }
-
-// function Game(choice, id) {
-//     this.ai = choice
-//     this.id = id
-//     //WORTH MOVING THIS OUT OF HERE INTO A CONSTANT
-//     this.swan = `Swan: If you play this and lose the trick, you lead the next trick.`;
-//     this.fox = `Fox: When you play this, you may exchange the decree card with a card from your hand.`;
-//     this.woodcutter = `Woodcutter: When you play this, draw 1 card. Then discard any 1 card to the bottom of the deck.`;
-//     this.treasure = `Treasure: The winner of the trick receives 1 point for each 7 in the trick.`;
-//     this.witch = `Witch: When determining the winner of a trick with only one 9, treat the 9 as if it were in the trump suit.`;
-//     this.monarch = `Monarch: When you lead this, if your opponent has any cards of the same suit, they must play either the 1 or their highest card from that suit.`;
-//     this.mechanics = [this.swan, this.fox, this.woodcutter, this.treasure, this.witch, this.monarch];
-//     this.gameOver = false; //game? or possibly round
-//     this.winner = ''; //game
 }
 
 Game.prototype.whoWinning = function () {
@@ -117,17 +102,6 @@ function State(player1, player2, round, deck) {
     this.turn = round.receiveplayer.id
 }
 
-// State.prototype.update = function () {
-//     trick.winner.wonLast = true
-//     trick.loser.wonLast = false
-//     if (trick.hasSwan) {
-//         trick = new Trick(trick.loser, trick.winner)
-//     } else {
-//         trick = new Trick(trick.winner, trick.loser)
-//     }
-//     this.turn = trick.leadplayer.id
-// }
-
 function Round(dealplayer, receiveplayer, deck) {
     this.decree = this.setDecree(deck)
     this.dealplayer = dealplayer;
@@ -164,16 +138,6 @@ Round.prototype.setDecree = function (deck) {
     let decree = deck.pop();
     return decree
 };
-
-// Round.prototype.start = function () {
-//     // this.createDeck()
-//     // this.shuffleDeck()
-//     // this.receiveplayer.createHand(round.deck)
-//     // this.dealplayer.createHand(round.deck)
-//     // this.setDecree()
-//     let state = new State(player1, player2, round, game)
-//     return state
-// }
 
 app.use(express.static('public'))
 app.use(cookieParser())
@@ -312,8 +276,7 @@ io.on('connection', function(socket){
     if (active[cookie]) {
         let user = active[cookie]
         user.socket = socket.id
-        console.log(user)
-        socket.emit("startup", user)
+        socket.emit('startup', active[cookie])
     }
 
     //resume a game
@@ -356,7 +319,7 @@ io.on('connection', function(socket){
         let cookie = server.parseCookie(socket.request.headers.cookie).id
         let gameroom = shortid.generate()
         socket.join(gameroom)
-        games[gameroom] = new Game(false, cookie, socket.id)
+        games[gameroom] = new Game(false, gameroom, cookie, socket.id)
         active[cookie].games[gameroom] = games[gameroom]
         io.to(gameroom).emit('startupinfo', games[gameroom])
     })
@@ -375,7 +338,7 @@ io.on('connection', function(socket){
             let p1socket = active[p1cookie].socket
             let p2cookie = server.parseCookie(socket.request.headers.cookie).id
             let p2socket = socket.id
-            games[gameroom] = new Game(true, p1cookie, p1socket, p2cookie, p2socket)
+            games[gameroom] = new Game(true, gameroom, p1cookie, p1socket, p2cookie, p2socket)
             active[p1cookie].games[gameroom] = games[gameroom]
             active[p2cookie].games[gameroom] = games[gameroom]
             socket.join(gameroom)

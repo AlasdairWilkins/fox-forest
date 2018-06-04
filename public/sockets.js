@@ -1,20 +1,24 @@
-socket.on('startup', function(msg) {
-    client = new Client(msg)
+socket.on('startup', function(userinfo) {
+    client.name = userinfo.name
+    client.id = userinfo.id
+    console.log(client)
     display.buildDisplayPlayer(client.name)
 })
 
 
 socket.on('gamecode', function(msg) {
-    gameroom = msg
+    console.log(msg)
     display.buildGameCode(msg)
     document.getElementById("twoplayer").style.display = "none";
     document.getElementById("createcode").style.display = "block";
     document.getElementById("email").style.display = "block"
 })
 
-socket.on('startupinfo', function(msg) {
-    console.log(msg)
-    start(msg.state, msg.twoplayer)
+socket.on('startupinfo', function(gameinfo) {
+    console.log(gameinfo)
+    client.active = new Game(gameinfo)
+    console.log(client.active)
+    client.active.start()
 })
 
 socket.on('resumegame', function(msg) {

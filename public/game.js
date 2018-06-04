@@ -1,15 +1,12 @@
-function Game(choice, id, displayplayer, remoteplayer) {
-    this.twoplayer = choice;
-    this.id = id
-    this.displayplayer = displayplayer
-    this.remoteplayer = remoteplayer
-    // this.results = {
-    //     lead: "",
-    //     follow: "",
-    //     winner: ""
-    // };
-    this.gameOver = false; //game? or possibly round
-    this.winner = ''; //game
+function Game(game) {
+    this.twoplayer = game.twoplayer;
+    this.id = game.id
+    this.deck = this.twoplayer ? null : game.deck
+    this.displayplayer = game.player1.cookie === client.cookie ? new Player(game.player1) : new Player(game.player2)
+    this.remoteplayer = game.player1.cookie === client.cookie ? new Player(game.player2) : new Player(game.player1)
+    this.round = new Round(game.round)
+    // this.gameOver = false; //game? or possibly round
+    // this.winner = ''; //game
 }
 
 Game.prototype.resetPlayers = function () {
@@ -23,21 +20,9 @@ Game.prototype.resetPlayers = function () {
 };
 
 Game.prototype.start = function (state) {
-    player1.tricks = []
-    player2.tricks = []
-    round.decree = state.decree;
-    if (game.twoplayer) {
-        if (game.displayplayer.id === player1.id) {
-            game.displayplayer.hand = state.player1.hand;
-        } else {
-            game.displayplayer.hand = state.player2.hand;
-        }
-    } else {
-        player1.hand = state.player1.hand
-        player2.hand = state.player2.hand
-    }
-
-    trick = new Trick(round.receiveplayer, round.dealplayer)
+    display.buildGame()
+    game.setEventListeners()
+    display.build()
 }
 
 Game.prototype.resume = function (state) {
@@ -62,23 +47,4 @@ Game.prototype.resume = function (state) {
     } else {
         trick = new Trick(game.displayplayer, game.remoteplayer)
     }
-}
-
-Game.prototype.setEventListeners = function() {
-
-    document.getElementById("trick-leader").addEventListener("animationend", function () {
-        document.getElementById("trick-leader").style.display = "none";
-        trick.start()
-    })
-
-    document.getElementById("trick-winner").addEventListener("animationend", function () {
-        document.getElementById("trick-winner").style.display = "none";
-        trick.end()
-    })
-
-    document.getElementById("round-winner").addEventListener("animationend", function () {
-        document.getElementById("round-winner").style.display = "none"
-        round.end()
-    })
-
 }

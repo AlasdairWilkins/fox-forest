@@ -1,13 +1,15 @@
 //client-side file
 
-function Player(name, id) {
-    this.name = name;
-    this.id = id;
-    this.hand = [];
-    this.tricks = [];
-    this.score = 0;
-    this.treasure = 0;
-    this.roundResult = '';
+function Player(player) {
+    this.name = player.name;
+    this.id = player.id;
+    this.cookie = player.cookie
+    this.socket = player.socket
+    this.hand = player.hand;
+    this.tricks = player.tricks;
+    this.score = player.score
+    this.treasure = player.treasure;
+    // this.roundResult = '';
 }
 
 Player.prototype.setListStyle = function (counttemp, ztemp, cardtemp) {
