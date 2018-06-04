@@ -2,9 +2,9 @@
 
 function Player(deck, name, id, cookie, socket) {
     this.name = name ? name : names[Math.floor(Math.random() * names.length)];
-    this.id = id ? id : 'computer';
+    this.id = cookie ? id : 'computer';
     this.cookie = cookie ? cookie : null;
-    this.socket = socket ? socket : null;
+    this.socket = cookie ? socket : null;
     this.hand = this.createHand(deck)
     this.tricks = [];
     this.score = 0;

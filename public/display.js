@@ -85,7 +85,15 @@ function Display() {
         //     document.getElementById("remote-score").innerHTML = game.remoteplayer.score
     }
 
-    this.buildGame = function () {
+    this.buildGame = function() {
+        display.showGame()
+        display.buildDecree();
+        display.buildListDeal();
+        display.buildDisplayInfo();
+        display.buildTrick()
+    }
+
+    this.showGame = function () {
         document.getElementById("players-info").classList.remove("setup");
         document.getElementById("display-container").style.display = "contents";
         document.getElementById("remote-info").style.display = "block";
@@ -220,22 +228,6 @@ function Display() {
         }).join("")
         document.getElementById("hand").innerHTML = handarray
     };
-
-    this.build = function() {
-        display.buildDecree();
-        display.buildListDeal();
-        display.buildDisplayInfo();
-        display.buildTrick()
-        if (trick.cards.length === 0) {
-            if (document.getElementById('leader-checkBox').checked) {
-                display.buildResults("trick-leader", "lead the", trick.leadplayer)
-            } else {
-                trick.start()
-            }
-        } else {
-            trick.resume()
-        }
-    }
 
     this.showDropdown = function(element) {
         document.getElementById(element).classList.toggle("show")

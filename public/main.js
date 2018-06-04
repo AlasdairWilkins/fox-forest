@@ -4,6 +4,17 @@ function Client() {
     this.games = {}
 }
 
+Client.prototype.start = function(gameinfo) {
+    this.active = new Game(gameinfo)
+    game = this.active
+    round = game.round
+    trick = round.trick
+    player1 = gameinfo.player1.cookie === client.cookie ? game.displayplayer : game.remoteplayer
+    player2 = gameinfo.player1.cookie === client.cookie ? game.remoteplayer : game.displayplayer
+    console.log(game, round, trick, player1, player2)
+    game.start()
+}
+
 Client.prototype.parseCookie = function(cookie) {
     cookie = cookie.split("; ").join(";")
     cookie = cookie.split(" =").join("=")
@@ -39,17 +50,14 @@ Client.prototype.clickedNew = function() {
 
 const client = new Client()
 const games = client.games
-// const game = client.active
-// const round = game.round
-// const trick = round.trick
+let game
+let round
+let trick
+let player1
+let player2
 
-let player1 = null;
-let player2 = null;
-// let game = null;
-let state = null;
-// let round = null;
-// let trick = null;
-let gameroom = null
+// let state = null;
+// let gameroom = null
 
 const suits = ['Bells', 'Keys', 'Moons']
 const stylesheet = document.documentElement.style

@@ -15,10 +15,7 @@ socket.on('gamecode', function(msg) {
 })
 
 socket.on('startupinfo', function(gameinfo) {
-    console.log(gameinfo)
-    client.active = new Game(gameinfo)
-    console.log(client.active)
-    client.active.start()
+    client.start(gameinfo)
 })
 
 socket.on('resumegame', function(msg) {

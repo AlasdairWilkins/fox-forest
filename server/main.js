@@ -61,6 +61,7 @@ function Game(choice, id, p1cookie, p1socket, p2cookie, p2socket) {
     this.player1 = new Player(this.deck, active[p1cookie].name, active[p1cookie].id, p1cookie, p1socket)
     this.player2 = choice ? new Player(this.deck, active[p2cookie].name, active[p2cookie].id, p2cookie, p2socket) : new Player(this.deck)
     this.round = new Round(this.player1, this.player2, this.deck)
+    this.turn = this.round.trick.leadplayer.id
     // this.state = new State(this.player1, this.player2, this.round, this.deck)
 }
 
@@ -91,19 +92,34 @@ Game.prototype.whoWinning = function () {
 
 };
 
-function State(player1, player2, round, deck) {
-    this.player1 = player1
-    this.player2 = player2
-    // this.id = game.id
-    this.deal = round.dealplayer.id
-    this.decree = round.decree
-    this.deck = deck
-    this.trick = []
-    this.turn = round.receiveplayer.id
+// function State(player1, player2, round, deck) {
+//     this.player1 = player1
+//     this.player2 = player2
+//     // this.id = game.id
+//     this.deal = round.dealplayer.id
+//     this.decree = round.decree
+//     this.deck = deck
+//     this.trick = []
+//     this.turn = round.receiveplayer.id
+// }
+
+Game.prototype.update = function(state) {
+    console.log("State:", state)
+    console.log("Game:", this)
+    let round = this.round
+    let trick = round.trick
+    round.deal = state.deal
+    this.deck = state.deck
+    round.deck = state.deck
+    round.decree = state.decree
+    this.player1 = state.player1
+    this.player2 = state.player2
+    trick.cards = state.trick
 }
 
 function Round(dealplayer, receiveplayer, deck) {
     this.decree = this.setDecree(deck)
+    this.deal = dealplayer.id
     this.dealplayer = dealplayer;
     this.receiveplayer = receiveplayer
     this.trick = new Trick(this.receiveplayer, this.dealplayer)
@@ -380,26 +396,22 @@ io.on('connection', function(socket){
         });
     })
 
-    socket.on('turncompleted', function(msg){
-        trick.leadplayer.hand = msg.hand
-        if (state.decree !== msg.decree) {
-            state.decree = msg.decree
-        }
-        state.trick = msg.trick
-        if (msg.turn === state.player1.id) {
+    socket.on('turncompleted', function(state){
+        let game = games[state.id]
+        game.update(state)
+        if (state.turn === state.player1.id) {
             state.turn = state.player2.id
+            game.turn = state.player2.id
         } else {
             state.turn = state.player1.id
+            game.turn = state.player1.id
         }
-        socket.to(gameroom).emit('turninfo', msg)
+        socket.to(gameroom).emit('turninfo', state)
     })
 
-    socket.on('trickcompleted', function(msg) {
-        state.decree = msg.decree
-        state.trick = msg.trick
-        trick.followplayer.hand = msg.hand
-        state.turn = msg.turn
-        trick.cards = msg.trick
+    socket.on('trickcompleted', function(state) {
+        let game = games[state.id]
+        game.update(state)
         // if (state.turn === player1.id) {
         //     game.leadplayer = player2
         //     game.followplayer = player1
@@ -407,8 +419,7 @@ io.on('connection', function(socket){
         //     game.leadplayer = player1
         //     game.followplayer = player2
         // }
-        trick.score(state)
-        state.update()
+        game.round.trick.score(state)
         io.in(gameroom).emit('trickresults', state)
     })
 
@@ -424,9 +435,9 @@ io.on('connection', function(socket){
         io.in(gameroom).emit('roundresults', scores)
     })
 
-    socket.on('updatestate', function (msg) {
-        let game = games[msg.id]
-        game.state = msg
+    socket.on('updatestate', function (state) {
+        let game = games[state.id]
+        game.update(state)
     })
 
     //FIX THIS!!!!! ------>>>>>

@@ -4,7 +4,7 @@ function Game(game) {
     this.deck = this.twoplayer ? null : game.deck
     this.displayplayer = game.player1.cookie === client.cookie ? new Player(game.player1) : new Player(game.player2)
     this.remoteplayer = game.player1.cookie === client.cookie ? new Player(game.player2) : new Player(game.player1)
-    this.round = new Round(game.round)
+    this.round = new Round(game.round, this)
     // this.gameOver = false; //game? or possibly round
     // this.winner = ''; //game
 }
@@ -21,8 +21,17 @@ Game.prototype.resetPlayers = function () {
 
 Game.prototype.start = function (state) {
     display.buildGame()
-    game.setEventListeners()
-    display.build()
+    // game.setEventListeners()
+    // display.build()
+    if (trick.cards.length === 0) {
+        if (document.getElementById('leader-checkBox').checked) {
+            display.buildResults("trick-leader", "lead the", trick.leadplayer)
+        } else {
+            trick.start()
+        }
+    } else {
+        trick.resume()
+    }
 }
 
 Game.prototype.resume = function (state) {

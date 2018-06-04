@@ -1,11 +1,21 @@
-function Trick(trick) {
-    this.cards = trick.cards
-    this.leadplayer = trick.leadplayer
-    this.followplayer = trick.followplayer
-    this.witchReset = trick.witchReset;
-    this.hasSwan = trick.hasSwan;
-    this.winner = trick.winner
-    this.loser = trick.loser
+function Trick(trick, game, clientside) {
+    if (game) {
+        this.cards = trick.cards
+        this.leadplayer = game.displayplayer.id === trick.leadplayer.id ? game.displayplayer : game.remoteplayer
+        this.followplayer = game.displayplayer.id === trick.leadplayer.id ? game.remoteplayer : game.displayplayer
+        this.witchReset = trick.witchReset;
+        this.hasSwan = trick.hasSwan;
+        this.winner = trick.winner
+        this.loser = trick.loser
+    } else {
+        this.cards = []
+        this.leadplayer = trick.hasSwan ? trick.loser : trick.winner
+        this.followplayer = trick.hasSwan ? trick.winner : trick.loser
+        this.witchReset = false
+        this.hasSwan = false
+        this.winner = null
+        this.loser = null
+    }
 }
 
 Trick.prototype.doWitch = function () {
@@ -174,11 +184,7 @@ Trick.prototype.end = function() {
 
             }
         }
-        if (trick.hasSwan) {
-            trick = new Trick(trick.loser, trick.winner)
-        } else {
-            trick = new Trick(trick.winner, trick.loser)
-        }
+        trick = new Trick(trick, false)
         display.buildTrick()
         if (document.getElementById('leader-checkBox').checked) {
             display.buildResults("trick-leader", "lead the", trick.leadplayer)

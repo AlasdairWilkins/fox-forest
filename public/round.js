@@ -1,8 +1,10 @@
-function Round(round) {
+function Round(round, game) {
     this.decree = round.decree
-    this.dealplayer = round.dealplayer;
-    this.receiveplayer = round.receiveplayer
-    this.trick = new Trick(round.trick)
+    this.deck = game.deck
+    this.deal = round.deal
+    this.dealplayer = game.displayplayer.id === round.dealplayer.id ? game.displayplayer : game.remoteplayer
+    this.receiveplayer = game.displayplayer.id === round.dealplayer.id ? game.remoteplayer : game.displayplayer
+    this.trick = new Trick(round.trick, game)
 }
 
 Round.prototype.createDeck = function () {
