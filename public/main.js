@@ -3,7 +3,7 @@ function Client(info) {
 }
 
 Client.prototype.clickedAI = function() {
-    socket.emit('start1p', "I'd like to start a game.")
+    socket.emit('start1p')
     // player1 = new Player("Alasdair", socket.id);
     // let name = $.post("/computername", null, function (data, status) {
     //     player2 = new Player(data.name);

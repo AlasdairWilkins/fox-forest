@@ -13,7 +13,8 @@ socket.on('gamecode', function(msg) {
 })
 
 socket.on('startupinfo', function(msg) {
-        start(msg.state, msg.twoplayer)
+    console.log(msg)
+    start(msg.state, msg.twoplayer)
 })
 
 socket.on('resumegame', function(msg) {

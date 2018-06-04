@@ -353,5 +353,5 @@ $('#email').on('submit', function(submit) {
 $('#entercode').on('submit', function(submit) {
     submit.preventDefault()
     let code = document.getElementById('codeentry').value
-    socket.emit('startgame', code)
+    socket.emit('join2p', code)
 })
