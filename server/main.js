@@ -51,13 +51,14 @@ const authorizationUri = oauth2.authorizationCode.authorizeURL({
     // redirect_uri: 'http://fox-forest.alasdairwilkins.com/login',
 });
 
-let player1 = null
-let player2 = null
-let round = null
-let trick = null
-let gameroom = null
-let state = null
-let scores = null
+function Results (game, round, trick) {
+    if (trick) {
+        this.player1 = game.player1
+        this.player2 = game.player2
+        this.decree = round.decree
+        this.trick = trick
+    }
+}
 
 http.listen(8000, function() {
     console.log('Example app listening on port 8000!');
@@ -160,6 +161,7 @@ io.on('connection', function(socket){
         socket.emit('startup', user)
 
         if (user.current) {
+            console.log(user.current)
             let gameroom = user.current
             let game = games[gameroom]
             if (cookie === game.player1.cookie && !game.player1.socket) {
@@ -217,8 +219,9 @@ io.on('connection', function(socket){
             games[gameroom] = new Game(true, gameroom, p1cookie, p1socket, p2cookie, p2socket)
             active[p1cookie].games[gameroom] = games[gameroom]
             active[p2cookie].games[gameroom] = games[gameroom]
+            active[p1cookie].current = gameroom
+            active[p2cookie].current = gameroom
             socket.join(gameroom)
-            console.log("The gameroom is", gameroom)
             io.to(gameroom).emit('startupinfo', games[gameroom])
         } else {
             console.log("That game code doesn't exist!")
@@ -266,29 +269,31 @@ io.on('connection', function(socket){
         let gameroom = state.id
         let game = games[gameroom]
         game.update(state)
-        if (state.turn === state.player1.id) {
-            state.turn = state.player2.id
-            game.turn = state.player2.id
+        if (state.turn === game.player1.id) {
+            state.turn = game.player2.id
+            game.turn = game.player2.id
         } else {
-            state.turn = state.player1.id
-            game.turn = state.player1.id
+            state.turn = game.player1.id
+            game.turn = game.player1.id
         }
-        console.log("And here we go!", gameroom)
         socket.to(gameroom).emit('turninfo', state)
     })
 
     socket.on('trickcompleted', function(state) {
         let gameroom = state.id
         let game = games[gameroom]
-        let trick = game.round.trick
+        let round = game.round
+        let trick = round.trick
         game.update(state)
         trick.score(state)
-        !trick.hasSwan ? trick = new Trick(trick.winner, trick.loser) : trick = new Trick(trick.loser, trick.winner)
-        state.trick = trick
-        io.in(gameroom).emit('trickresults', state)
+        let results = new Results(game, round, trick)
+        console.log(results)
+        io.in(gameroom).emit('trickresults', results)
+        console.log("And now!", trick.hasSwan, !trick.hasSwan)
+        trick.hasSwan ? game.round.trick = new Trick(trick.loser, trick.winner) : game.round.trick = new Trick(trick.winner, trick.loser)
+        console.log("First:", trick)
+        console.log("Second:", game.round.trick)
     })
-
-    //FIX THIS!!!!! ------>>>>>
 
     socket.on('roundcompleted', function() {
         player1.getScores()
@@ -321,10 +326,8 @@ io.on('connection', function(socket){
 
     socket.on('disconnect', function(){
         if (active[cookie]) {
-
             if (active[cookie].current) {
                 let game = games[active[cookie].current]
-                console.log("Cookie:", cookie, "P1 Cookie:", game.player1.cookie, "P2 Cookie:", game.player2.cookie)
                 if (game.player1.cookie === cookie) {
                     game.player1.socket = null
                 }

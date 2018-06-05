@@ -185,7 +185,8 @@ Player.prototype.clicked = function(card) {
 
 Player.prototype.finishTurn = function (card) {
     if (game.twoplayer) {
-        let state = new State(player1, player2, trick, round, game)
+        let state = new State(game.displayplayer, trick, round, game)
+        console.log("State:", state)
         if (trick.cards.length === 2) {
             socket.emit('trickcompleted', state)
         } else {
@@ -281,25 +282,22 @@ Player.prototype.hasSuit = function () {
     return false
 };
 
-Player.prototype.receiveScores = function (state) {
-    if (round.decree !== state.decree) {
-        round.decree = state.decree;
+Player.prototype.receiveScores = function (results) {
+    if (round.decree !== results.decree) {
+        round.decree = results.decree;
         display.buildDecree();
     }
-
-    trick.cards = state.trick;
-    player1.tricks = state.player1.tricks
-    player2.tricks = state.player2.tricks
-    if (player1.score !== state.player1.score || player2.score !== state.player2.score) {
-        player1.score = state.player1.score
-        player2.score = state.player2.score
+    player1.tricks = results.player1.tricks
+    player2.tricks = results.player2.tricks
+    if (player1.score !== results.player1.score || player2.score !== results.player2.score) {
+        player1.score = results.player1.score
+        player2.score = results.player2.score
         display.buildDisplayInfo()
     }
-    if (state.player1.wonLast) {
-        trick.winner = player1
-    } else {
-        trick.winner = player2
-    }
+    trick.cards = results.trick.cards
+    trick.winner = results.trick.winner
+    trick.loser = results.trick.loser
+    trick.hasSwan = results.trick.hasSwan
     display.buildTrick()
     trick.results()
 }

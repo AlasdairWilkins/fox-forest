@@ -6,35 +6,18 @@
     <link rel="stylesheet" type="text/css" href="/main.css">
     <script type="application/javascript" src="/jquery-3.3.1.js" ></script>
     <script type="application/javascript" src="/turn.js" ></script>
+    <script type="application/javascript" src="/display.js" defer></script>
     <script type="application/javascript" src="/trick.js" defer></script>
     <script type="application/javascript" src="/round.js" defer></script>
     <script type="application/javascript" src="/game.js" defer></script>
     <script type="application/javascript" src="/card.js" defer></script>
     <script type="application/javascript" src="/player.js" defer></script>
-    <script type="application/javascript" src="/display.js" defer></script>
-    <!--<script type="application/javascript" src="/sockets.js" defer></script>-->
-    <script type="application/javascript" src="/manage.js" defer></script>
+    <script type="application/javascript" src="/state.js" defer></script>
+    <script type="application/javascript" src="/client.js" defer></script>
     <script type="application/javascript" src="/main.js" defer></script>
 </head>
 <body>
 <div class="setup" id="players-info">
-    <!--<div id="display-container">-->
-        <!--<div class="dropdown bars" id="user-dropdown">-->
-            <!--<div class="bars" id="bar1"></div>-->
-            <!--<div class="bars" id="bar2"></div>-->
-            <!--<div class="bars" id="bar3"></div>-->
-            <!--<div class="dropdown-content" id="user-dropdown-content">-->
-                <!--<div onclick="display.showModal('settings-modal')"><p>User Settings</p></div>-->
-                <!--<div onclick="alert('Under construction!'")><p>Log Out</p></div>-->
-            <!--</div>-->
-        <!--</div>-->
-        <!--<div id="player-name"></div>-->
-        <!--<div id="display-info">-->
-            <!--<span id="display-name"></span> | Tricks: <span id="display-tricks"></span> | Score: <span id="display-score"></span>-->
-        <!--</div>-->
-    <!--</div>-->
-
-    <!--<div id="reference-menu">-->
     <div class="reference" id="scoring-reference">
         <div class="dropdown" id="scoring-dropdown" onclick="display.showDropdown('scoring-dropdown-content')">Scoring Reference</div>
         <div class="dropdown-content" id="scoring-dropdown-content">
@@ -100,18 +83,6 @@
             <p><strong>1. Swan:</strong> If you play this and lose the trick, you lead the next trick.</p>
         </div>
     </div>
-    <!--</div>-->
-    <!--<div id="remote-container">-->
-    <!--<div class="dropdown bars" id="chat-dropdown">-->
-    <!--<div class="bars" id="bar4"></div>-->
-    <!--<div class="bars" id="bar5"></div>-->
-    <!--<div class="bars" id="bar6"></div>-->
-    <!--<div class="dropdown-content" id="chat-dropdown-content">-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--<div id="remote-info">-->
-        <!--<span id="remote-name"></span> | Tricks: <span id="remote-tricks"></span> | Score: <span id="remote-score"></span>-->
-    <!--</div>-->
     <div class="modal" id="rulebook-modal">
         <div class="modal-container" id="flipbook-container">
             <div id="flipbook">
@@ -146,7 +117,6 @@
             <button onclick="display.clearModal('video-tutorial-modal')">Return to game</button>
         </div>
     </div>
-    <!--</div>-->
 </div>
 <div id="startup">
     <p>Welcome to The Fox in the Forest!</p>
@@ -155,9 +125,5 @@
         <button id="nologin" onclick="display.buildForm('username')">Continue without logging in.</button>
     </div>
 </div>
-<!--<script src="/socket.io/socket.io.js"></script>-->
-<!--<script>-->
-    <!--var socket = io();-->
-<!--</script>-->
 </body>
 </html>

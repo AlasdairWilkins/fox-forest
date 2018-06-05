@@ -43,16 +43,13 @@ Game.prototype.whoWinning = function () {
 };
 
 Game.prototype.update = function(state) {
-    console.log("State:", state)
-    console.log("Game:", this)
     let round = this.round
     let trick = round.trick
     round.deal = state.deal
     this.deck = state.deck
     round.deck = state.deck
     round.decree = state.decree
-    this.player1 = state.player1
-    this.player2 = state.player2
+    this.player1.cookie === state.player.cookie ? this.player1.hand = state.player.hand : this.player2.hand = state.player.hand
     trick.cards = state.trick
 }
 

@@ -144,7 +144,7 @@ Trick.prototype.play = function () {
 Trick.prototype.results = function() {
     display.buildDisplayInfo();
     if (document.getElementById('winner-checkBox').checked) {
-        display.buildResults("trick-winner", "won the", trick.winner)
+        display.buildResults("trick-winner", "won the", this.winner)
     } else {
         setTimeout(function() {
             trick.end()
@@ -154,13 +154,13 @@ Trick.prototype.results = function() {
 
 Trick.prototype.end = function() {
     if (game.twoplayer) {
-        trick.cards = []
-        display.buildTrick()
         if (player1.tricks.length + player2.tricks.length === 13) {
             if (trick.leadplayer.cookie === game.displayplayer.cookie) {
                 socket.emit('roundcompleted')
             }
         } else {
+            trick = new Trick(trick)
+            display.buildTrick()
             if (document.getElementById('leader-checkBox').checked) {
                 display.buildResults("trick-leader", "lead the", trick.leadplayer)
             } else {

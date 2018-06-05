@@ -1,22 +1,3 @@
-// TO-DO:
-// Properly update state for scores
-// Create new trick objects on client side
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 socket.on('startup', function(userinfo) {
     client.name = userinfo.name
     client.id = userinfo.id
@@ -54,9 +35,9 @@ socket.on('turninfo', function(state) {
     trick.play()
 })
 
-socket.on('trickresults', function(state) {
-    console.log(state)
-    game.displayplayer.receiveScores(state, 0)
+socket.on('trickresults', function(results) {
+    console.log(results)
+    game.displayplayer.receiveScores(results)
 })
 
 socket.on('announcement', function(msg) {
