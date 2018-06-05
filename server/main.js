@@ -1,6 +1,15 @@
+const Server = require("./server")
+const Game = require("./game")
+const Round = require("./round")
+const Trick = require("./trick")
 const Player = require("./player")
 const Card = require("./card")
-const Trick = require("./trick")
+
+server = new Server()
+active = server.active
+users = server.users
+games = server.games
+pending = server.pending
 
 const url = 'http://localhost:8000/'
 // const url = 'http://fox-forest.alasdairwilkins.com/'
@@ -42,8 +51,6 @@ const authorizationUri = oauth2.authorizationCode.authorizeURL({
     // redirect_uri: 'http://fox-forest.alasdairwilkins.com/login',
 });
 
-// this is such a problem, SOLVE IT!!!
-
 let player1 = null
 let player2 = null
 let round = null
@@ -52,108 +59,9 @@ let gameroom = null
 let state = null
 let scores = null
 
-const suits = ['Bells', 'Keys', 'Moons']
-
-function Game(choice, id, p1cookie, p1socket, p2cookie, p2socket) {
-    this.twoplayer = choice
-    this.id = id
-    this.deck = this.createDeck()
-    this.player1 = new Player(this.deck, active[p1cookie].name, active[p1cookie].id, p1cookie, p1socket)
-    this.player2 = choice ? new Player(this.deck, active[p2cookie].name, active[p2cookie].id, p2cookie, p2socket) : new Player(this.deck)
-    this.round = new Round(this.player1, this.player2, this.deck)
-    this.turn = this.round.trick.leadplayer.id
-    // this.state = new State(this.player1, this.player2, this.round, this.deck)
-}
-
-Game.prototype.whoWinning = function () {
-    if (player1.score > player2.score) {
-        if (player2.score === 1) {
-            game.currentWinner = `${player1.name} is winning with ${player1.score} points to ${player2.name}'s 1 point.`
-        } else {
-            game.currentWinner = `${player1.name} is winning with ${player1.score} points to ${player2.name}'s ${player2.score} points.`
-        }
-    } else if (player2.score > player1.score) {
-        if (player1.score === 1) {
-            game.currentWinner = `${player2.name} is winning with ${player2.score} points to ${player1.name}'s 1 point.`
-        } else {
-            game.currentWinner = `${player2.name} is winning with ${player2.score} points to ${player1.name}'s ${player1.score} points.`
-        }
-    } else {
-        game.currentWinner = `${player1.name} and ${player2.name} are tied with ${player1.score} points each.`
-    }
-    if (player1.score >= 21 || player2.score >= 21) {
-        game.gameOver = true;
-        if (player1.score > player2.score) {
-            game.winner = `${player1.name} wins!`
-        } else {
-            game.winner = `${player2.name} wins!`
-        }
-    }
-
-};
-
-// function State(player1, player2, round, deck) {
-//     this.player1 = player1
-//     this.player2 = player2
-//     // this.id = game.id
-//     this.deal = round.dealplayer.id
-//     this.decree = round.decree
-//     this.deck = deck
-//     this.trick = []
-//     this.turn = round.receiveplayer.id
-// }
-
-Game.prototype.update = function(state) {
-    console.log("State:", state)
-    console.log("Game:", this)
-    let round = this.round
-    let trick = round.trick
-    round.deal = state.deal
-    this.deck = state.deck
-    round.deck = state.deck
-    round.decree = state.decree
-    this.player1 = state.player1
-    this.player2 = state.player2
-    trick.cards = state.trick
-}
-
-function Round(dealplayer, receiveplayer, deck) {
-    this.decree = this.setDecree(deck)
-    this.deal = dealplayer.id
-    this.dealplayer = dealplayer;
-    this.receiveplayer = receiveplayer
-    this.trick = new Trick(this.receiveplayer, this.dealplayer)
-}
-
-Game.prototype.createDeck = function () {
-    let deck = []
-    for (let i = 0; i < suits.length; i++) {
-        for (let num = 1; num < 12; num++) {
-            let card = new Card(num, suits[i]);
-            deck.push(card);
-        }
-    }
-    this.shuffleDeck(deck)
-    return deck
-};
-
-Game.prototype.shuffleDeck = function (deck) {
-    let i = 0
-        , j = 0
-        , temp = [];
-
-    for (i = deck.length - 1; i > 0; i -= 1) {
-        j = Math.floor(Math.random() * (i + 1));
-        temp = deck[i];
-        deck[i] = deck[j];
-        deck[j] = temp
-    }
-};
-
-Round.prototype.setDecree = function (deck) {
-    let decree = deck.pop();
-    return decree
-};
+http.listen(8000, function() {
+    console.log('Example app listening on port 8000!');
+});
 
 app.use(express.static('public'))
 app.use(cookieParser())
@@ -188,32 +96,6 @@ app.get('/nologin', (req, res) => {
     console.log(active)
     res.redirect('/')
 })
-
-function Server () {
-    this.active = {}
-    this.users = {}
-    this.games = {}
-    this.pending = {}
-}
-
-Server.prototype.parseCookie = function(cookie) {
-    cookie = cookie.split("; ").join(";")
-    cookie = cookie.split(" =").join("=")
-    cookie = cookie.split(";")
-
-    let object = {}
-    for (let i = 0; i < cookie.length; i++) {
-        cookie[i] = cookie[i].split("=");
-        object[cookie[i][0]] = decodeURIComponent(cookie[i][1])
-    }
-    return object
-}
-
-const server = new Server()
-const active = server.active
-const users = server.users
-const games = server.games
-const pending = server.pending
 
 // Callback service parsing the authorization token and asking for the access token
 app.get('/login',  (req, res) => {
@@ -266,23 +148,6 @@ app.post('/woodcutterdraw', function(req, res) {
     res.send({'newcard': card})
 })
 
-//review purpose of this function?
-//
-// app.post('/computername', function(req, res) {
-//     res.setHeader('Access-Control-Allow-Origin', '*')
-//     fs.readFile('./names.json', 'utf8', function(err, data) {
-//         let json = JSON.parse(data)
-//         let names = json['names']
-//         let num = Math.floor(Math.random() * 202)
-//         let name = names[num]
-//         res.send({'name': name})
-//     })
-// })
-
-http.listen(8000, function() {
-    console.log('Example app listening on port 8000!');
-});
-
 io.on('connection', function(socket){
 
     let cookie = server.parseCookie(socket.request.headers.cookie).id
@@ -292,26 +157,22 @@ io.on('connection', function(socket){
     if (active[cookie]) {
         let user = active[cookie]
         user.socket = socket.id
-        socket.emit('startup', active[cookie])
-    }
+        socket.emit('startup', user)
 
-    //resume a game
-
-    if (users[cookie]) {
-        let gameroom = users[cookie][0]
-        let game = games[gameroom]
-        if (cookie === game.p1cookie && !game.p1socket) {
-            game.p1socket = socket.id
-            socket.join(gameroom)
-            let startup = {'twoplayer': game.twoplayer, 'state': game.state}
-            socket.emit("resumegame", startup)
-        } else if (cookie === game['p2cookie'] && !game['p2socket']) {
-            game.p2socket = socket.id
-            socket.join(gameroom)
-            let startup = {'twoplayer': game.twoplayer, 'state': game.state}
-            socket.emit("resumegame", startup)
-        } else {
-            console.log("That's an error!")
+        if (user.current) {
+            let gameroom = user.current
+            let game = games[gameroom]
+            if (cookie === game.player1.cookie && !game.player1.socket) {
+                game.player1.socket = socket.id
+                socket.join(gameroom)
+                socket.emit("startupinfo", game)
+            } else if (cookie === game.player2.cookie && !game.player2.socket) {
+                game.player2.socket = socket.id
+                socket.join(gameroom)
+                socket.emit("startupinfo", game)
+            } else {
+                console.log("That's an error!")
+            }
         }
     }
 
@@ -329,14 +190,13 @@ io.on('connection', function(socket){
     //     console.log("Normal load up!", socket.request.headers.referer)
     // }
 
-
-
     socket.on('start1p', function(){
         let cookie = server.parseCookie(socket.request.headers.cookie).id
         let gameroom = shortid.generate()
         socket.join(gameroom)
         games[gameroom] = new Game(false, gameroom, cookie, socket.id)
         active[cookie].games[gameroom] = games[gameroom]
+        active[cookie].current = gameroom
         io.to(gameroom).emit('startupinfo', games[gameroom])
     })
 
@@ -358,12 +218,12 @@ io.on('connection', function(socket){
             active[p1cookie].games[gameroom] = games[gameroom]
             active[p2cookie].games[gameroom] = games[gameroom]
             socket.join(gameroom)
+            console.log("The gameroom is", gameroom)
             io.to(gameroom).emit('startupinfo', games[gameroom])
         } else {
             console.log("That game code doesn't exist!")
         }
     })
-
 
     socket.on('sendcode', function(msg){
         let link = `http://localhost:8000/?code=${msg.gameroom}`
@@ -396,8 +256,15 @@ io.on('connection', function(socket){
         });
     })
 
-    socket.on('turncompleted', function(state){
+    socket.on('updatestate', function (state) {
         let game = games[state.id]
+        console.log("The game to update", game)
+        game.update(state)
+    })
+
+    socket.on('turncompleted', function(state){
+        let gameroom = state.id
+        let game = games[gameroom]
         game.update(state)
         if (state.turn === state.player1.id) {
             state.turn = state.player2.id
@@ -406,22 +273,22 @@ io.on('connection', function(socket){
             state.turn = state.player1.id
             game.turn = state.player1.id
         }
+        console.log("And here we go!", gameroom)
         socket.to(gameroom).emit('turninfo', state)
     })
 
     socket.on('trickcompleted', function(state) {
-        let game = games[state.id]
+        let gameroom = state.id
+        let game = games[gameroom]
+        let trick = game.round.trick
         game.update(state)
-        // if (state.turn === player1.id) {
-        //     game.leadplayer = player2
-        //     game.followplayer = player1
-        // } else {
-        //     game.leadplayer = player1
-        //     game.followplayer = player2
-        // }
-        game.round.trick.score(state)
+        trick.score(state)
+        !trick.hasSwan ? trick = new Trick(trick.winner, trick.loser) : trick = new Trick(trick.loser, trick.winner)
+        state.trick = trick
         io.in(gameroom).emit('trickresults', state)
     })
+
+    //FIX THIS!!!!! ------>>>>>
 
     socket.on('roundcompleted', function() {
         player1.getScores()
@@ -434,13 +301,6 @@ io.on('connection', function(socket){
         }
         io.in(gameroom).emit('roundresults', scores)
     })
-
-    socket.on('updatestate', function (state) {
-        let game = games[state.id]
-        game.update(state)
-    })
-
-    //FIX THIS!!!!! ------>>>>>
 
     socket.on('roundstartup', function() {
         player1.hand = []
@@ -460,13 +320,16 @@ io.on('connection', function(socket){
     })
 
     socket.on('disconnect', function(){
-        if (users[cookie]) {
-            for (let i = 0; i < users[cookie].length; i++) {
-                let game = games[users[cookie][i]]
-                if (socket.id === game['p1socket']) {
-                    game['p1socket'] = null
-                } else {
-                    game['p2socket'] = null
+        if (active[cookie]) {
+
+            if (active[cookie].current) {
+                let game = games[active[cookie].current]
+                console.log("Cookie:", cookie, "P1 Cookie:", game.player1.cookie, "P2 Cookie:", game.player2.cookie)
+                if (game.player1.cookie === cookie) {
+                    game.player1.socket = null
+                }
+                if (game.player2.cookie === cookie) {
+                    game.player2.socket = null
                 }
             }
         }

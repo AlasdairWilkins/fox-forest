@@ -76,7 +76,7 @@ Player.prototype.doFox = function (card) {
     display.buildDecree(decree);
     this.hand.splice(card, 1);
     this.insertCard(newcard);
-    if (this.id === game.displayplayer.id) {
+    if (this.cookie === game.displayplayer.cookie) {
         let passbutton = "";
         display.buildPassButton(passbutton);
         display.buildListInactive(card)
@@ -92,7 +92,7 @@ Player.prototype.doWoodcutter = function (card) {
     } else {
         round.deck.splice(0, 0, discard);
     }
-    if (this.id === game.displayplayer.id) {
+    if (this.cookie === game.displayplayer.cookie) {
         display.buildListInactive(card)
         this.finishTurn(card)
     }
@@ -141,7 +141,7 @@ Player.prototype.playCard = function (cardtemp) {
 Player.prototype.doFoxHuman = function (card) {
     this.playCard(card);
     display.buildTrick();
-    if (game.displayplayer.id === trick.followplayer.id) {
+    if (game.displayplayer.cookie === trick.followplayer.cookie) {
         this.resetCards();
     }
     display.buildFoxList(card);
@@ -153,7 +153,7 @@ Player.prototype.doFoxHuman = function (card) {
 Player.prototype.doWoodcutterHuman = function (card) {
     this.playCard(card);
     display.buildTrick();
-    if (game.displayplayer.id === trick.followplayer.id) {
+    if (game.displayplayer.cookie === trick.followplayer.cookie) {
         this.resetCards();
     }
     this.resetCards()
@@ -185,8 +185,7 @@ Player.prototype.clicked = function(card) {
 
 Player.prototype.finishTurn = function (card) {
     if (game.twoplayer) {
-        state = {'decree': round.decree, 'trick': trick.cards, 'turn': this.id, 'hand': this.hand};
-        // 'name': this.name, 'completed': true
+        let state = new State(player1, player2, trick, round, game)
         if (trick.cards.length === 2) {
             socket.emit('trickcompleted', state)
         } else {
@@ -282,19 +281,12 @@ Player.prototype.hasSuit = function () {
     return false
 };
 
-Player.prototype.receiveScores = function (state, suit) {
+Player.prototype.receiveScores = function (state) {
     if (round.decree !== state.decree) {
         round.decree = state.decree;
-        let decree = `<img src=${round.decree.image} class="card">`;
-        display.buildDecree(decree);
+        display.buildDecree();
     }
-    if (game.displayplayer.id === state.turn) {
-        trick.leadplayer = game.displayplayer
-        trick.followplayer = game.remoteplayer
-    } else {
-        trick.leadplayer = game.remoteplayer
-        trick.followplayer = game.displayplayer
-    }
+
     trick.cards = state.trick;
     player1.tricks = state.player1.tricks
     player2.tricks = state.player2.tricks
@@ -308,10 +300,8 @@ Player.prototype.receiveScores = function (state, suit) {
     } else {
         trick.winner = player2
     }
-
-
     display.buildTrick()
-    trick.results(suit)
+    trick.results()
 }
 
 Player.prototype.getScores = function () {
@@ -342,7 +332,7 @@ Player.prototype.getScores = function () {
         } else if (tricks >= 10) {
             this.roundResult = `${this.name} won  ${this.tricks.length} tricks, collected 1 treasure, and scored 1 point.`
         }
-        else {
+    else {
             let treasurescore = score + 1;
             this.roundResult = `${this.name} won ${this.tricks.length} tricks, collected 1 treasure, and scored ${treasurescore} points.`
         }

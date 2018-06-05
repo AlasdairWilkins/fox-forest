@@ -30,10 +30,11 @@ function Display() {
         }
     }
 
-
-
     this.buildGameCode = function(code) {
         document.getElementById("newcode").innerHTML = `Your game code is ${code}.`
+        document.getElementById("twoplayer").style.display = "none";
+        document.getElementById("createcode").style.display = "block";
+        document.getElementById("email").style.display = "block"
     }
 
     this.buildEmailSent = function(email) {
@@ -130,7 +131,7 @@ function Display() {
         if (element === "round-winner") {
             result = `${player1.roundResult}<br><br>${player2.roundResult}`
         } else {
-            if (leadplayer.id === game.displayplayer.id) {
+            if (leadplayer.cookie === game.displayplayer.cookie) {
                 result = `You ${action} trick!`
             } else {
                 if (action === "lead the") {

@@ -2,8 +2,8 @@ function Round(round, game) {
     this.decree = round.decree
     this.deck = game.deck
     this.deal = round.deal
-    this.dealplayer = game.displayplayer.id === round.dealplayer.id ? game.displayplayer : game.remoteplayer
-    this.receiveplayer = game.displayplayer.id === round.dealplayer.id ? game.remoteplayer : game.displayplayer
+    this.dealplayer = game.displayplayer.cookie === round.dealplayer.cookie ? game.displayplayer : game.remoteplayer
+    this.receiveplayer = game.displayplayer.cookie === round.dealplayer.cookie ? game.remoteplayer : game.displayplayer
     this.trick = new Trick(round.trick, game)
 }
 
@@ -45,7 +45,7 @@ Round.prototype.start = function () {
 
 Round.prototype.end = function() {
     if (game.twoplayer) {
-        if (trick.leadplayer.id === game.displayplayer.id) {
+        if (trick.leadplayer.cookie === game.displayplayer.cookie) {
             socket.emit('roundstartup')
         }
     } else {

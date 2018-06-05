@@ -1,3 +1,22 @@
+// TO-DO:
+// Properly update state for scores
+// Create new trick objects on client side
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 socket.on('startup', function(userinfo) {
     client.name = userinfo.name
     client.id = userinfo.id
@@ -7,24 +26,11 @@ socket.on('startup', function(userinfo) {
 
 
 socket.on('gamecode', function(msg) {
-    console.log(msg)
     display.buildGameCode(msg)
-    document.getElementById("twoplayer").style.display = "none";
-    document.getElementById("createcode").style.display = "block";
-    document.getElementById("email").style.display = "block"
 })
 
 socket.on('startupinfo', function(gameinfo) {
     client.start(gameinfo)
-})
-
-socket.on('resumegame', function(msg) {
-    console.log(msg)
-    prepare(msg.state, msg.twoplayer)
-    display.buildGame()
-    game.setEventListeners()
-    game.resume(msg.state)
-    display.build()
 })
 
 socket.on('newround', function(msg) {
@@ -39,19 +45,18 @@ socket.on('newround', function(msg) {
     display.build2p()
 })
 
-socket.on('turninfo', function(msg) {
-    console.log(msg)
-    if (round.decree != msg['decree']) {
-        round.decree = msg['decree'];
+socket.on('turninfo', function(state) {
+    if (round.decree != state['decree']) {
+        round.decree = state['decree'];
         display.buildDecree();
     }
-    trick.cards = msg['trick'];
+    trick.cards = state['trick'];
     trick.play()
 })
 
-socket.on('trickresults', function(msg) {
-    console.log(msg)
-    game.displayplayer.receiveScores(msg, 0)
+socket.on('trickresults', function(state) {
+    console.log(state)
+    game.displayplayer.receiveScores(state, 0)
 })
 
 socket.on('announcement', function(msg) {

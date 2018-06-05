@@ -41,7 +41,7 @@ Game.prototype.resume = function (state) {
     player2.score = state.player2.score
     round.decree = state.decree
     if (game.twoplayer) {
-        if (game.displayplayer.id === player1.id) {
+        if (game.displayplayer.cookie === player1.cookie) {
             game.displayplayer.hand = state.player1.hand;
         } else {
             game.displayplayer.hand = state.player2.hand;

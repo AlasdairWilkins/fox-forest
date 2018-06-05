@@ -1,8 +1,8 @@
-function Trick(trick, game, clientside) {
+function Trick(trick, game) {
     if (game) {
         this.cards = trick.cards
-        this.leadplayer = game.displayplayer.id === trick.leadplayer.id ? game.displayplayer : game.remoteplayer
-        this.followplayer = game.displayplayer.id === trick.leadplayer.id ? game.remoteplayer : game.displayplayer
+        this.leadplayer = game.displayplayer.cookie === trick.leadplayer.cookie ? game.displayplayer : game.remoteplayer
+        this.followplayer = game.displayplayer.cookie === trick.leadplayer.cookie ? game.remoteplayer : game.displayplayer
         this.witchReset = trick.witchReset;
         this.hasSwan = trick.hasSwan;
         this.winner = trick.winner
@@ -96,7 +96,7 @@ Trick.prototype.score = function () {
 
 Trick.prototype.start = function() {
     if (game.twoplayer) {
-        if (trick.leadplayer.id === game.displayplayer.id) {
+        if (trick.leadplayer.cookie === game.displayplayer.cookie) {
             display.buildListActive();
             display.buildDisplayTurn()
         } else {
@@ -109,7 +109,7 @@ Trick.prototype.start = function() {
 
 Trick.prototype.resume = function() {
     if (game.twoplayer) {
-        if (trick.followplayer.id === game.displayplayer.id) {
+        if (trick.followplayer.cookie === game.displayplayer.cookie) {
             game.displayplayer.setFollowCards()
             display.buildListActive();
             display.buildDisplayTurn()
@@ -126,7 +126,7 @@ Trick.prototype.resume = function() {
 
 Trick.prototype.play = function () {
     display.buildTrick();
-    if (game.displayplayer.id !== trick.leadplayer.id) {
+    if (game.displayplayer.cookie !== trick.leadplayer.cookie) {
         if (!game.twoplayer) {
             trick.leadplayer.leadCard();
         }
@@ -136,13 +136,12 @@ Trick.prototype.play = function () {
         display.buildDisplayTurn()
     } else {
         let state = new State(player1, player2, trick, round, game)
-        console.log("To send:", state)
         socket.emit('updatestate', state)
     }
     display.buildListActive()
 };
 
-Trick.prototype.results = function(suit) {
+Trick.prototype.results = function() {
     display.buildDisplayInfo();
     if (document.getElementById('winner-checkBox').checked) {
         display.buildResults("trick-winner", "won the", trick.winner)
@@ -158,7 +157,7 @@ Trick.prototype.end = function() {
         trick.cards = []
         display.buildTrick()
         if (player1.tricks.length + player2.tricks.length === 13) {
-            if (trick.leadplayer.id === game.displayplayer.id) {
+            if (trick.leadplayer.cookie === game.displayplayer.cookie) {
                 socket.emit('roundcompleted')
             }
         } else {
