@@ -20,9 +20,11 @@ Game.prototype.resetPlayers = function () {
 };
 
 Game.prototype.start = function (state) {
+    let displayInfo = new PlayerInfo(this.displayplayer)
+    let remoteInfo = new PlayerInfo(this.remoteplayer)
+    display.build('display-info', playerInfo, 'game', displayInfo)
+    display.build('remote-info', playerInfo, 'game', remoteInfo)
     display.buildGame()
-    // game.setEventListeners()
-    // display.build()
     if (trick.cards.length === 0) {
         if (document.getElementById('leader-checkBox').checked) {
             display.buildResults("trick-leader", "lead the", trick.leadplayer)

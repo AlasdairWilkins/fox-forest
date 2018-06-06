@@ -6,33 +6,33 @@
     <link rel="stylesheet" type="text/css" href="/main.css">
     <script type="application/javascript" src="/jquery-3.3.1.js" ></script>
     <script type="application/javascript" src="/turn.js" ></script>
+    <script type="application/javascript" src="/auto-complete.min.js" ></script>
+    <script type="application/javascript" src="/handlebars-v4.0.11.js" ></script>
     <script type="application/javascript" src="/display.js" defer></script>
     <script type="application/javascript" src="/trick.js" defer></script>
     <script type="application/javascript" src="/round.js" defer></script>
     <script type="application/javascript" src="/game.js" defer></script>
     <script type="application/javascript" src="/card.js" defer></script>
     <script type="application/javascript" src="/player.js" defer></script>
+    <script type="application/javascript" src="/playerinfo.js" defer></script>
     <script type="application/javascript" src="/sockets.js" defer></script>
     <script type="application/javascript" src="/state.js" defer></script>
     <script type="application/javascript" src="/client.js" defer></script>
     <script type="application/javascript" src="/main.js" defer></script>
 </head>
 <body>
-<div class="setup" id="players-info">
+<div class="main" id="players-info">
     <div id="display-container">
         <div class="dropdown bars" id="user-dropdown">
             <div class="bars" id="bar1"></div>
             <div class="bars" id="bar2"></div>
             <div class="bars" id="bar3"></div>
             <div class="dropdown-content" id="user-dropdown-content">
+                <div onclick="client.goHome()")><p>Main Menu</p></div>
                 <div onclick="display.showModal('settings-modal')"><p>User Settings</p></div>
-                <div onclick="alert('Under construction!')")><p>Log Out</p></div>
             </div>
         </div>
-        <div id="player-name"></div>
-        <div id="display-info">
-            <span id="display-name"></span> | Tricks: <span id="display-tricks"></span> | Score: <span id="display-score"></span>
-        </div>
+        <div id="display-info"></div>
     </div>
 
     <!--<div id="reference-menu">-->
@@ -110,9 +110,7 @@
     <!--<div class="dropdown-content" id="chat-dropdown-content">-->
     <!--</div>-->
     <!--</div>-->
-    <div id="remote-info">
-        <span id="remote-name"></span> | Tricks: <span id="remote-tricks"></span> | Score: <span id="remote-score"></span>
-    </div>
+    <div id="remote-info"></div>
     <div class="modal" id="rulebook-modal">
         <div class="modal-container" id="flipbook-container">
             <div id="flipbook">
@@ -151,35 +149,7 @@
 </div>
 <div id="startup">
     <p>Welcome to The Fox in the Forest!</p>
-    <div id ="playerstartup">
-        <button id="ai" onclick="client.clickedAI()">Play against the computer.</button>
-        <button id="human" onclick="client.clicked2P()">Play against another person.</button>
-    </div>
-    <div id="twoplayer">
-        <button id="creategame" onclick="client.clickedNew()">Get a new game code.</button>
-        <button id="joingame" onclick="display.enterCode()">Enter an existing code.</button>
-    </div>
-    <div id="createcode">
-        <div id="newcode"></div><br>
-        <form id="email">
-            Enter your opponent's email to send them the code:<br>
-            <input id="emailentry" type="text" onfocus="this.value=''" value="Email"><br><br>
-            <input type="submit" value="Submit">
-        </form>
-    </div>
-    <div id="emailsent">
-        <p id="sentmessage"></p>
-        <button onclick="display.resendEmail()">Resend email.</button>
-    </div>
-    <div id="entercode">
-        <form id="code">
-            Enter the code you have received to start the game:<br>
-            <input id="codeentry" type="text" onfocus="this.value=''" value="Game Code"><br><br>
-            <input type="submit" value="Submit">
-        </form>
-
-    </div>
-</div>
+    <div id ="playerstartup"></div></div>
 
 <div id="play">
     <div id="game">

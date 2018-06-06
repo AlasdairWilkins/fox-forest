@@ -124,7 +124,7 @@ app.get('/login',  (req, res) => {
             // review findPlayer function
             let user = shortid.generate()
 
-            active[req.cookies.id] = {id: user, name: response.first_name, games: {}}
+            active[req.cookies.id] = {id: user, name: response.first_name, login: 'recurse', games: {}}
             res.redirect('/')
         })
         .catch(function (err) {
@@ -202,7 +202,7 @@ io.on('connection', function(socket){
         io.to(gameroom).emit('startupinfo', games[gameroom])
     })
 
-    socket.on('start2p', function(msg){
+    socket.on('start2p', function(){
         let cookie = server.parseCookie(socket.request.headers.cookie).id
         let gameroom = shortid.generate()
         pending[gameroom] = {p1: cookie}
@@ -261,7 +261,6 @@ io.on('connection', function(socket){
 
     socket.on('updatestate', function (state) {
         let game = games[state.id]
-        console.log("The game to update", game)
         game.update(state)
     })
 

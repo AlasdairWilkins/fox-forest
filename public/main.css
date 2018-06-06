@@ -19,21 +19,19 @@ body {
     color: white;
 }
 
-.setup {
+.login {
     width: 60%;
     padding-left: 20%;
     padding-right: 20%
 }
 
-.player {
-    padding-left: 5px;
-    width: 80%;
-    padding-right: 20%
-}
-
-.game {
+.main {
     padding-left: 5px;
     padding-right: 5px;
+}
+
+#display-container {
+    display: contents;
 }
 
 #player-name {
@@ -111,10 +109,6 @@ body {
     padding: 8px 0 8px 0;
 }
 
-#display-container {
-    display: none;
-}
-
 #display-info {
     margin-left: 5px;
     width: 100%;
@@ -123,7 +117,6 @@ body {
 #remote-info {
     text-align: right;
     width: 100%;
-    display: none;
 }
 
 .dropdown {
@@ -297,25 +290,25 @@ table {
     margin-left: 15px;
 }
 
-#twoplayer {
-    display: none;
-}
+/*#twoplayer {*/
+    /*display: none;*/
+/*}*/
 
-#createcode {
-    display: none;
-}
+/*#createcode {*/
+    /*display: none;*/
+/*}*/
 
-#email {
-    display:none
-}
+/*#email {*/
+    /*display:none*/
+/*}*/
 
-#emailsent {
-    display: none;
-}
+/*#emailsent {*/
+    /*display: none;*/
+/*}*/
 
-#entercode {
-    display: none;
-}
+/*#entercode {*/
+    /*display: none;*/
+/*}*/
 
 #play {
     display: none;

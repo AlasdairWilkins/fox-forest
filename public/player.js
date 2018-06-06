@@ -198,6 +198,10 @@ Player.prototype.finishTurn = function (card) {
             trick.followplayer.followCard()
         }
         trick.score(trick.leadplayer, trick.followplayer)
+        let parent
+        trick.winner.id === game.displayplayer.id ? parent = 'display-info' : parent = 'remote-info'
+        let update = new PlayerInfo(trick.winner)
+        display.build(parent, playerInfo, 'game', update)
         trick.results(card)
     }
 }
@@ -283,20 +287,24 @@ Player.prototype.hasSuit = function () {
 };
 
 Player.prototype.receiveScores = function (results) {
+    console.log("Made it here!")
     if (round.decree !== results.decree) {
         round.decree = results.decree;
         display.buildDecree();
     }
-    player1.tricks = results.player1.tricks
-    player2.tricks = results.player2.tricks
-    if (player1.score !== results.player1.score || player2.score !== results.player2.score) {
-        player1.score = results.player1.score
-        player2.score = results.player2.score
-        display.buildDisplayInfo()
-    }
-    trick.cards = results.trick.cards
-    trick.winner = results.trick.winner
+    let winner = results.trick.winner
+    let updateplayer
+    results.trick.winner.id === player1.id ? updateplayer = player1 : updateplayer = player2
+    updateplayer.tricks = winner.tricks
+    updateplayer.score = winner.score
+    let parent
+    updateplayer.id === game.displayplayer.id ? parent = 'display-info' : parent = 'remote-info'
+    let update = new PlayerInfo(updateplayer)
+    console.log("Player Info:", playerInfo)
+    display.build(parent, playerInfo, 'game', update)
+    trick.winner = winner
     trick.loser = results.trick.loser
+    trick.cards = results.trick.cards
     trick.hasSwan = results.trick.hasSwan
     display.buildTrick()
     trick.results()

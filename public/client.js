@@ -1,6 +1,9 @@
 function Client() {
     this.cookie = this.parseCookie(document.cookie).id
+    this.login = null
     this.active = null
+    this.id = null
+    this.name = null
     this.games = {}
 }
 
@@ -11,7 +14,7 @@ Client.prototype.start = function(gameinfo) {
     trick = round.trick
     player1 = gameinfo.player1.cookie === client.cookie ? game.displayplayer : game.remoteplayer
     player2 = gameinfo.player1.cookie === client.cookie ? game.remoteplayer : game.displayplayer
-    console.log(game, round, trick, player1, player2)
+    // console.log(game, round, trick, player1, player2)
     game.start()
 }
 
@@ -28,16 +31,20 @@ Client.prototype.parseCookie = function(cookie) {
     return object
 }
 
+Client.prototype.goHome = function() {
+    //move from current
+    if (this.active) {
+        document.getElementById('play').style.display = 'none'
+        document.getElementById('startup').style.display = 'block'
+        // display.buildDisplayPlayer(this.name)
+    }
+    display.build('playerstartup', 'startup', 'home')
+}
+
 Client.prototype.clickedAI = function() {
     socket.emit('start1p')
 }
 
-Client.prototype.clicked2P = function() {
-    document.getElementById("playerstartup").style.display = "none";
-    document.getElementById("twoplayer").style.display = "block";
-}
-
 Client.prototype.clickedNew = function() {
-    console.log('Got here!')
-    socket.emit('start2p', "I'd like to start a game.")
+    socket.emit('start2p')
 }

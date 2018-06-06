@@ -135,14 +135,13 @@ Trick.prototype.play = function () {
     if (game.twoplayer) {
         display.buildDisplayTurn()
     } else {
-        let state = new State(player1, player2, trick, round, game)
+        let state = new State(game.displayplayer, trick, round, game)
         socket.emit('updatestate', state)
     }
     display.buildListActive()
 };
 
 Trick.prototype.results = function() {
-    display.buildDisplayInfo();
     if (document.getElementById('winner-checkBox').checked) {
         display.buildResults("trick-winner", "won the", this.winner)
     } else {

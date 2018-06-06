@@ -5,8 +5,53 @@ const forms = {username:
             // inputId: 'usernameentry',
             text: 'Enter your display name.',
             default: 'Your name'
-            }}
+            }
+}
 
+const playerInfo = {
+    name: `{{input}}`,
+    game: `{{name}} | Tricks: {{tricks}} | Score: {{score}}`
+}
+
+// document.getElementById("players-info").classList.remove("player");
+// document.getElementById("players-info").classList.add("game");
+// document.getElementById("player-name").style.display = "none"
+// document.getElementById("display-info").style.display = "block"
+// document.getElementById("display-name").innerHTML = game.displayplayer.name;
+// document.getElementById("display-tricks").innerHTML = game.displayplayer.tricks.length;
+// document.getElementById("display-score").innerHTML = game.displayplayer.score;
+// document.getElementById("remote-name").innerHTML = game.remoteplayer.name;
+// document.getElementById("remote-tricks").innerHTML = game.remoteplayer.tricks.length;
+// document.getElementById("remote-score").innerHTML = game.remoteplayer.score
+
+const startup = {
+    home:
+        `<button id="ai" onclick="client.clickedAI()">Play against the computer.</button>    
+        <button id="human" onclick="display.build('playerstartup', startup, 'twoplayer')">Play against another person.</button>`,
+    twoplayer:
+        `<button id="creategame" onclick="client.clickedNew()">Get a new game code.</button>
+        <button id="joingame" onclick="display.build('playerstartup', startup, 'entercode')">Enter an existing code.</button>`,
+    createcode:
+        // `<script type="text/x-handlebars-template">
+        `<div id="newcode">Your game code is {{input}}.</div><br>
+        <form id="email">
+        Enter your opponent's email to send them the code:<br>
+        <input id="emailentry" type="text" onfocus="this.value=''" value="Email"><br><br>
+        <input type="submit" value="Submit">
+        </form>`,
+        // </script>`,
+    emailsent:
+        // `<script type="text/x-handlebars-template">
+        `<p id="sentmessage">The game code {{code}} has been sent to {{email}}.</p>
+        <button onclick="display.build('playerstartup', startup, 'createcode', '{{code}}')">Resend email.</button>`,
+        // </script>`,
+    entercode:
+        `<form id="code">
+        Enter the code you have received to start the game:<br>
+        <input id="codeentry" type="text" onfocus="this.value=''" value="Game Code"><br><br>
+        <input type="submit" value="Submit">
+        </form>`
+}
 
 function Display() {
     this.swan = `Swan: If you play this and lose the trick, you lead the next trick.`;
@@ -30,46 +75,49 @@ function Display() {
         }
     }
 
-    this.buildGameCode = function(code) {
-        document.getElementById("newcode").innerHTML = `Your game code is ${code}.`
-        document.getElementById("twoplayer").style.display = "none";
-        document.getElementById("createcode").style.display = "block";
-        document.getElementById("email").style.display = "block"
+    this.build = function(parent, directory, value, input) {
+        if (input) {
+            console.log(input)
+            let template = Handlebars.compile(directory[value])
+            if (typeof input === "string") {
+                input = {input: input}
+            }
+            let html = template(input)
+            document.getElementById(parent).innerHTML = html
+        } else {
+           document.getElementById(parent).innerHTML = directory[value]
+        }
     }
 
-    this.buildEmailSent = function(email) {
-        document.getElementById("sentmessage").innerHTML = `The code has been sent to ${email}.`
-    }
+    // this.resendEmail = function() {
+    //     document.getElementById("emailsent").style.display = 'none'
+    //     document.getElementById("createcode").style.display = 'block'
+    // }
 
-    this.resendEmail = function() {
-        document.getElementById("emailsent").style.display = 'none'
-        document.getElementById("createcode").style.display = 'block'
-    }
+    // this.enterCode = function() {
+    //     document.getElementById("twoplayer").style.display = 'none'
+    //     document.getElementById("entercode").style.display = 'block'
+    // }
 
-    this.enterCode = function() {
-        document.getElementById("twoplayer").style.display = 'none'
-        document.getElementById("entercode").style.display = 'block'
-    }
+    // this.buildDisplayPlayer = function(name) {
+    //     document.getElementById("players-info").classList.remove("setup");
+    //     document.getElementById("players-info").classList.add("player");
+    //     document.getElementById("display-container").style.display = "contents";
+    //     document.getElementById("display-info").style.display = "none"
+    //     document.getElementById("player-name").innerHTML = `<span>${name}</span>`;
+    // }
 
-    this.buildDisplayPlayer = function(name) {
-        document.getElementById("players-info").classList.remove("setup");
-        document.getElementById("players-info").classList.add("player");
-        document.getElementById("display-container").style.display = "contents";
-        document.getElementById("display-info").style.display = "none"
-        document.getElementById("player-name").innerHTML = `<span>${name}</span>`;
-    }
-
-    this.buildDisplayInfo = function () {
-        document.getElementById("players-info").classList.remove("player");
-        document.getElementById("players-info").classList.add("game");
-        document.getElementById("player-name").style.display = "none"
-        document.getElementById("display-info").style.display = "block"
-        document.getElementById("display-name").innerHTML = game.displayplayer.name;
-        document.getElementById("display-tricks").innerHTML = game.displayplayer.tricks.length;
-        document.getElementById("display-score").innerHTML = game.displayplayer.score;
-        document.getElementById("remote-name").innerHTML = game.remoteplayer.name;
-        document.getElementById("remote-tricks").innerHTML = game.remoteplayer.tricks.length;
-        document.getElementById("remote-score").innerHTML = game.remoteplayer.score
+    // this.buildDisplayInfo = function () {
+    //     document.getElementById("players-info").classList.remove("player");
+    //     document.getElementById("players-info").classList.add("game");
+    //     document.getElementById("player-name").style.display = "none"
+    //     document.getElementById("display-info").style.display = "block"
+    //     document.getElementById("display-name").innerHTML = game.displayplayer.name;
+    //     document.getElementById("display-tricks").innerHTML = game.displayplayer.tricks.length;
+    //     document.getElementById("display-score").innerHTML = game.displayplayer.score;
+    //     document.getElementById("remote-name").innerHTML = game.remoteplayer.name;
+    //     document.getElementById("remote-tricks").innerHTML = game.remoteplayer.tricks.length;
+    //     document.getElementById("remote-score").innerHTML = game.remoteplayer.score
         // if (!game.twoplayer) {
         //     document.getElementById("display-name").innerHTML = `<button>${game.displayplayer.name}</button>`;
         //     document.getElementById("display-tricks").innerHTML = game.displayplayer.tricks.length;
@@ -84,20 +132,21 @@ function Display() {
         //     document.getElementById("remote-name").innerHTML =  `<button>${game.remoteplayer.name}</button>`;
         //     document.getElementById("remote-tricks").innerHTML = game.remoteplayer.tricks.length;
         //     document.getElementById("remote-score").innerHTML = game.remoteplayer.score
-    }
+    // }
 
     this.buildGame = function() {
         display.showGame()
         display.buildDecree();
         display.buildListDeal();
-        display.buildDisplayInfo();
         display.buildTrick()
     }
 
     this.showGame = function () {
-        document.getElementById("players-info").classList.remove("setup");
-        document.getElementById("display-container").style.display = "contents";
-        document.getElementById("remote-info").style.display = "block";
+        // document.getElementById("players-info").classList.remove("setup");
+        // document.getElementById("display-container").style.display = "contents";
+        // document.getElementById("remote-info").style.display = "block";
+        // document.getElementById("players-info").classList.remove("player");
+        // document.getElementById("players-info").classList.add("game");
         document.getElementById("startup").style.display = "none";
         document.getElementById("play").style.display = "block";
     }
@@ -324,7 +373,6 @@ function pauseVideo() {
 }
 
 $(function(){
-
     $("#flipbook").turn({
         width: 800,
         height: 592,
@@ -333,17 +381,17 @@ $(function(){
 
 })
 
-$('#email').on('submit', function(submit) {
+$('#playerstartup').on('submit', '#email', function(submit) {
+    console.log("Hello!")
     submit.preventDefault()
     let email = document.getElementById('emailentry').value
-    socket.emit('sendcode', {'gameroom': gameroom, 'email': email})
-    display.buildEmailSent(email)
-    document.getElementById('createcode').style.display = 'none'
-    document.getElementById('emailsent').style.display = 'block'
+    let input = {email: email, code: gamecode}
+    // socket.emit('sendcode', input)
+    display.build('playerstartup', startup, 'emailsent', input)
 
 })
 
-$('#entercode').on('submit', function(submit) {
+$('#playerstartup').on('submit', '#code', function(submit) {
     submit.preventDefault()
     let code = document.getElementById('codeentry').value
     socket.emit('join2p', code)
@@ -363,3 +411,4 @@ document.getElementById("round-winner").addEventListener("animationend", functio
     document.getElementById("round-winner").style.display = "none"
     round.end()
 })
+

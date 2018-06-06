@@ -1,13 +1,18 @@
 socket.on('startup', function(userinfo) {
     client.name = userinfo.name
     client.id = userinfo.id
-    console.log(client)
-    display.buildDisplayPlayer(client.name)
+    client.login = userinfo.login
+    display.build('display-info', playerInfo, 'name', client.name)
 })
 
 
-socket.on('gamecode', function(msg) {
-    display.buildGameCode(msg)
+socket.on('gamecode', function(code) {
+    gamecode = code
+    if (client.login === 'recurse') {
+        display.build('playerstartup', startup, 'createcode', code)
+    } else {
+        display.build('playerstartup', startup, 'createcode', code)
+    }
 })
 
 socket.on('startupinfo', function(gameinfo) {
