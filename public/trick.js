@@ -136,6 +136,7 @@ Trick.prototype.play = function () {
         display.buildDisplayTurn()
     } else {
         let state = new State(game.displayplayer, trick, round, game)
+        console.log("State:", state)
         socket.emit('updatestate', state)
     }
     display.buildListActive()

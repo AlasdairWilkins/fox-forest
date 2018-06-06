@@ -10,7 +10,8 @@ const forms = {username:
 
 const playerInfo = {
     name: `{{input}}`,
-    game: `{{name}} | Tricks: {{tricks}} | Score: {{score}}`
+    game: `{{name}} | Tricks: {{tricks}} | Score: {{score}}`,
+    none: ''
 }
 
 // document.getElementById("players-info").classList.remove("player");
@@ -31,7 +32,11 @@ const startup = {
     twoplayer:
         `<button id="creategame" onclick="client.clickedNew()">Get a new game code.</button>
         <button id="joingame" onclick="display.build('playerstartup', startup, 'entercode')">Enter an existing code.</button>`,
-    createcode:
+    codeoptions:
+        `<div id="newcode">Your game code is {{input}}.</div><br>
+        <button onclick="display.build('playerstartup', startup, 'emailcode', '{{input}}')">Email the code.</button>
+        <button onclick="socket.emit('getzulip')">Invite a Recurser on Zulip.</button>`,
+    emailcode:
         // `<script type="text/x-handlebars-template">
         `<div id="newcode">Your game code is {{input}}.</div><br>
         <form id="email">
@@ -43,8 +48,15 @@ const startup = {
     emailsent:
         // `<script type="text/x-handlebars-template">
         `<p id="sentmessage">The game code {{code}} has been sent to {{email}}.</p>
-        <button onclick="display.build('playerstartup', startup, 'createcode', '{{code}}')">Resend email.</button>`,
+        <button onclick="display.build('playerstartup', startup, 'emailcode', '{{code}}')">Resend email.</button>`,
         // </script>`,
+    zulipcode:
+        `<div id="newcode">Your game code is {{input}}.</div><br>
+        <form id="zulip">
+        Enter your opponent's name to send them the code:<br>
+        <input id="zulipentry" type="text" onfocus="this.value=''" value="Recurser"><br><br>
+        <input type="submit" value="Submit">
+        </form>`,
     entercode:
         `<form id="code">
         Enter the code you have received to start the game:<br>
@@ -395,6 +407,14 @@ $('#playerstartup').on('submit', '#code', function(submit) {
     submit.preventDefault()
     let code = document.getElementById('codeentry').value
     socket.emit('join2p', code)
+})
+
+$('#playerstartup').on('submit', '#zulip', function(submit) {
+    submit.preventDefault()
+    console.log("Submitted!")
+    let zulip = document.getElementById('zulipentry').value
+    console.log(zulip)
+    //Zulip ping function goes here
 })
 
 document.getElementById("trick-leader").addEventListener("animationend", function () {

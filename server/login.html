@@ -17,7 +17,8 @@
     <script type="application/javascript" src="/main.js" defer></script>
 </head>
 <body>
-<div class="login" id="players-info">
+<div id="players-info">
+    <div id="display-info"></div>
     <div class="reference" id="scoring-reference">
         <div class="dropdown" id="scoring-dropdown" onclick="display.showDropdown('scoring-dropdown-content')">Scoring Reference</div>
         <div class="dropdown-content" id="scoring-dropdown-content">
@@ -83,6 +84,7 @@
             <p><strong>1. Swan:</strong> If you play this and lose the trick, you lead the next trick.</p>
         </div>
     </div>
+    <div id="remote-info"></div>
     <div class="modal" id="rulebook-modal">
         <div class="modal-container" id="flipbook-container">
             <div id="flipbook">

@@ -9,9 +9,9 @@ socket.on('startup', function(userinfo) {
 socket.on('gamecode', function(code) {
     gamecode = code
     if (client.login === 'recurse') {
-        display.build('playerstartup', startup, 'createcode', code)
+        display.build('playerstartup', startup, 'codeoptions', code)
     } else {
-        display.build('playerstartup', startup, 'createcode', code)
+        display.build('playerstartup', startup, 'emailcode', code)
     }
 })
 
@@ -60,4 +60,9 @@ socket.on('roundresults', function(msg) {
     } else {
         round.end()
     }
+})
+
+socket.on('zulipinfo', function(msg) {
+    console.log(msg)
+    display.build('playerstartup', startup, 'zulipcode', gamecode)
 })

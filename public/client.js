@@ -38,7 +38,9 @@ Client.prototype.goHome = function() {
         document.getElementById('startup').style.display = 'block'
         // display.buildDisplayPlayer(this.name)
     }
-    display.build('playerstartup', 'startup', 'home')
+    display.build('display-info', playerInfo, 'name', client.name)
+    display.build('remote-info', playerInfo, 'none')
+    display.build('playerstartup', startup, 'home')
 }
 
 Client.prototype.clickedAI = function() {

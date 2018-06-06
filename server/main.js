@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const Server = require("./server")
 const Game = require("./game")
 const Round = require("./round")
@@ -11,7 +13,7 @@ users = server.users
 games = server.games
 pending = server.pending
 
-const url = 'http://localhost:8000/'
+const url = process.env.SITE_URL
 // const url = 'http://fox-forest.alasdairwilkins.com/'
 
 const express = require('express');
@@ -29,17 +31,20 @@ const request = require('request')
 const Promise = require('bluebird')
 const rp = require('request-promise')
 
+const zulip = require('zulip-js')
+
+const zulipConfig = {
+    username: 'fox-forest-bot@recurse.zulipchat.com',
+    apiKey: process.env.ZULIP_KEY,
+    realm: 'https://recurse.zulipchat.com'
+};
+
 //https://www.recurse.com/settings/apps
 
 const credentials = {
     client: {
-        //development
-        id: 'fe8bb8dba4ab9d66bfc19544d4fba61a453492c0c437ee1c6890996e9c9b26ac',
-        secret: 'faa0e825b09c5a155115261a0fb81f97524b583f4c4413d0487799ac43088342'
-
-        //production
-        // id: '0b974ddeacd24f0b30a60738d27c8121c8bacc6cf38d0d79916275b5a9eb5952',
-        // secret: 'd270c15a97785250da3fe03fd8c1677ab8434090dd5ef08a5f8237f09f38c64a'
+        id: process.env.RC_ID,
+        secret: process.env.RC_SECRET
     },
     auth: {
         tokenHost: 'https://www.recurse.com'
@@ -47,9 +52,11 @@ const credentials = {
 };
 const oauth2 = require('simple-oauth2').create(credentials);
 const authorizationUri = oauth2.authorizationCode.authorizeURL({
-    redirect_uri: 'http://localhost:8000/login'
+    redirect_uri: url + '/login'
     // redirect_uri: 'http://fox-forest.alasdairwilkins.com/login',
 });
+
+console.log('authorization', authorizationUri)
 
 function Results (game, round, trick) {
     if (trick) {
@@ -103,7 +110,7 @@ app.get('/login',  (req, res) => {
     const code = req.query.code;
     let options = {
         code: code,
-        redirect_uri: 'http://localhost:8000/login'
+        redirect_uri: url + '/login'
         // redirect_uri: 'http://fox-forest.alasdairwilkins.com/login'
     };
 
@@ -228,14 +235,36 @@ io.on('connection', function(socket){
         }
     })
 
+    socket.on('zulipget', function() {
+        zulip(config)
+            .then(function(client) {
+                return client.users.retrieve()
+            })
+            .then(function(results) {
+                let users = results.members
+                let names = []
+                let addresses = {}
+                for (let user = 0; user < users.length; user++) {
+                    if (!users[user]['is_bot']) {
+                        addresses[users[user].full_name] = users[user].email
+                    }
+                }
+                names = Object.keys(addresses)
+                names.sort()
+                socket.emit('zulipinfo', {names: names, addresses: addresses})
+            })
+            .catch(function (err) {
+                console.log("Error:", err)
+            })
+    })
+
     socket.on('sendcode', function(msg){
-        let link = `http://localhost:8000/?code=${msg.gameroom}`
-        //let link = `http://fox-forest.alasdairwilkins.com/?code=${msg.gameroom}`
+        let link = `${url}/?code=${msg.gameroom}`
         let transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
                 user: 'alasdairprograms@gmail.com',
-                pass: 'h0p3&j0y'
+                pass: process.env.MAIL_PASS
             },
             tls: {
                 rejectUnauthorized: false
@@ -260,6 +289,8 @@ io.on('connection', function(socket){
     })
 
     socket.on('updatestate', function (state) {
+        console.log(state)
+        debugger
         let game = games[state.id]
         game.update(state)
     })
