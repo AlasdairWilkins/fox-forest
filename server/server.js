@@ -1,8 +1,23 @@
+const Game = require("./game")
+
+
 function Server () {
     this.active = {}
     this.users = {}
     this.games = {}
     this.pending = {}
+}
+
+Server.prototype.createGame = function(socket, gameroom) {
+    let p1cookie = pending[gameroom].p1
+    let p1socket = active[p1cookie].socket
+    let p2cookie = server.parseCookie(socket.request.headers.cookie).id
+    let p2socket = socket.id
+    games[gameroom] = new Game(true, gameroom, p1cookie, p1socket, p2cookie, p2socket)
+    active[p1cookie].games[gameroom] = games[gameroom]
+    active[p2cookie].games[gameroom] = games[gameroom]
+    active[p1cookie].current = gameroom
+    active[p2cookie].current = gameroom
 }
 
 Server.prototype.parseCookie = function(cookie) {

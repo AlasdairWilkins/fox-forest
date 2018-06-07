@@ -56,8 +56,6 @@ const authorizationUri = oauth2.authorizationCode.authorizeURL({
     // redirect_uri: 'http://fox-forest.alasdairwilkins.com/login',
 });
 
-console.log('authorization', authorizationUri)
-
 function Results (game, round, trick) {
     if (trick) {
         this.player1 = game.player1
@@ -75,11 +73,19 @@ app.use(express.static('public'))
 app.use(cookieParser())
 
 app.get('/', (req, res) => {
-    console.log('Body', req.body)
+    // console.log('Body', req.body)
     console.log('Cookie', req.cookies)
+    console.log("/", req.headers.referer)
+    let cookie
     if (!req.cookies.id) {
-        let cookie = shortid.generate()
+        cookie = shortid.generate()
         res.setHeader('Set-Cookie', 'id=' + cookie)
+    } else {
+        cookie = req.cookies.id
+    }
+    if (req.query.code) {
+        let code = req.query.code
+        res.setHeader('Set-Cookie', 'code=' + code)
     }
     if (!active[req.cookies.id]) {
         res.sendFile(__dirname + '/login.html')
@@ -87,10 +93,10 @@ app.get('/', (req, res) => {
         res.sendFile(__dirname + '/main.html')
         console.log('here comes a user');
     }
-
 });
 
 app.get('/auth', (req, res) => {
+    console.log("/auth", req.headers.referer)
     res.redirect(authorizationUri);
 });
 
@@ -107,6 +113,7 @@ app.get('/nologin', (req, res) => {
 
 // Callback service parsing the authorization token and asking for the access token
 app.get('/login',  (req, res) => {
+    console.log("/login", req.headers.referer)
     const code = req.query.code;
     let options = {
         code: code,
@@ -143,18 +150,18 @@ app.get('/login',  (req, res) => {
 
 //review purpose of this function?
 
-app.post('/codesent', function(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    console.log(req.body)
-})
+// app.post('/codesent', function(req, res) {
+//     res.setHeader('Access-Control-Allow-Origin', '*')
+//     console.log(req.body)
+// })
 
 //review purpose of this function?
 
-app.post('/woodcutterdraw', function(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    var card = round.deck.pop()
-    res.send({'newcard': card})
-})
+// app.post('/woodcutterdraw', function(req, res) {
+//     res.setHeader('Access-Control-Allow-Origin', '*')
+//     var card = round.deck.pop()
+//     res.send({'newcard': card})
+// })
 
 io.on('connection', function(socket){
 
@@ -183,18 +190,30 @@ io.on('connection', function(socket){
                 console.log("That's an error!")
             }
         }
+
+        if (server.parseCookie(socket.request.headers.cookie).code) {
+            console.log("Hello!")
+            let gameroom = server.parseCookie(socket.request.headers.cookie).code
+            if (pending[gameroom]) {
+                console.log("Ahoy hoy!")
+                server.createGame(socket, gameroom)
+                socket.join(gameroom)
+                io.to(gameroom).emit('startupinfo', games[gameroom])
+            }
+        }
+
     }
 
     // check for email link -- will need to be fixed for login and Zulip
 
     // if (!socket.request.headers.referer === url) {
     //     console.log("A game code incoming!", console.log(socket.request.headers.referer))
-    //     // let referer = socket.request.headers.referer
-    //     // let query = referer.substr(url.length)
-    //     // if (query.substr(0, 5) === '?code') {
-    //     //     let code = query.substr(6)
-    //     //     start2p(code, socket)
-    //     // }
+    // //     // let referer = socket.request.headers.referer
+    // //     // let query = referer.substr(url.length)
+    // //     // if (query.substr(0, 5) === '?code') {
+    // //     //     let code = query.substr(6)
+    // //     //     start2p(code, socket)
+    // //     // }
     // } else {
     //     console.log("Normal load up!", socket.request.headers.referer)
     // }
@@ -219,15 +238,7 @@ io.on('connection', function(socket){
 
     socket.on('join2p', function(gameroom){
         if (pending[gameroom]) {
-            let p1cookie = pending[gameroom].p1
-            let p1socket = active[p1cookie].socket
-            let p2cookie = server.parseCookie(socket.request.headers.cookie).id
-            let p2socket = socket.id
-            games[gameroom] = new Game(true, gameroom, p1cookie, p1socket, p2cookie, p2socket)
-            active[p1cookie].games[gameroom] = games[gameroom]
-            active[p2cookie].games[gameroom] = games[gameroom]
-            active[p1cookie].current = gameroom
-            active[p2cookie].current = gameroom
+            server.createGame(socket, gameroom)
             socket.join(gameroom)
             io.to(gameroom).emit('startupinfo', games[gameroom])
         } else {
@@ -236,7 +247,7 @@ io.on('connection', function(socket){
     })
 
     socket.on('zulipget', function() {
-        zulip(config)
+        zulip(zulipConfig)
             .then(function(client) {
                 return client.users.retrieve()
             })
@@ -255,6 +266,25 @@ io.on('connection', function(socket){
             })
             .catch(function (err) {
                 console.log("Error:", err)
+            })
+    })
+
+    socket.on('zulipsend', function(msg) {
+        let address = msg.address
+        let code = msg.code
+        let name = msg.name
+        zulip(zulipConfig)
+            .then(function(client) {
+                const params = {
+                    to: address,
+                    type: 'private',
+                    content: `${name} has invited you to play a game of The Fox in the Forest. [Click here](${url}?code=${code}) to play. Good luck!`
+                    // content: "You've been invited to play a game of The Fox in the Forest!"
+                }
+                return client.messages.send(params)
+            })
+            .then(function(result) {
+                console.log(result)
             })
     })
 

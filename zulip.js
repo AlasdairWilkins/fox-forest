@@ -9,9 +9,11 @@ app.listen(8000, () => {
 });
 
 app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/zulip.html')
+
 })
 
-app.get('/', (req, res) => {
+// app.get('/', (req, res) => {
     zulip(config)
         .then(function(client) {
             const params = {
@@ -47,7 +49,7 @@ app.get('/', (req, res) => {
         //     console.log("Error:", err)
         //     return res.status(500).json('Authentication failed')
         // })
-})
+// })
 
 
 

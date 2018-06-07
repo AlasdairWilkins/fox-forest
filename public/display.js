@@ -35,7 +35,7 @@ const startup = {
     codeoptions:
         `<div id="newcode">Your game code is {{input}}.</div><br>
         <button onclick="display.build('playerstartup', startup, 'emailcode', '{{input}}')">Email the code.</button>
-        <button onclick="socket.emit('getzulip')">Invite a Recurser on Zulip.</button>`,
+        <button onclick="socket.emit('zulipget')">Invite a Recurser on Zulip.</button>`,
     emailcode:
         // `<script type="text/x-handlebars-template">
         `<div id="newcode">Your game code is {{input}}.</div><br>
@@ -54,7 +54,7 @@ const startup = {
         `<div id="newcode">Your game code is {{input}}.</div><br>
         <form id="zulip">
         Enter your opponent's name to send them the code:<br>
-        <input id="zulipentry" type="text" onfocus="this.value=''" value="Recurser"><br><br>
+        <input id="zulipentry" type="text" placeholder="Recurser"><br><br>
         <input type="submit" value="Submit">
         </form>`,
     entercode:
@@ -411,10 +411,9 @@ $('#playerstartup').on('submit', '#code', function(submit) {
 
 $('#playerstartup').on('submit', '#zulip', function(submit) {
     submit.preventDefault()
-    console.log("Submitted!")
     let zulip = document.getElementById('zulipentry').value
-    console.log(zulip)
-    //Zulip ping function goes here
+    let address = addresses[zulip]
+    socket.emit('zulipsend', {address: address, code: gamecode, name: client.name})
 })
 
 document.getElementById("trick-leader").addEventListener("animationend", function () {

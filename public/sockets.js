@@ -63,6 +63,18 @@ socket.on('roundresults', function(msg) {
 })
 
 socket.on('zulipinfo', function(msg) {
-    console.log(msg)
     display.build('playerstartup', startup, 'zulipcode', gamecode)
+    addresses = msg.addresses
+    demo1 = new autoComplete({
+        selector: '#zulipentry',
+        minChars: 1,
+        source: function (term, suggest) {
+            term = term.toLowerCase();
+            var choices = msg.names
+            var suggestions = [];
+            for (i = 0; i < choices.length; i++)
+                if (~choices[i].toLowerCase().indexOf(term)) suggestions.push(choices[i]);
+            suggest(suggestions);
+        }
+    })
 })
