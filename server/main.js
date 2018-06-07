@@ -101,13 +101,12 @@ app.get('/auth', (req, res) => {
 });
 
 app.get('/nologin', (req, res) => {
-    console.log(req.query)
+    console.log("Cookies!", req.cookies)
     active[req.cookies.id] = {
         id: null,
         name: req.query.username,
         games: {}
     }
-    console.log(active)
     res.redirect('/')
 })
 
