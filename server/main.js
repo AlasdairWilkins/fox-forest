@@ -156,11 +156,11 @@ app.get('/login',  (req, res) => {
 
 //review purpose of this function?
 
-// app.post('/woodcutterdraw', function(req, res) {
-//     res.setHeader('Access-Control-Allow-Origin', '*')
-//     var card = round.deck.pop()
-//     res.send({'newcard': card})
-// })
+app.post('/woodcutterdraw', function(req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    var card = round.deck.pop()
+    res.send({'newcard': card})
+})
 
 io.on('connection', function(socket){
 
@@ -354,7 +354,10 @@ io.on('connection', function(socket){
         console.log("Second:", game.round.trick)
     })
 
-    socket.on('roundcompleted', function() {
+    socket.on('roundcompleted', function(gameroom) {
+        let game = games[gameroom]
+        let player1 = game.player1
+        let player2 = game.player2
         player1.getScores()
         player2.getScores()
         scores = {
@@ -366,19 +369,28 @@ io.on('connection', function(socket){
         io.in(gameroom).emit('roundresults', scores)
     })
 
-    socket.on('roundstartup', function() {
+    socket.on('roundstartup', function(gameroom) {
+        let game = games[gameroom]
+        let player1 = game.player1
+        let player2 = game.player2
+        let round = game.round
         player1.hand = []
         player2.hand = []
-        if (round.dealplayer.id === player1.id) {
-            round = new Round(player2, player1)
-        } else {
-            round = new Round(player1, player2)
-        }
-        state = round.start()
-        io.in(gameroom).emit('newround', state)
+        game.round = new Round(round.receiveplayer, round.dealplayer)
+        round = game.round
+        io.in(gameroom).emit('newround', round)
     })
 
-    socket.on('woodcutter', function(msg){
+    socket.on('woodcutterdraw', function(gameroom) {
+        let game = games[gameroom]
+        let deck = game.deck
+        let card = deck.pop()
+        game.deck = deck
+        round.deck = deck
+        socket.emit('woodcuttercard', card)
+    })
+
+    socket.on('woodcutterdiscard', function(msg){
         var discard = msg['discard']
         round.deck.splice(0, 0, discard)
     })

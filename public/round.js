@@ -1,38 +1,52 @@
 function Round(round, game) {
-    this.decree = round.decree
-    this.deck = game.deck
-    this.deal = round.deal
-    this.dealplayer = game.displayplayer.cookie === round.dealplayer.cookie ? game.displayplayer : game.remoteplayer
-    this.receiveplayer = game.displayplayer.cookie === round.dealplayer.cookie ? game.remoteplayer : game.displayplayer
-    this.trick = new Trick(round.trick, game)
+    if (game) {
+        this.deck = game.deck
+        this.decree = round.decree
+        this.deal = round.deal
+        this.dealplayer = game.displayplayer.cookie === round.dealplayer.cookie ? game.displayplayer : game.remoteplayer
+        this.receiveplayer = game.displayplayer.cookie === round.dealplayer.cookie ? game.remoteplayer : game.displayplayer
+        this.trick = new Trick(round.trick, game)
+    } else {
+        this.deck = this.createDeck()
+        this.dealplayer = round.receiveplayer
+        this.dealplayer.createHand(this.deck)
+        this.receiveplayer = round.dealplayer
+        this.receiveplayer.createHand(this.deck)
+        this.decree = this.setDecree()
+        this.trick = new Trick(trick, this)
+    }
 }
 
 Round.prototype.createDeck = function () {
+    let deck = []
     for (let i = 0; i < suits.length; i++) {
         for (let num = 1; num < 12; num++) {
             let card = new Card(num, suits[i]);
             card.mechanic = display.mechanics[i]
-            this.deck.push(card);
+            deck.push(card);
         }
     }
+    return this.shuffleDeck(deck)
 };
 
-Round.prototype.shuffleDeck = function () {
+Round.prototype.shuffleDeck = function (deck) {
     let i = 0
         , j = 0
         , temp = [];
 
-    for (i = this.deck.length - 1; i > 0; i -= 1) {
+    for (i = deck.length - 1; i > 0; i -= 1) {
         j = Math.floor(Math.random() * (i + 1));
-        temp = this.deck[i];
-        this.deck[i] = this.deck[j];
-        this.deck[j] = temp
+        temp = deck[i];
+        deck[i] = deck[j];
+        deck[j] = temp
     }
+    return deck
 };
 
 Round.prototype.setDecree = function () {
-    this.decree = this.deck.pop();
-};
+    let decree = this.deck.pop();
+    return decree
+}
 
 Round.prototype.start = function () {
     this.createDeck();
@@ -49,14 +63,19 @@ Round.prototype.end = function() {
             socket.emit('roundstartup')
         }
     } else {
-        this.reset()
+        game.round = new Round(this)
+        round = game.round
+        trick = round.trick
+        round.reset()
+        trick.start()
     }
 }
 
 Round.prototype.reset = function () {
-    display.buildDisplayInfo();
-    // this = new Round(this.receiveplayer, this.dealplayer)
-    // this.start();
-    display.buildTrick();
-    display.buildListActive();
+    let displayInfo = new PlayerInfo(game.displayplayer)
+    let remoteInfo = new PlayerInfo(game.remoteplayer)
+    display.build('display-info', playerInfo, 'game', displayInfo)
+    display.build('remote-info', playerInfo, 'game', remoteInfo)
+    display.buildTrick()
+    display.buildListDeal()
 };

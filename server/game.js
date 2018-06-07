@@ -46,8 +46,6 @@ Game.prototype.update = function(state) {
     let round = this.round
     let trick = round.trick
     round.deal = state.deal
-    this.deck = state.deck
-    round.deck = state.deck
     round.decree = state.decree
     this.player1.cookie === state.player.cookie ? this.player1.hand = state.player.hand : this.player2.hand = state.player.hand
     trick.cards = state.trick
@@ -61,8 +59,7 @@ Game.prototype.createDeck = function () {
             deck.push(card);
         }
     }
-    this.shuffleDeck(deck)
-    return deck
+    return this.shuffleDeck(deck)
 };
 
 Game.prototype.shuffleDeck = function (deck) {
@@ -76,6 +73,7 @@ Game.prototype.shuffleDeck = function (deck) {
         deck[i] = deck[j];
         deck[j] = temp
     }
+    return deck
 };
 
 const suits = ['Bells', 'Keys', 'Moons']

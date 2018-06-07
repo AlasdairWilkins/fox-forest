@@ -1,16 +1,23 @@
-function Trick(trick, game) {
-    if (game) {
-        this.cards = trick.cards
+function Trick(trick, input) {
+    if (input instanceof Game) {
+        let game = input
         this.leadplayer = game.displayplayer.cookie === trick.leadplayer.cookie ? game.displayplayer : game.remoteplayer
         this.followplayer = game.displayplayer.cookie === trick.leadplayer.cookie ? game.remoteplayer : game.displayplayer
+        this.cards = trick.cards
         this.witchReset = trick.witchReset;
         this.hasSwan = trick.hasSwan;
         this.winner = trick.winner
         this.loser = trick.loser
     } else {
+        if (input instanceof Round) {
+            let round = input
+            this.leadplayer = round.receiveplayer
+            this.followplayer = round.dealplayer
+        } else {
+            this.leadplayer = trick.hasSwan ? trick.loser : trick.winner
+            this.followplayer = trick.hasSwan ? trick.winner : trick.loser
+        }
         this.cards = []
-        this.leadplayer = trick.hasSwan ? trick.loser : trick.winner
-        this.followplayer = trick.hasSwan ? trick.winner : trick.loser
         this.witchReset = false
         this.hasSwan = false
         this.winner = null
@@ -182,13 +189,15 @@ Trick.prototype.end = function() {
                 }
 
             }
-        }
-        trick = new Trick(trick, false)
-        display.buildTrick()
-        if (document.getElementById('leader-checkBox').checked) {
-            display.buildResults("trick-leader", "lead the", trick.leadplayer)
         } else {
-            trick.start()
+            trick = new Trick(trick)
+            display.buildTrick()
+            if (document.getElementById('leader-checkBox').checked) {
+                display.buildResults("trick-leader", "lead the", trick.leadplayer)
+            } else {
+                trick.start()
+            }
         }
+
     }
 }

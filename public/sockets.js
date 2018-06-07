@@ -19,16 +19,12 @@ socket.on('startupinfo', function(gameinfo) {
     client.start(gameinfo)
 })
 
-socket.on('newround', function(msg) {
-    if (round.dealplayer.id === player1.id) {
-        round = new Round(player2, player1)
-        trick.leadplayer = player1
-    } else {
-        round = new Round(player1, player2)
-        trick.leadplayer = player2
-    }
-    game.start2p(msg)
-    display.build2p()
+socket.on('newround', function(roundinfo) {
+    game.deck = roundinfo
+    game.round = new Round(roundinfo, game)
+    round = game.round
+    trick = round.trick
+    trick.start()
 })
 
 socket.on('turninfo', function(state) {
@@ -77,4 +73,8 @@ socket.on('zulipinfo', function(msg) {
             suggest(suggestions);
         }
     })
+})
+
+socket.on('woodcuttercard', function(card) {
+    game.displayplayer.insertWoodcutter(card)
 })

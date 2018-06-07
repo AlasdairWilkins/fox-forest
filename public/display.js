@@ -430,4 +430,3 @@ document.getElementById("round-winner").addEventListener("animationend", functio
     document.getElementById("round-winner").style.display = "none"
     round.end()
 })
-
