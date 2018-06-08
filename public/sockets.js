@@ -30,14 +30,15 @@ socket.on('newround', function(roundinfo) {
 socket.on('turninfo', function(state) {
     if (round.decree != state['decree']) {
         round.decree = state['decree'];
-        display.buildDecree();
+        let carddata = {image: round.decree.image, mouseover: round.decree.mouseover}
+        display.build('decree-card', cards, 'decree', carddata)
     }
     trick.cards = state['trick'];
     trick.play()
 })
 
 socket.on('trickresults', function(results) {
-    console.log(results)
+    display.clear('turn')
     game.displayplayer.receiveScores(results)
 })
 
@@ -46,11 +47,11 @@ socket.on('announcement', function(msg) {
 })
 
 socket.on('roundresults', function(msg) {
-    display.clearTurn()
-    player1.score = msg['p1score']
-    player1.roundResult = msg['p1result']
-    player2.score = msg['p2score']
-    player2.roundResult = msg['p2result']
+    display.clear('turn')
+    game.player1.score = msg['p1score']
+    game.player1.roundResult = msg['p1result']
+    game.player2.score = msg['p2score']
+    game.player2.roundResult = msg['p2result']
     if (document.getElementById('score-checkBox').checked) {
         display.buildResults("round-winner")
     } else {

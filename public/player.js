@@ -72,8 +72,8 @@ Player.prototype.insertWoodcutter = function (card) {
 Player.prototype.doFox = function (card) {
     let newcard = round.decree;
     round.decree = this.hand[card];
-    let decree = `<img src=${round.decree.image} class="card">`;
-    display.buildDecree(decree);
+    let carddata = {image: round.decree.image, mouseover: round.decree.mouseover}
+    display.build('decree-card', cards, 'decree', carddata)
     this.hand.splice(card, 1);
     this.insertCard(newcard);
     if (this.cookie === game.displayplayer.cookie) {
@@ -187,7 +187,7 @@ Player.prototype.finishTurn = function (card) {
         if (trick.cards.length === 2) {
             socket.emit('trickcompleted', state)
         } else {
-            display.buildRemoteTurn()
+            display.build('turn', turn, 'remote', game.remoteplayer.name)
             socket.emit('turncompleted', state)
         }
     } else {
@@ -287,7 +287,8 @@ Player.prototype.receiveScores = function (results) {
     console.log("Made it here!")
     if (round.decree !== results.decree) {
         round.decree = results.decree;
-        display.buildDecree();
+        let carddata = {image: round.decree.image, mouseover: round.decree.mouseover}
+        display.build('decree-card', cards, 'decree', carddata)
     }
     let winner = results.trick.winner
     let updateplayer

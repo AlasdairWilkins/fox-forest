@@ -39,7 +39,7 @@ Client.prototype.goHome = function() {
         // display.buildDisplayPlayer(this.name)
     }
     display.build('display-info', playerInfo, 'name', client.name)
-    display.build('remote-info', playerInfo, 'none')
+    display.clear('remote-info')
     display.build('playerstartup', startup, 'home')
 }
 

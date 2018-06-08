@@ -22,7 +22,6 @@ Round.prototype.createDeck = function () {
     for (let i = 0; i < suits.length; i++) {
         for (let num = 1; num < 12; num++) {
             let card = new Card(num, suits[i]);
-            card.mechanic = display.mechanics[i]
             deck.push(card);
         }
     }

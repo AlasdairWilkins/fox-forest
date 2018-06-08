@@ -105,23 +105,24 @@ Trick.prototype.start = function() {
     if (game.twoplayer) {
         if (trick.leadplayer.cookie === game.displayplayer.cookie) {
             display.buildListActive();
-            display.buildDisplayTurn()
+            display.build('turn', turn, 'display')
         } else {
-            display.buildRemoteTurn()
+            display.build('turn', turn, 'remote', game.remoteplayer.name)
         }
     } else {
         trick.play()
     }
 }
 
+
 Trick.prototype.resume = function() {
     if (game.twoplayer) {
         if (trick.followplayer.cookie === game.displayplayer.cookie) {
             game.displayplayer.setFollowCards()
             display.buildListActive();
-            display.buildDisplayTurn()
+            display.build('turn', turn, 'display')
         } else {
-            display.buildRemoteTurn()
+            display.build('turn', turn, 'remote', game.remoteplayer.name)
         }
     } else {
         if (trick.cards.length === 1) {
@@ -140,7 +141,7 @@ Trick.prototype.play = function () {
         game.displayplayer.setFollowCards()
     }
     if (game.twoplayer) {
-        display.buildDisplayTurn()
+        display.build('turn', turn, 'display')
     } else {
         let state = new State(game.displayplayer, trick, round, game)
         console.log("State:", state)
