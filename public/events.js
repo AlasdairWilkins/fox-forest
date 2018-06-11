@@ -61,7 +61,7 @@ $('#playerstartup').on('submit', '#email', function(submit) {
     submit.preventDefault()
     let email = document.getElementById('emailentry').value
     let input = {email: email, code: gamecode}
-    // socket.emit('sendcode', input)
+    socket.emit('sendcode', input)
     display.build('playerstartup', startup, 'emailsent', input)
 
 })
