@@ -301,9 +301,9 @@ io.on('connection', function(socket){
 
         let mailOptions = {
             to: msg.email,
-            subject: "Here's your game code",
-            text: `${msg.gameroom} or go to ${link}`,
-            html: `<a href='${link}'>${link}</a>`
+            subject: "You've been invited to play a game of The Fox in the Forest!",
+            text: `Go to http://fox-forest.alasdairwilkins.com and enter ${msg.gameroom} when it asks for a game code.`,
+            html: `Go to <a href="http://fox-forest.alasdairwilkins.com">fox-forest.alasdairwilkins.com</a> and enter ${msg.gameroom} when it asks for a game code. Good luck!`
         };
 
         transporter.sendMail(mailOptions, (error, info) => {
