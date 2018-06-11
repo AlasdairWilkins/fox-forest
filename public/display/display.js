@@ -131,7 +131,7 @@ function Display() {
 
     this.buildGame = function() {
         this.showGame()
-        let carddata = {image: round.decree.image, mouseover: round.decree.mouseover}
+        let carddata = {image: game.round.decree.image, mouseover: game.round.decree.mouseover}
         this.build('decree-card', cards, 'decree', carddata)
         this.buildListDeal();
         this.buildTrick()
@@ -145,7 +145,7 @@ function Display() {
     this.buildResults = function (element, action, leadplayer) {
         let result = null
         if (element === "round-winner") {
-            result = `${player1.roundResult}<br><br>${player2.roundResult}`
+            result = `${game.player1.roundResult}<br><br>${game.player2.roundResult}`
         } else {
             if (leadplayer.cookie === game.displayplayer.cookie) {
                 result = `You ${action} trick!`
@@ -164,6 +164,7 @@ function Display() {
 
 
     this.buildTrick = function (zindex) {
+        let trick = game.round.trick
         let newarray = trick.cards.map(function (card) {
             let count = trick.cards.indexOf(card) + 1;
             if (count === trick.cards.length) {
@@ -225,7 +226,7 @@ function Display() {
     };
 
     this.buildListActive = function () {
-        let tricksplayed = player1.tricks.length + player2.tricks.length;
+        let tricksplayed = game.player1.tricks.length + game.player2.tricks.length;
         let handarray = game.displayplayer.hand.map(function (card) {
             let count = game.displayplayer.hand.indexOf(card);
             let style = game.displayplayer.setListStyle(count, count, card);

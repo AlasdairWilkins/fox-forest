@@ -14,7 +14,6 @@ games = server.games
 pending = server.pending
 
 const url = process.env.SITE_URL
-// const url = 'http://fox-forest.alasdairwilkins.com/'
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -152,15 +151,15 @@ app.get('/login',  (req, res) => {
 // app.post('/codesent', function(req, res) {
 //     res.setHeader('Access-Control-Allow-Origin', '*')
 //     console.log(req.body)
+// // })
+//
+// //review purpose of this function?
+//
+// app.post('/woodcutterdraw', function(req, res) {
+//     res.setHeader('Access-Control-Allow-Origin', '*')
+//     var card = round.deck.pop()
+//     res.send({'newcard': card})
 // })
-
-//review purpose of this function?
-
-app.post('/woodcutterdraw', function(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    var card = round.deck.pop()
-    res.send({'newcard': card})
-})
 
 io.on('connection', function(socket){
 
@@ -361,6 +360,8 @@ io.on('connection', function(socket){
         player1.getScores()
         player2.getScores()
         scores = {
+            'p1cookie': player1.cookie,
+            'p2cookie': player2.cookie,
             'p1score': player1.score,
             'p1result': player1.roundResult,
             'p2score': player2.score,
@@ -383,10 +384,7 @@ io.on('connection', function(socket){
 
     socket.on('woodcutterdraw', function(gameroom) {
         let game = games[gameroom]
-        let deck = game.deck
-        let card = deck.pop()
-        game.deck = deck
-        round.deck = deck
+        let card = game.round.deck.pop()
         socket.emit('woodcuttercard', card)
     })
 

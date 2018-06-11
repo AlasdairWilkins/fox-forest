@@ -5,7 +5,7 @@ function Player(deck, name, id, cookie, socket) {
     this.id = cookie ? id : 'computer';
     this.cookie = cookie ? cookie : null;
     this.socket = cookie ? socket : null;
-    this.hand = this.createHand(deck)
+    this.hand = null
     this.tricks = [];
     this.score = 0;
     this.treasure = 0;

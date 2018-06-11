@@ -16,47 +16,38 @@ socket.on('gamecode', function(code) {
 })
 
 socket.on('startupinfo', function(gameinfo) {
+    console.log(gameinfo)
     client.start(gameinfo)
 })
 
 socket.on('newround', function(roundinfo) {
     game.deck = roundinfo
     game.round = new Round(roundinfo, game)
-    round = game.round
-    trick = round.trick
-    trick.start()
+    game.round.start()
 })
 
 socket.on('turninfo', function(state) {
-    if (round.decree != state['decree']) {
-        round.decree = state['decree'];
-        let carddata = {image: round.decree.image, mouseover: round.decree.mouseover}
+    if (game.round.decree != state['decree']) {
+        game.round.decree = state['decree'];
+        let carddata = {image: game.round.decree.image, mouseover: game.round.decree.mouseover}
         display.build('decree-card', cards, 'decree', carddata)
     }
-    trick.cards = state['trick'];
-    trick.play()
+    game.round.trick.cards = state['trick'];
+    game.round.trick.play()
 })
 
 socket.on('trickresults', function(results) {
     display.clear('turn')
-    game.displayplayer.receiveScores(results)
+    game.round.receiveTrick(results)
 })
 
-socket.on('announcement', function(msg) {
-    console.log(msg)
-})
+// socket.on('announcement', function(msg) {
+//     console.log(msg)
+// })
 
-socket.on('roundresults', function(msg) {
+socket.on('roundresults', function(results) {
     display.clear('turn')
-    game.player1.score = msg['p1score']
-    game.player1.roundResult = msg['p1result']
-    game.player2.score = msg['p2score']
-    game.player2.roundResult = msg['p2result']
-    if (document.getElementById('score-checkBox').checked) {
-        display.buildResults("round-winner")
-    } else {
-        round.end()
-    }
+    game.receiveRound(results)
 })
 
 socket.on('zulipinfo', function(msg) {

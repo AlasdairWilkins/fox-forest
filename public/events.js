@@ -81,15 +81,15 @@ $('#playerstartup').on('submit', '#zulip', function(submit) {
 
 document.getElementById("trick-leader").addEventListener("animationend", function () {
     document.getElementById("trick-leader").style.display = "none";
-    trick.start()
+    game.round.trick.start()
 })
 
 document.getElementById("trick-winner").addEventListener("animationend", function () {
     document.getElementById("trick-winner").style.display = "none";
-    trick.end()
+    game.round.trick.end()
 })
 
 document.getElementById("round-winner").addEventListener("animationend", function () {
     document.getElementById("round-winner").style.display = "none"
-    round.end()
+    game.round.end()
 })

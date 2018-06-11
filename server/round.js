@@ -1,24 +1,17 @@
 //server-side file
 
 const Trick = require("./trick")
+const Card = require("./card")
 
-function Round(dealplayer, receiveplayer, deck) {
-    if (deck) {
-        this.decree = this.setDecree(deck)
-        this.deal = dealplayer.id
-        this.dealplayer = dealplayer;
-        this.receiveplayer = receiveplayer
-        this.trick = new Trick(this.receiveplayer, this.dealplayer)
-    } else {
-        this.deck = round.createDeck()
-        this.deal = dealplayer.id
-        this.dealplayer = dealplayer
-        this.dealplayer.createHand(this.deck)
-        this.receiveplayer = receiveplayer
-        this.receiveplayer.createHand(this.deck)
-        this.decree = this.setDecree(this.deck)
-        this.trick = new Trick(this.receiveplayer, this.dealplayer)
-    }
+function Round(dealplayer, receiveplayer) {
+    this.deck = this.createDeck()
+    this.deal = dealplayer.id
+    this.dealplayer = dealplayer
+    this.dealplayer.hand = this.dealplayer.createHand(this.deck)
+    this.receiveplayer = receiveplayer
+    this.receiveplayer.hand = this.receiveplayer.createHand(this.deck)
+    this.decree = this.setDecree(this.deck)
+    this.trick = new Trick(this.receiveplayer, this.dealplayer)
 }
 
 Round.prototype.setDecree = function (deck) {

@@ -70,9 +70,9 @@ Player.prototype.insertWoodcutter = function (card) {
 
 
 Player.prototype.doFox = function (card) {
-    let newcard = round.decree;
-    round.decree = this.hand[card];
-    let carddata = {image: round.decree.image, mouseover: round.decree.mouseover}
+    let newcard = game.round.decree;
+    game.round.decree = this.hand[card];
+    let carddata = {image: game.round.decree.image, mouseover: game.round.decree.mouseover}
     display.build('decree-card', cards, 'decree', carddata)
     this.hand.splice(card, 1);
     this.insertCard(newcard);
@@ -90,7 +90,7 @@ Player.prototype.doWoodcutter = function (card) {
     if (game.twoplayer) {
         //$.post("http://localhost:8000/woodcutterdiscard", {'discard': discard}, game.displayplayer(oldcount))
     } else {
-        round.deck.splice(0, 0, discard);
+        game.round.deck.splice(0, 0, discard);
     }
     if (this.cookie === game.displayplayer.cookie) {
         display.buildListInactive(card)
@@ -112,25 +112,25 @@ Player.prototype.doFoxAI = function () {
 };
 
 Player.prototype.doWoodcutterAI = function () {
-    let newcard = round.deck.pop();
+    let newcard = game.round.deck.pop();
     this.insertCard(newcard)
     let card = Math.floor(Math.random() * this.hand.length);
     let discard = this.hand[card];
     this.hand.splice(card, 1);
-    round.deck.splice(0, 0, discard);
+    game.round.deck.splice(0, 0, discard);
 };
 
 Player.prototype.playCard = function (cardtemp) {
-    trick.cards.push(this.hand[cardtemp]);
-    let tricknum = trick.cards.length - 1;
+    game.round.trick.cards.push(this.hand[cardtemp]);
+    let tricknum = game.round.trick.cards.length - 1;
     this.hand.splice(cardtemp, 1);
     if (this.hand.length > 0) {
         if (!game.twoplayer) {
             if (this !== game.displayplayer) {
-                if (trick.cards[tricknum].value === 3) {
+                if (game.round.trick.cards[tricknum].value === 3) {
                     this.doFoxAI()
                 }
-                if (trick.cards[tricknum].value === 5) {
+                if (game.round.trick.cards[tricknum].value === 5) {
                     this.doWoodcutterAI()
                 }
             }
@@ -141,7 +141,7 @@ Player.prototype.playCard = function (cardtemp) {
 Player.prototype.doFoxHuman = function (card) {
     this.playCard(card);
     display.buildTrick();
-    if (game.displayplayer.cookie === trick.followplayer.cookie) {
+    if (game.displayplayer.cookie === game.round.trick.followplayer.cookie) {
         this.resetCards();
     }
     display.buildFoxList(card);
@@ -153,14 +153,14 @@ Player.prototype.doFoxHuman = function (card) {
 Player.prototype.doWoodcutterHuman = function (card) {
     this.playCard(card);
     display.buildTrick();
-    if (game.displayplayer.cookie === trick.followplayer.cookie) {
+    if (game.displayplayer.cookie === game.round.trick.followplayer.cookie) {
         this.resetCards();
     }
     this.resetCards()
     if (game.twoplayer) {
         socket.emit('woodcutterdraw', game.id)
     } else {
-        let newcard = round.deck.pop()
+        let newcard = game.round.deck.pop()
         this.insertWoodcutter(newcard)
     }
 };
@@ -182,30 +182,30 @@ Player.prototype.clicked = function(card) {
 
 Player.prototype.finishTurn = function (card) {
     if (game.twoplayer) {
-        let state = new State(game.displayplayer, trick, round, game)
+        let state = new State(game.displayplayer, game, game.round, game.round.trick)
         console.log("State:", state)
-        if (trick.cards.length === 2) {
+        if (game.round.trick.cards.length === 2) {
             socket.emit('trickcompleted', state)
         } else {
             display.build('turn', turn, 'remote', game.remoteplayer.name)
             socket.emit('turncompleted', state)
         }
     } else {
-        if (this === trick.leadplayer) {
-            trick.followplayer.followCard()
+        if (this === game.round.trick.leadplayer) {
+            game.round.trick.followplayer.followCard()
         }
-        trick.score(trick.leadplayer, trick.followplayer)
+        game.round.trick.score(game.round.trick.leadplayer, game.round.trick.followplayer)
         let parent
-        trick.winner.id === game.displayplayer.id ? parent = 'display-info' : parent = 'remote-info'
-        let update = new PlayerInfo(trick.winner)
+        game.round.trick.winner.cookie === game.displayplayer.cookie ? parent = 'display-info' : parent = 'remote-info'
+        let update = new PlayerInfo(game.round.trick.winner)
         display.build(parent, playerInfo, 'game', update)
-        trick.results(card)
+        game.round.trick.results(card)
     }
 }
 
 Player.prototype.doMonarch = function () {
     let playablecards = this.hand.filter(card => {
-        if (card.suit === trick.cards[0].suit) {
+        if (card.suit === game.round.trick.cards[0].suit) {
             return true
         } else {
             return false
@@ -226,11 +226,11 @@ Player.prototype.doMonarch = function () {
 Player.prototype.setFollowCards = function () {
     if (this.hasSuit()) {
         for (let i = 0; i < this.hand.length; i++) {
-            if (this.hand[i].suit !== trick.cards[0].suit) {
+            if (this.hand[i].suit !== game.round.trick.cards[0].suit) {
                 this.hand[i].playable = false
             }
         }
-        if (trick.cards[0].value === 11) {
+        if (game.round.trick.cards[0].value === 11) {
             this.doMonarch()
         }
     }
@@ -243,7 +243,7 @@ Player.prototype.followCard = function () {
         console.log("in the if!")
         playablecards = this.hand.filter(card => {
             console.log(card)
-            if (card.suit === trick.cards[0].suit) {
+            if (card.suit === game.round.trick.cards[0].suit) {
                 return true
             } else {
                 return false
@@ -252,7 +252,7 @@ Player.prototype.followCard = function () {
         console.log(playablecards)
     }
     let playablecard = null
-    if (trick.cards[0].value === 11) {
+    if (game.round.trick.cards[0].value === 11) {
         if (playablecards[0].value === 1)  {
             playablecard = Math.floor(Math.random() * 2) * (playablecards.length - 1)
         } else {
@@ -276,37 +276,12 @@ Player.prototype.resetCards = function () {
 
 Player.prototype.hasSuit = function () {
     for (let i = 0; i < this.hand.length; i++) {
-        if (this.hand[i].suit === trick.cards[0].suit) {
+        if (this.hand[i].suit === game.round.trick.cards[0].suit) {
             return true
         }
     }
     return false
 };
-
-Player.prototype.receiveScores = function (results) {
-    console.log("Made it here!")
-    if (round.decree !== results.decree) {
-        round.decree = results.decree;
-        let carddata = {image: round.decree.image, mouseover: round.decree.mouseover}
-        display.build('decree-card', cards, 'decree', carddata)
-    }
-    let winner = results.trick.winner
-    let updateplayer
-    results.trick.winner.id === player1.id ? updateplayer = player1 : updateplayer = player2
-    updateplayer.tricks = winner.tricks
-    updateplayer.score = winner.score
-    let parent
-    updateplayer.id === game.displayplayer.id ? parent = 'display-info' : parent = 'remote-info'
-    let update = new PlayerInfo(updateplayer)
-    console.log("Player Info:", playerInfo)
-    display.build(parent, playerInfo, 'game', update)
-    trick.winner = winner
-    trick.loser = results.trick.loser
-    trick.cards = results.trick.cards
-    trick.hasSwan = results.trick.hasSwan
-    display.buildTrick()
-    trick.results()
-}
 
 Player.prototype.getScores = function () {
     let tricks = this.tricks.length;

@@ -10,11 +10,6 @@ function Client() {
 Client.prototype.start = function(gameinfo) {
     this.active = new Game(gameinfo)
     game = this.active
-    round = game.round
-    trick = round.trick
-    player1 = gameinfo.player1.cookie === client.cookie ? game.displayplayer : game.remoteplayer
-    player2 = gameinfo.player1.cookie === client.cookie ? game.remoteplayer : game.displayplayer
-    // console.log(game, round, trick, player1, player2)
     game.start()
 }
 

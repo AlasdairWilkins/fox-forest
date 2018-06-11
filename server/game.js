@@ -2,15 +2,13 @@
 
 const Round = require("./round")
 const Player = require("./player")
-const Card = require("./card")
 
 function Game(choice, id, p1cookie, p1socket, p2cookie, p2socket) {
     this.twoplayer = choice
     this.id = id
-    this.deck = this.createDeck()
     this.player1 = new Player(this.deck, active[p1cookie].name, active[p1cookie].id, p1cookie, p1socket)
     this.player2 = choice ? new Player(this.deck, active[p2cookie].name, active[p2cookie].id, p2cookie, p2socket) : new Player(this.deck)
-    this.round = new Round(this.player1, this.player2, this.deck)
+    this.round = new Round(this.player1, this.player2)
     this.turn = this.round.trick.leadplayer.id
     // this.state = new State(this.player1, this.player2, this.round, this.deck)
 }
@@ -50,32 +48,5 @@ Game.prototype.update = function(state) {
     this.player1.cookie === state.player.cookie ? this.player1.hand = state.player.hand : this.player2.hand = state.player.hand
     trick.cards = state.trick
 }
-
-Game.prototype.createDeck = function () {
-    let deck = []
-    for (let i = 0; i < suits.length; i++) {
-        for (let num = 1; num < 12; num++) {
-            let card = new Card(num, suits[i]);
-            deck.push(card);
-        }
-    }
-    return this.shuffleDeck(deck)
-};
-
-Game.prototype.shuffleDeck = function (deck) {
-    let i = 0
-        , j = 0
-        , temp = [];
-
-    for (i = deck.length - 1; i > 0; i -= 1) {
-        j = Math.floor(Math.random() * (i + 1));
-        temp = deck[i];
-        deck[i] = deck[j];
-        deck[j] = temp
-    }
-    return deck
-};
-
-const suits = ['Bells', 'Keys', 'Moons']
 
 module.exports = Game

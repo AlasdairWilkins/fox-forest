@@ -1,4 +1,4 @@
-function State(player, trick, round, game) {
+function State(player, game, round, trick) {
     this.player = player
     this.id = game.id
     this.deal = round.deal
