@@ -287,7 +287,7 @@ io.on('connection', function(socket){
     })
 
     socket.on('sendcode', function(msg){
-        let link = `${url}/?code=${msg.gameroom}`
+        let link = `${url}/?code=${msg.code}`
         let transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
@@ -302,8 +302,8 @@ io.on('connection', function(socket){
         let mailOptions = {
             to: msg.email,
             subject: "You've been invited to play a game of The Fox in the Forest!",
-            text: `Go to http://fox-forest.alasdairwilkins.com and enter ${msg.gameroom} when it asks for a game code.`,
-            html: `Go to <a href="http://fox-forest.alasdairwilkins.com">fox-forest.alasdairwilkins.com</a> and enter ${msg.gameroom} when it asks for a game code. Good luck!`
+            text: `Go to http://fox-forest.alasdairwilkins.com and enter ${msg.code} when it asks for a game code.`,
+            html: `Go to <a href="http://fox-forest.alasdairwilkins.com">fox-forest.alasdairwilkins.com</a> and enter ${msg.code} when it asks for a game code. Good luck!`
         };
 
         transporter.sendMail(mailOptions, (error, info) => {
