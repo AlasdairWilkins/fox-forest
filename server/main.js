@@ -372,14 +372,10 @@ io.on('connection', function(socket){
 
     socket.on('roundstartup', function(gameroom) {
         let game = games[gameroom]
-        let player1 = game.player1
-        let player2 = game.player2
-        let round = game.round
-        player1.hand = []
-        player2.hand = []
-        game.round = new Round(round.receiveplayer, round.dealplayer)
-        round = game.round
-        io.in(gameroom).emit('newround', round)
+        game.player1.hand = []
+        game.player2.hand = []
+        game.round = new Round(game.round.receiveplayer, game.round.dealplayer)
+        io.in(gameroom).emit('newround', game.round)
     })
 
     socket.on('woodcutterdraw', function(gameroom) {
@@ -389,8 +385,9 @@ io.on('connection', function(socket){
     })
 
     socket.on('woodcutterdiscard', function(msg){
-        var discard = msg['discard']
-        round.deck.splice(0, 0, discard)
+        let discard = msg.discard
+        let gameroom = msg.gameroom
+        games[gameroom].round.deck.splice(0, 0, discard)
     })
 
     socket.on('disconnect', function(){

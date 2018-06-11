@@ -21,8 +21,8 @@ socket.on('startupinfo', function(gameinfo) {
 })
 
 socket.on('newround', function(roundinfo) {
-    game.round = new Round(roundinfo, game)
-    game.round.start()
+    debugger
+    game.resetRound(roundinfo)
 })
 
 socket.on('turninfo', function(state) {
@@ -39,10 +39,6 @@ socket.on('trickresults', function(results) {
     display.clear('turn')
     game.round.receiveTrick(results)
 })
-
-// socket.on('announcement', function(msg) {
-//     console.log(msg)
-// })
 
 socket.on('roundresults', function(results) {
     display.clear('turn')

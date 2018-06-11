@@ -5,7 +5,7 @@ const Card = require("./card")
 
 function Round(dealplayer, receiveplayer) {
     this.deck = this.createDeck()
-    this.deal = dealplayer.id
+    this.deal = dealplayer.cookie
     this.dealplayer = dealplayer
     this.dealplayer.hand = this.dealplayer.createHand(this.deck)
     this.receiveplayer = receiveplayer

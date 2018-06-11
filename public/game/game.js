@@ -55,7 +55,11 @@ Game.prototype.receiveRound = function (results) {
     }
 }
 
-Game.prototype.resetRound = function() {
-    this.round = new Round(this.round)
+Game.prototype.resetRound = function(roundinfo) {
+    if (this.twoplayer) {
+        this.round = new Round(roundinfo, game)
+    } else {
+        this.round = new Round(this.round)
+    }
     this.round.start()
 }

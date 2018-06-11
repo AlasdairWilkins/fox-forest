@@ -88,7 +88,7 @@ Player.prototype.doWoodcutter = function (card) {
     let discard = this.hand[card];
     this.hand.splice(card, 1);
     if (game.twoplayer) {
-        //$.post("http://localhost:8000/woodcutterdiscard", {'discard': discard}, game.displayplayer(oldcount))
+        socket.emit('woodcutterdiscard', {discard: discard, gameroom: game.id})
     } else {
         game.round.deck.splice(0, 0, discard);
     }
