@@ -1,10 +1,10 @@
 function Game(game) {
     this.twoplayer = game.twoplayer;
     this.id = game.id
-    this.player1 = game.player1
-    this.player2 = game.player2
-    this.displayplayer = game.player1.cookie === client.cookie ? new Player(game.player1) : new Player(game.player2)
-    this.remoteplayer = game.player1.cookie === client.cookie ? new Player(game.player2) : new Player(game.player1)
+    this.player1 = new Player(game.player1)
+    this.player2 = new Player(game.player2)
+    this.displayplayer = game.player1.cookie === client.cookie ? this.player1 : this.player2
+    this.remoteplayer = game.player1.cookie === client.cookie ? this.player2 : this.player1
     this.round = new Round(game.round, this)
 }
 
@@ -44,22 +44,18 @@ Game.prototype.update = function() {
 }
 
 Game.prototype.receiveRound = function (results) {
-    let player1
-    let player2
-    if (this.displayplayer.cookie === results.p1cookie) {
-        player1 = this.displayplayer
-        player2 = this.remoteplayer
-    } else {
-        player1 = this.remoteplayer
-        player2 = this.remoteplayer
-    }
-    player1.score = results.p1score
-    player2.roundResult = results.p1result
-    player1.score = results.p2score
-    player2.roundResult = results.p2result
+    this.player1.score = results.p1score
+    this.player1.roundResult = results.p1result
+    this.player2.score = results.p2score
+    this.player2.roundResult = results.p2result
     if (document.getElementById('score-checkBox').checked) {
         display.buildResults("round-winner")
     } else {
         this.round.end()
     }
+}
+
+Game.prototype.resetRound = function() {
+    this.round = new Round(this.round)
+    this.round.start()
 }

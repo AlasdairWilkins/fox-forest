@@ -5,6 +5,8 @@ function Round(round, game) {
         this.deal = round.deal
         this.dealplayer = game.displayplayer.cookie === round.dealplayer.cookie ? game.displayplayer : game.remoteplayer
         this.receiveplayer = game.displayplayer.cookie === round.dealplayer.cookie ? game.remoteplayer : game.displayplayer
+        game.displayplayer.cookie === this.dealplayer.cookie ?
+            game.displayplayer.hand = round.dealplayer.hand : game.displayplayer.hand = round.receiveplayer.hand
         this.trick = new Trick(round.trick, game)
     } else {
         this.deck = this.createDeck()
@@ -76,11 +78,7 @@ Round.prototype.end = function() {
             socket.emit('roundstartup', game.id)
         }
     } else {
-        game.round = new Round(this)
-        round = game.round
-        trick = round.trick
-        round.reset()
-        trick.start()
+        game.resetRound()
     }
 }
 

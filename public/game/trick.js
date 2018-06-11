@@ -153,7 +153,7 @@ Trick.prototype.results = function() {
         display.buildResults("trick-winner", "won the", this.winner)
     } else {
         setTimeout(function() {
-            this.end()
+            game.round.trick.end()
         }, 1500)
     }
 }

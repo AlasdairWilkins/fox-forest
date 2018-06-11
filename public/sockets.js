@@ -21,13 +21,12 @@ socket.on('startupinfo', function(gameinfo) {
 })
 
 socket.on('newround', function(roundinfo) {
-    game.deck = roundinfo
     game.round = new Round(roundinfo, game)
     game.round.start()
 })
 
 socket.on('turninfo', function(state) {
-    if (game.round.decree != state['decree']) {
+    if (game.round.decree !== state['decree']) {
         game.round.decree = state['decree'];
         let carddata = {image: game.round.decree.image, mouseover: game.round.decree.mouseover}
         display.build('decree-card', cards, 'decree', carddata)
