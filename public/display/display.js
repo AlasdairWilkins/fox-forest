@@ -22,6 +22,13 @@ const cards = {
     decree: `<img src={{image}} class="card" {{mouseover}}'>`
 }
 
+const results = {
+    leads: `<div id="trick-leader">{{#if display}}You lead{{else}}{{name}} leads{{/if}} the trick!</div>`,
+    trick: `<div id="trick-winner">{{#if display}}You{{else}}{{name}}{{/if}} won the trick!</div>`,
+    round: `<div id="round-winner">{{#roundPlayer display}}{{/roundPlayer}}
+            {{#roundPlayer remote}}{{/roundPlayer}}</div>`,
+}
+
 
 const startup = {
     home:
@@ -35,19 +42,15 @@ const startup = {
         <button onclick="display.build('playerstartup', startup, 'emailcode', '{{input}}')">Email the code.</button>
         <button onclick="socket.emit('zulipget')">Invite a Recurser on Zulip.</button>`,
     emailcode:
-        // `<script type="text/x-handlebars-template">
         `<div id="newcode">Your game code is {{input}}.</div><br>
         <form id="email">
         Enter your opponent's email to send them the code:<br>
         <input id="emailentry" type="text" onfocus="this.value=''" value="Email"><br><br>
         <input type="submit" value="Submit">
         </form>`,
-        // </script>`,
     emailsent:
-        // `<script type="text/x-handlebars-template">
         `<p id="sentmessage">The game code {{code}} has been sent to {{email}}.</p>
         <button onclick="display.build('playerstartup', startup, 'emailcode', '{{code}}')">Resend email.</button>`,
-        // </script>`,
     zulipcode:
         `<div id="newcode">Your game code is {{input}}.</div><br>
         <form id="zulip">
@@ -84,12 +87,9 @@ function Display() {
 
     this.build = function(parent, directory, value, input) {
         if (input) {
-            console.log(input)
             let template = Handlebars.compile(directory[value])
-            if (typeof input === "string") {
-                input = {input: input}
-            }
-            let html = template(input)
+            let context = new Context(input, value)
+            let html = template(context)
             document.getElementById(parent).innerHTML = html
         } else {
            document.getElementById(parent).innerHTML = directory[value]
@@ -160,8 +160,6 @@ function Display() {
         document.getElementById(element).innerHTML = `${result}`
         document.getElementById(element).style.display = "block";
     };
-
-
 
     this.buildTrick = function (zindex) {
         let trick = game.round.trick

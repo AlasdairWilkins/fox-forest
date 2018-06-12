@@ -45,39 +45,14 @@ Player.prototype.getScores = function () {
     } else if (tricks === 5) {
         score = 2
     } else if (tricks === 6) {
-        score += 3
+        score = 3
     } else if (7 <= tricks && tricks <= 9) {
-        score += 6
-    }
-    if (this.treasure === 0) {
-        if (tricks === 1) {
-            this.roundResult = `${this.name} won  1 trick and scored 6 points.`
-        } else if (score === 1) {
-            this.roundResult = `${this.name} won 4 tricks and scored 1 point.`
-        } else {
-            this.roundResult = `${this.name} won ${this.tricks.length} tricks and scored ${score} points.`
-        }
-    } else if (this.treasure === 1) {
-        if (tricks === 1) {
-            this.roundResult = `${this.name} won  1 trick, collected 1 treasure, and scored 7 points.`
-        } else if (tricks >= 10) {
-            this.roundResult = `${this.name} won  ${this.tricks.length} tricks, collected 1 treasure, and scored 1 point.`
-        }
-        else {
-            let treasurescore = score + 1;
-            this.roundResult = `${this.name} won ${this.tricks.length} tricks, collected 1 treasure, and scored ${treasurescore} points.`
-        }
-    } else {
-        let treasurescore = score + this.treasure;
-        if (tricks === 1) {
-            this.roundResult = `${this.name} won 1 trick, collected ${this.treasure} treasures, and scored ${treasurescore} points.`
-        } else {
-            this.roundResult = `${this.name} won ${this.tricks.length} tricks, collected ${this.treasure} treasures, and scored ${treasurescore} points.`
-        }
+        score = 6
     }
     this.score += score;
     this.treasure = 0;
     this.tricks = []
+    return this.score
 };
 
 const names = ["James", "John", "Robert", "Michael", "William", "David", "Richard", "Joseph", "Thomas", "Charles", "Christopher", "Daniel",

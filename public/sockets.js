@@ -16,33 +16,30 @@ socket.on('gamecode', function(code) {
 })
 
 socket.on('startupinfo', function(gameinfo) {
-    console.log(gameinfo)
     client.start(gameinfo)
 })
 
 socket.on('newround', function(roundinfo) {
-    debugger
     game.resetRound(roundinfo)
 })
 
 socket.on('turninfo', function(state) {
     if (game.round.decree !== state['decree']) {
         game.round.decree = state['decree'];
-        let carddata = {image: game.round.decree.image, mouseover: game.round.decree.mouseover}
-        display.build('decree-card', cards, 'decree', carddata)
+        display.build('decree-card', cards, 'decree', game.round.decree)
     }
     game.round.trick.cards = state['trick'];
     game.round.trick.play()
 })
 
-socket.on('trickresults', function(results) {
+socket.on('trickresults', function(result) {
     display.clear('turn')
-    game.round.receiveTrick(results)
+    game.round.receiveTrick(result)
 })
 
-socket.on('roundresults', function(results) {
+socket.on('roundresults', function(result) {
     display.clear('turn')
-    game.receiveRound(results)
+    game.scoreRound(result)
 })
 
 socket.on('zulipinfo', function(msg) {
@@ -62,6 +59,6 @@ socket.on('zulipinfo', function(msg) {
     })
 })
 
-socket.on('woodcuttercard', function(card) {
+socket.on('woodcuttercard', function(donext, card) {
     game.displayplayer.insertWoodcutter(card)
 })

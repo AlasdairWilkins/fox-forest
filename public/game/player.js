@@ -72,8 +72,7 @@ Player.prototype.insertWoodcutter = function (card) {
 Player.prototype.doFox = function (card) {
     let newcard = game.round.decree;
     game.round.decree = this.hand[card];
-    let carddata = {image: game.round.decree.image, mouseover: game.round.decree.mouseover}
-    display.build('decree-card', cards, 'decree', carddata)
+    display.build('decree-card', cards, 'decree', game.round.decree)
     this.hand.splice(card, 1);
     this.insertCard(newcard);
     if (this.cookie === game.displayplayer.cookie) {
@@ -183,7 +182,6 @@ Player.prototype.clicked = function(card) {
 Player.prototype.finishTurn = function (card) {
     if (game.twoplayer) {
         let state = new State(game.displayplayer, game, game.round, game.round.trick)
-        console.log("State:", state)
         if (game.round.trick.cards.length === 2) {
             socket.emit('trickcompleted', state)
         } else {
@@ -197,8 +195,7 @@ Player.prototype.finishTurn = function (card) {
         game.round.trick.score(game.round.trick.leadplayer, game.round.trick.followplayer)
         let parent
         game.round.trick.winner.cookie === game.displayplayer.cookie ? parent = 'display-info' : parent = 'remote-info'
-        let update = new PlayerInfo(game.round.trick.winner)
-        display.build(parent, playerInfo, 'game', update)
+        display.build(parent, playerInfo, 'game', game.round.trick.winner)
         game.round.trick.results(card)
     }
 }
@@ -238,18 +235,14 @@ Player.prototype.setFollowCards = function () {
 
 Player.prototype.followCard = function () {
     let playablecards = this.hand
-    console.log("made it here")
     if (this.hasSuit()) {
-        console.log("in the if!")
         playablecards = this.hand.filter(card => {
-            console.log(card)
             if (card.suit === game.round.trick.cards[0].suit) {
                 return true
             } else {
                 return false
             }
         })
-        console.log(playablecards)
     }
     let playablecard = null
     if (game.round.trick.cards[0].value === 11) {
@@ -261,7 +254,6 @@ Player.prototype.followCard = function () {
     } else {
         playablecard = Math.floor(Math.random() * (playablecards.length));
     }
-    console.log(playablecards[playablecard])
     let card = this.hand.indexOf(playablecards[playablecard])
     this.playCard(card);
     display.buildTrick()
@@ -297,33 +289,5 @@ Player.prototype.getScores = function () {
     } else if (7 <= tricks && tricks <= 9) {
         score += 6
     }
-    if (this.treasure === 0) {
-        if (tricks === 1) {
-            this.roundResult = `${this.name} won  1 trick and scored 6 points.`
-        } else if (score === 1) {
-            this.roundResult = `${this.name} won 4 tricks and scored 1 point.`
-        } else {
-            this.roundResult = `${this.name} won ${this.tricks.length} tricks and scored ${score} points.`
-        }
-    } else if (this.treasure === 1) {
-        if (tricks === 1) {
-            this.roundResult = `${this.name} won  1 trick, collected 1 treasure, and scored 7 points.`
-        } else if (tricks >= 10) {
-            this.roundResult = `${this.name} won  ${this.tricks.length} tricks, collected 1 treasure, and scored 1 point.`
-        }
-    else {
-            let treasurescore = score + 1;
-            this.roundResult = `${this.name} won ${this.tricks.length} tricks, collected 1 treasure, and scored ${treasurescore} points.`
-        }
-    } else {
-        let treasurescore = score + this.treasure;
-        if (tricks === 1) {
-            this.roundResult = `${this.name} won 1 trick, collected ${this.treasure} treasures, and scored ${treasurescore} points.`
-        } else {
-            this.roundResult = `${this.name} won ${this.tricks.length} tricks, collected ${this.treasure} treasures, and scored ${treasurescore} points.`
-        }
-    }
-    this.score += score;
-    this.treasure = 0;
-    this.tricks = []
+    return this.score + score;
 };

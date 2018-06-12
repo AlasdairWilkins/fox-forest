@@ -30,11 +30,11 @@ Trick.prototype.doWitch = function () {
     let position = 0;
     if (this.cards[0].value === 9) {
         oldsuittemp = this.cards[0].suit;
-        this.cards[0].suit = round.decree.suit
+        this.cards[0].suit = game.round.decree.suit
     } else {
         oldsuittemp = this.cards[1].suit;
         position = 1;
-        this.cards[1].suit = round.decree.suit
+        this.cards[1].suit = game.round.decree.suit
     }
     this.witchReset = true;
     return {
@@ -76,7 +76,7 @@ Trick.prototype.score = function () {
             this.loser = this.leadplayer
         }
     } else {
-        if (this.cards[1].suit === round.decree.suit) {
+        if (this.cards[1].suit === game.round.decree.suit) {
             if (this.witchReset) {
                 this.cards[olddata.position].suit = olddata.suit;
             }
@@ -150,7 +150,7 @@ Trick.prototype.play = function () {
 
 Trick.prototype.results = function() {
     if (document.getElementById('winner-checkBox').checked) {
-        display.buildResults("trick-winner", "won the", this.winner)
+        display.build('trick-info', results, 'trick', this.winner)
     } else {
         setTimeout(function() {
             game.round.trick.end()
@@ -165,19 +165,7 @@ Trick.prototype.end = function() {
                 socket.emit('roundcompleted', game.id)
             }
         } else {
-            game.player1.getScores();
-            game.player2.getScores();
-            if (game.gameOver) {
-                display.buildScores();
-                display.buildWinner()
-            } else {
-                if (document.getElementById('score-checkBox').checked) {
-                    display.buildResults("round-winner")
-                } else {
-                    game.round.end()
-                }
-
-            }
+           game.scoreRound()
         }
     } else {
         game.round.resetTrick()

@@ -1,10 +1,10 @@
 const client = new Client()
 // const games = client.games
 let game
-let round
-let trick
-let player1
-let player2
+// let round
+// let trick
+// let player1
+// let player2
 let gamecode
 let addresses
 

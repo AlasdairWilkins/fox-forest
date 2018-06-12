@@ -52,7 +52,9 @@ Round.prototype.setDecree = function () {
 Round.prototype.start = function() {
     if (this.trick.cards.length === 0) {
         if (document.getElementById('leader-checkBox').checked) {
-            display.buildResults("trick-leader", "lead the", this.trick.leadplayer)
+            let leader = {name: this.trick.leadplayer.name}
+            game.displayplayer.cookie === this.trick.leadplayer.cookie ? leader.display = true : leader.display = false
+            display.build('trick-info', results, 'leads', leader)
         } else {
             this.trick.start()
         }
@@ -86,23 +88,20 @@ Round.prototype.resetTrick = function() {
     this.trick = new Trick(this.trick)
     display.buildTrick()
     if (document.getElementById('leader-checkBox').checked) {
-        display.buildResults("trick-leader", "lead the", this.trick.leadplayer)
+        display.build('trick-info', results, 'leads', this.trick.leadplayer)
     } else {
         this.trick.start()
     }
 }
 
 Round.prototype.reset = function () {
-    let displayInfo = new PlayerInfo(game.displayplayer)
-    let remoteInfo = new PlayerInfo(game.remoteplayer)
-    display.build('display-info', playerInfo, 'game', displayInfo)
-    display.build('remote-info', playerInfo, 'game', remoteInfo)
+    display.build('display-info', playerInfo, 'game', game.displayplayer)
+    display.build('remote-info', playerInfo, 'game', game.remoteplayer)
     display.buildTrick()
     display.buildListDeal()
 };
 
 Round.prototype.receiveTrick = function(results) {
-    console.log("Made it here!")
     if (this.decree !== results.decree) {
         this.decree = results.decree;
         let carddata = {image: this.decree.image, mouseover: this.decree.mouseover}
@@ -115,9 +114,7 @@ Round.prototype.receiveTrick = function(results) {
     updateplayer.score = winner.score
     let parent
     updateplayer.cookie === game.displayplayer.cookie ? parent = 'display-info' : parent = 'remote-info'
-    let update = new PlayerInfo(updateplayer)
-    console.log("Player Info:", playerInfo)
-    display.build(parent, playerInfo, 'game', update)
+    display.build(parent, playerInfo, 'game', updateplayer)
     this.trick.winner = winner
     this.trick.loser = results.trick.loser
     this.trick.cards = results.trick.cards

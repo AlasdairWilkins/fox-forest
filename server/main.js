@@ -4,8 +4,9 @@ const Server = require("./server")
 const Game = require("./game")
 const Round = require("./round")
 const Trick = require("./trick")
-const Player = require("./player")
-const Card = require("./card")
+const Results = require("./results")
+// const Player = require("./player")
+// const Card = require("./card")
 
 server = new Server()
 active = server.active
@@ -54,15 +55,6 @@ const authorizationUri = oauth2.authorizationCode.authorizeURL({
     redirect_uri: url + '/login'
     // redirect_uri: 'http://fox-forest.alasdairwilkins.com/login',
 });
-
-function Results (game, round, trick) {
-    if (trick) {
-        this.player1 = game.player1
-        this.player2 = game.player2
-        this.decree = round.decree
-        this.trick = trick
-    }
-}
 
 http.listen(8000, function() {
     console.log('Example app listening on port 8000!');
@@ -349,23 +341,16 @@ io.on('connection', function(socket){
         io.in(gameroom).emit('trickresults', results)
         console.log("And now!", trick.hasSwan, !trick.hasSwan)
         trick.hasSwan ? game.round.trick = new Trick(trick.loser, trick.winner) : game.round.trick = new Trick(trick.winner, trick.loser)
-        console.log("First:", trick)
-        console.log("Second:", game.round.trick)
     })
 
     socket.on('roundcompleted', function(gameroom) {
         let game = games[gameroom]
-        let player1 = game.player1
-        let player2 = game.player2
-        player1.getScores()
-        player2.getScores()
+        let results = new Results(game, game.round)
         scores = {
             'p1cookie': player1.cookie,
             'p2cookie': player2.cookie,
             'p1score': player1.score,
-            'p1result': player1.roundResult,
             'p2score': player2.score,
-            'p2result': player2.roundResult
         }
         io.in(gameroom).emit('roundresults', scores)
     })

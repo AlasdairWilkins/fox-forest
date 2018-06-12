@@ -56,40 +56,37 @@ $(function(){
 
 })
 
-$('#playerstartup').on('submit', '#email', function(submit) {
-    console.log("Hello!")
-    submit.preventDefault()
-    let email = document.getElementById('emailentry').value
-    let input = {email: email, code: gamecode}
-    socket.emit('sendcode', input)
-    display.build('playerstartup', startup, 'emailsent', input)
+$('#playerstartup')
+    .on('submit', '#email', function(submit) {
+        console.log("Hello!")
+        submit.preventDefault()
+        let email = document.getElementById('emailentry').value
+        let input = {email: email, code: gamecode}
+        socket.emit('sendcode', input)
+        display.build('playerstartup', startup, 'emailsent', input)
+    })
+    .on('submit', '#code', function(submit) {
+        submit.preventDefault()
+        let code = document.getElementById('codeentry').value
+        socket.emit('join2p', code)
+    })
+    .on('submit', '#zulip', function(submit) {
+        submit.preventDefault()
+        let zulip = document.getElementById('zulipentry').value
+        let address = addresses[zulip]
+        socket.emit('zulipsend', {address: address, code: gamecode, name: client.name})
+    })
 
-})
-
-$('#playerstartup').on('submit', '#code', function(submit) {
-    submit.preventDefault()
-    let code = document.getElementById('codeentry').value
-    socket.emit('join2p', code)
-})
-
-$('#playerstartup').on('submit', '#zulip', function(submit) {
-    submit.preventDefault()
-    let zulip = document.getElementById('zulipentry').value
-    let address = addresses[zulip]
-    socket.emit('zulipsend', {address: address, code: gamecode, name: client.name})
-})
-
-document.getElementById("trick-leader").addEventListener("animationend", function () {
-    document.getElementById("trick-leader").style.display = "none";
-    game.round.trick.start()
-})
-
-document.getElementById("trick-winner").addEventListener("animationend", function () {
-    document.getElementById("trick-winner").style.display = "none";
-    game.round.trick.end()
-})
-
-document.getElementById("round-winner").addEventListener("animationend", function () {
-    document.getElementById("round-winner").style.display = "none"
-    game.round.end()
-})
+$('#trick-info')
+    .on('animationend', '#trick-leader', function() {
+        display.clear('trick-info')
+        game.round.trick.start()
+    })
+    .on('animationend', '#trick-winner', function() {
+        display.clear('trick-info')
+        game.round.trick.end()
+    })
+    .on('animationend', '#round-winner', function() {
+        display.clear('trick-info')
+        game.round.end()
+    })

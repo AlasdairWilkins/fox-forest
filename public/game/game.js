@@ -9,10 +9,10 @@ function Game(game) {
 }
 
 Game.prototype.start = function (state) {
-    let displayInfo = new PlayerInfo(this.displayplayer)
-    let remoteInfo = new PlayerInfo(this.remoteplayer)
-    display.build('display-info', playerInfo, 'game', displayInfo)
-    display.build('remote-info', playerInfo, 'game', remoteInfo)
+    // let displayInfo = new PlayerInfo(this.displayplayer)
+    // let remoteInfo = new PlayerInfo(this.remoteplayer)
+    display.build('display-info', playerInfo, 'game', this.displayplayer)
+    display.build('remote-info', playerInfo, 'game', this.remoteplayer)
     display.buildGame()
     this.round.start()
 }
@@ -39,17 +39,19 @@ Game.prototype.resume = function (state) {
 
 Game.prototype.update = function() {
     let state = new State(this.displayplayer, this, this.round, this.round.trick)
-    console.log("State:", state)
     socket.emit('updatestate', state)
 }
 
-Game.prototype.receiveRound = function (results) {
-    this.player1.score = results.p1score
-    this.player1.roundResult = results.p1result
-    this.player2.score = results.p2score
-    this.player2.roundResult = results.p2result
+Game.prototype.scoreRound = function (result) {
+    if (this.twoplayer) {
+        this.player1.score = result.p1score
+        this.player2.score = result.p2score
+    } else {
+        this.player1.score = this.player1.getScores()
+        this.player2.score = this.player2.getScores()
+    }
     if (document.getElementById('score-checkBox').checked) {
-        display.buildResults("round-winner")
+        display.build('trick-info', results, 'round', game)
     } else {
         this.round.end()
     }
@@ -61,5 +63,11 @@ Game.prototype.resetRound = function(roundinfo) {
     } else {
         this.round = new Round(this.round)
     }
+    this.player1.tricks = []
+    this.player2.tricks = []
+    this.player1.treasure = 0
+    this.player2.treasure = 0
+    display.build('display-info', playerInfo, 'game', this.displayplayer)
+    display.build('remote-info', playerInfo, 'game', this.remoteplayer)
     this.round.start()
 }
