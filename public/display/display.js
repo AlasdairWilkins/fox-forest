@@ -142,25 +142,6 @@ function Display() {
         document.getElementById("play").style.display = "block";
     }
 
-    this.buildResults = function (element, action, leadplayer) {
-        let result = null
-        if (element === "round-winner") {
-            result = `${game.player1.roundResult}<br><br>${game.player2.roundResult}`
-        } else {
-            if (leadplayer.cookie === game.displayplayer.cookie) {
-                result = `You ${action} trick!`
-            } else {
-                if (action === "lead the") {
-                    result = `${game.remoteplayer.name} leads the trick!`
-                } else {
-                    result = `${game.remoteplayer.name} ${action} the trick!`
-                }
-            }
-        }
-        document.getElementById(element).innerHTML = `${result}`
-        document.getElementById(element).style.display = "block";
-    };
-
     this.buildTrick = function (zindex) {
         let trick = game.round.trick
         let newarray = trick.cards.map(function (card) {

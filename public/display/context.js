@@ -39,5 +39,6 @@ function Context(source, type) {
 
         default:
             this.input = source
+
     }
 }

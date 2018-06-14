@@ -10,14 +10,3 @@ Handlebars.registerHelper('roundPlayer', function(input, options) {
     let context = new Context(input, 'roundPlayer')
     return template(context)
 })
-
-// let source = `{{#round displayPlayer}}{{/round}}`
-// let template = Handlebars.compile(source)
-// let context = {displayPlayer:
-//         {name: 'Alasdair',
-//             display: false,
-//             trick: {number: 2, word: 'trick'},
-//             treasure: {number: 2, word: 'treasure'},
-//             score: {number: 8, word: 'point'}}}
-// let html = template(context)
-// console.log(html)
