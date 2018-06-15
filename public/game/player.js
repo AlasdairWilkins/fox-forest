@@ -192,9 +192,9 @@ Player.prototype.finishTurn = function (card) {
         if (this === game.round.trick.leadplayer) {
             game.round.trick.followplayer.followCard()
         }
-        game.round.trick.score(game.round.trick.leadplayer, game.round.trick.followplayer)
-        let parent
-        game.round.trick.winner.cookie === game.displayplayer.cookie ? parent = 'display-info' : parent = 'remote-info'
+        game.round.trick.score()
+        let parent = game.round.trick.winner.cookie === game.displayplayer.cookie
+            ? 'display-info' : 'remote-info'
         display.build(parent, playerInfo, 'game', game.round.trick.winner)
         game.round.trick.results(card)
     }

@@ -295,7 +295,7 @@ io.on('connection', function(socket){
             to: msg.email,
             subject: "You've been invited to play a game of The Fox in the Forest!",
             text: `Go to http://fox-forest.alasdairwilkins.com and enter ${msg.code} when it asks for a game code.`,
-            html: `Go to <a href="http://fox-forest.alasdairwilkins.com">fox-forest.alasdairwilkins.com</a> and enter ${msg.code} when it asks for a game code. Good luck!`
+            html: `Go to <a href="${url}?code=${msg.code}">fox-forest.alasdairwilkins.com</a> and enter ${msg.code} when it asks for a game code. Good luck!`
         };
 
         transporter.sendMail(mailOptions, (error, info) => {

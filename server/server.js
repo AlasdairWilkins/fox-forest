@@ -14,10 +14,13 @@ Server.prototype.createGame = function(socket, gameroom) {
     let p2cookie = server.parseCookie(socket.request.headers.cookie).id
     let p2socket = socket.id
     games[gameroom] = new Game(true, gameroom, p1cookie, p1socket, p2cookie, p2socket)
-    active[p1cookie].games[gameroom] = games[gameroom]
-    active[p2cookie].games[gameroom] = games[gameroom]
-    active[p1cookie].current = gameroom
-    active[p2cookie].current = gameroom
+    let cookies = [p1cookie, p2cookie]
+    for (let i = 0; i < cookies.length; i++) {
+        let cookie = cookies[i]
+        active[cookie].games[gameroom] = games[gameroom]
+        active[cookie].current = gameroom
+    }
+
 }
 
 Server.prototype.parseCookie = function(cookie) {

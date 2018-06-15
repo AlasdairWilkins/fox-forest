@@ -77,13 +77,13 @@ const mechanics = {
 }
 
 function Display() {
-    this.swan = `Swan: If you play this and lose the trick, you lead the next trick.`;
-    this.fox = `Fox: When you play this, you may exchange the decree card with a card from your hand.`;
-    this.woodcutter = `Woodcutter: When you play this, draw 1 card. Then discard any 1 card to the bottom of the deck.`;
-    this.treasure = `Treasure: The winner of the trick receives 1 point for each 7 in the trick.`;
-    this.witch = `Witch: When determining the winner of a trick with only one 9, treat the 9 as if it were in the trump suit.`;
-    this.monarch = `Monarch: When you lead this, if your opponent has any cards of the same suit, they must play either the 1 or their highest card from that suit.`;
-    this.mechanics = [null, this.swan, null, this.fox, null, this.woodcutter, null, this.treasure, null, this.witch, null, this.monarch]
+    // this.swan = `Swan: If you play this and lose the trick, you lead the next trick.`;
+    // this.fox = `Fox: When you play this, you may exchange the decree card with a card from your hand.`;
+    // this.woodcutter = `Woodcutter: When you play this, draw 1 card. Then discard any 1 card to the bottom of the deck.`;
+    // this.treasure = `Treasure: The winner of the trick receives 1 point for each 7 in the trick.`;
+    // this.witch = `Witch: When determining the winner of a trick with only one 9, treat the 9 as if it were in the trump suit.`;
+    // this.monarch = `Monarch: When you lead this, if your opponent has any cards of the same suit, they must play either the 1 or their highest card from that suit.`;
+    // this.mechanics = [null, this.swan, null, this.fox, null, this.woodcutter, null, this.treasure, null, this.witch, null, this.monarch]
 
     this.build = function(parent, directory, value, input) {
         if (input) {
@@ -235,7 +235,6 @@ function Display() {
             tag.src = "https://www.youtube.com/iframe_api";
             let firstScriptTag = document.getElementsByTagName('script')[0];
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
         }
     }
 
