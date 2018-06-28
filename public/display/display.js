@@ -1,8 +1,46 @@
+const main = {
+    login:
+        `<div id="login">
+            <p>Welcome to The Fox in the Forest!</p>
+            <div id="loginselect">
+                <button id="rcauth" onclick="window.location.href='/auth'">Log in with RC.</button>
+                <button id="nologin" onclick="display.buildForm('username')">Continue without logging in.</button>
+            </div>
+        </div>`,
+    startup: `<div id="startup">
+                <p>Welcome to The Fox in the Forest!</p>
+                <div id ="playerstartup"></div>
+            </div>`,
+    game: `<div id="game">
+                <div id="trick-container">
+                    <div id="decree">
+                        <div id="decree-card"></div>
+                        <div id="pass"></div>
+                    </div>
+                    <div id="trick">
+                        <div id ="trick-cards"></div>
+                        <div id="trick-info"></div>
+                    </div>
+                    <div id="deck"><img src="/images/reverse.jpg" class="card"></div>
+                </div>
+                <div id="hand-container">
+                    <div id="hand"></div>
+                    <div id="info">
+                        <p>Game Info:</p>
+                        <p id="mechanic">Mouse over any odd-numbered card to see its special ability!</p>
+                        <p id="turn"></p>
+                        <p id="hint"></p>
+                    </div>
+                </div>
+            </div>`,
+}
+
+
 const forms = {username:
         {id: 'loginselect',
             formId: 'username',
-            action: "action='/nologin' method='get'",
-            // inputId: 'usernameentry',
+            action: '',
+            inputId: 'usernameentry',
             text: 'Enter your display name.',
             default: 'Your name'
             }
@@ -99,6 +137,24 @@ function Display() {
     this.clear = function(parent) {
         document.getElementById(parent).innerHTML = ''
     }
+
+    this.show = function(element) {
+        document.getElementById(element).style.display = "block"
+    }
+
+    this.hide = function(element) {
+        document.getElementById(element).style.display = "none"
+    }
+
+    // this.showModal = function(element) {
+    //     document.getElementById(element).style.display = "block"
+    //     if (element === 'video-tutorial-modal') {
+    //         let tag = document.createElement('script');
+    //         tag.src = "https://www.youtube.com/iframe_api";
+    //         let firstScriptTag = document.getElementsByTagName('script')[0];
+    //         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    //     }
+    // }
 
     this.buildHint = function(value) {
         if (value === 3) {
@@ -228,17 +284,4 @@ function Display() {
         document.getElementById(element).classList.toggle("show")
     }
 
-    this.showModal = function(element) {
-        document.getElementById(element).style.display = "block"
-        if (element === 'video-tutorial-modal') {
-            let tag = document.createElement('script');
-            tag.src = "https://www.youtube.com/iframe_api";
-            let firstScriptTag = document.getElementsByTagName('script')[0];
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        }
-    }
-
-    this.clearModal = function(element) {
-        document.getElementById(element).style.display = "none"
-    }
 }

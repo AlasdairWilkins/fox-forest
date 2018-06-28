@@ -1,6 +1,6 @@
 //server-side file
 
-function Player(deck, name, id, cookie, socket) {
+function Player(name, id, cookie, socket) {
     this.name = name ? name : names[Math.floor(Math.random() * names.length)];
     this.id = cookie ? id : 'computer';
     this.cookie = cookie ? cookie : null;

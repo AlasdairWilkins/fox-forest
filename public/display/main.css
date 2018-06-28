@@ -277,37 +277,9 @@ table {
 }
 
 
-#startup {
+#main {
     margin-left: 15px;
 }
-
-/*#twoplayer {*/
-    /*display: none;*/
-/*}*/
-
-/*#createcode {*/
-    /*display: none;*/
-/*}*/
-
-/*#email {*/
-    /*display:none*/
-/*}*/
-
-/*#emailsent {*/
-    /*display: none;*/
-/*}*/
-
-/*#entercode {*/
-    /*display: none;*/
-/*}*/
-
-#play {
-    display: none;
-}
-
-/*#chat-dropdown {*/
-    /*display: none*/
-/*}*/
 
 .dropdown-content {
     display: none;

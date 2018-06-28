@@ -12,4 +12,4 @@ const suits = ['Bells', 'Keys', 'Moons']
 const stylesheet = document.documentElement.style
 const display = new Display()
 
-display.build('playerstartup', startup, 'home')
+// display.build('playerstartup', startup, 'home')

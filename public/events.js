@@ -47,16 +47,14 @@ function pauseVideo() {
     video.pauseVideo();
 }
 
-$(function(){
-    $("#flipbook").turn({
-        width: 800,
-        height: 592,
-        autoCenter: true
-    });
+$('#main')
 
-})
+    .on('submit', '#username', function(submit) {
+        submit.preventDefault()
+        let username = document.getElementById('username').value
+        socket.emit('username', username)
+    })
 
-$('#playerstartup')
     .on('submit', '#email', function(submit) {
         console.log("Hello!")
         submit.preventDefault()
@@ -65,11 +63,13 @@ $('#playerstartup')
         socket.emit('sendcode', input)
         display.build('playerstartup', startup, 'emailsent', input)
     })
+
     .on('submit', '#code', function(submit) {
         submit.preventDefault()
         let code = document.getElementById('codeentry').value
         socket.emit('join2p', code)
     })
+
     .on('submit', '#zulip', function(submit) {
         submit.preventDefault()
         let zulip = document.getElementById('zulipentry').value
@@ -77,15 +77,16 @@ $('#playerstartup')
         socket.emit('zulipsend', {address: address, code: gamecode, name: client.name})
     })
 
-$('#trick-info')
     .on('animationend', '#trick-leader', function() {
         display.clear('trick-info')
         game.round.trick.start()
     })
+
     .on('animationend', '#trick-winner', function() {
         display.clear('trick-info')
         game.round.trick.end()
     })
+
     .on('animationend', '#round-winner', function() {
         display.clear('trick-info')
         game.round.end()

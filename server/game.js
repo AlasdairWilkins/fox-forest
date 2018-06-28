@@ -6,8 +6,8 @@ const Player = require("./player")
 function Game(choice, id, p1cookie, p1socket, p2cookie, p2socket) {
     this.twoplayer = choice
     this.id = id
-    this.player1 = new Player(this.deck, active[p1cookie].name, active[p1cookie].id, p1cookie, p1socket)
-    this.player2 = choice ? new Player(this.deck, active[p2cookie].name, active[p2cookie].id, p2cookie, p2socket) : new Player(this.deck)
+    this.player1 = new Player(active[p1cookie].name, active[p1cookie].id, p1cookie, p1socket)
+    this.player2 = choice ? new Player(active[p2cookie].name, active[p2cookie].id, p2cookie, p2socket) : new Player()
     this.round = new Round(this.player1, this.player2)
     this.turn = this.round.trick.leadplayer.id
     // this.state = new State(this.player1, this.player2, this.round, this.deck)

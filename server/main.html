@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>The Fox in the Forest</title>
     <link rel="stylesheet" type="text/css" href="/display/main.css">
+    <!--<script src="https://www.youtube.com/iframe_api" ></script>-->
     <script type="application/javascript" src="/libraries/jquery-3.3.1.js" ></script>
     <script type="application/javascript" src="/libraries/turn.js" ></script>
     <script type="application/javascript" src="/libraries/auto-complete.min.js" ></script>
@@ -17,6 +18,7 @@
     <script type="application/javascript" src="/display/display.js" defer></script>
     <script type="application/javascript" src="/display/handlebars.js" defer></script>
     <script type="application/javascript" src="/display/context.js" defer></script>
+    <script type="application/javascript" src="/display/flipbook.js" defer></script>
     <script type="application/javascript" src="/events.js" defer></script>
     <script type="application/javascript" src="/sockets.js" defer></script>
     <script type="application/javascript" src="/state.js" defer></script>
@@ -32,7 +34,7 @@
             <div class="bars" id="bar3"></div>
             <div class="dropdown-content" id="user-dropdown-content">
                 <div onclick="client.goHome()")><p>Main Menu</p></div>
-                <div onclick="display.showModal('settings-modal')"><p>User Settings</p></div>
+                <div onclick="display.show('settings-modal')"><p>User Settings</p></div>
             </div>
         </div>
         <div id="display-info"></div>
@@ -89,8 +91,8 @@
     <div class="reference" id="rules">
         <div class="dropdown" id="rules-dropdown" onclick="display.showDropdown('rules-dropdown-content')">Rules</div>
         <div class="dropdown-content" id="rules-dropdown-content">
-            <div onclick="display.showModal('rulebook-modal')"><p>Read the rules</p></div>
-            <div onclick="display.showModal('video-tutorial-modal')"><p>Watch video tutorial</p></div>
+            <div onclick="display.show('rulebook-modal')"><p>Read the rules</p></div>
+            <div onclick="display.show('video-tutorial-modal')"><p>Watch video tutorial</p></div>
         </div>
     </div>
     <div class="reference" id="cards-reference">
@@ -126,12 +128,10 @@
                 <div><img src="images/rules06.jpg"></div>
                 <div><img src="images/rules07.jpg"></div>
                 <div><img src="images/rules08.jpg"></div>
-                <div><img src="images/rules09.jpg"></div>
-                <div><img src="images/rules10.jpg"></div>
-                <div class="hard"></div>
-                <div class="hard"></div>
+                <div class="hard"><img src="images/rules09.jpg"></div>
+                <div class="hard"><img src="images/rules10.jpg"></div>
             </div>
-            <button onclick="display.clearModal('rulebook-modal')">Return to game</button>
+            <button onclick="display.hide('rulebook-modal')">Return to game</button>
         </div>
     </div>
     <div class="modal" id="settings-modal">
@@ -139,52 +139,20 @@
             <div><input id="leader-checkBox" type="checkbox" checked="true"><label for="leader-checkBox">Display leader of next trick</label></div>
             <div><input id="winner-checkBox" type="checkbox" checked="true"><label for="winner-checkBox">Display winner of current trick</label></div>
             <div><input id="score-checkBox" type="checkbox" checked="true"><label for="score-checkBox">Display end-of-round-scoring</label></div>
-            <button onclick="display.clearModal('settings-modal')">Return to game</button>
+            <button onclick="display.hide('settings-modal')">Return to game</button>
         </div>
     </div>
     <div class="modal" id="video-tutorial-modal">
         <div class="modal-container" id="video-tutorial-container">
             <div id="player"></div>
-            <button onclick="display.clearModal('video-tutorial-modal')">Return to game</button>
+            <button onclick="display.hide('video-tutorial-modal')">Return to game</button>
         </div>
     </div>
     <!--</div>-->
 </div>
-<div id="startup">
-    <p>Welcome to The Fox in the Forest!</p>
-    <div id ="playerstartup"></div></div>
 
-<div id="play">
-    <div id="game">
-        <div id="trick-container">
-            <div id="decree">
-                <div id="decree-card"></div>
-                <div id="pass"></div>
-            </div>
-            <div id="trick">
-                <div id ="trick-cards"></div>
-                <div id="trick-info"></div>
-            </div>
-            <div id="deck"><img src="/images/reverse.jpg" class="card"></div>
-        </div>
-        <div id="hand-container">
-            <div id="hand"></div>
-            <div id="info">
-                <p>Game Info:</p>
-                <p id="mechanic">Mouse over any odd-numbered card to see its special ability!</p>
-                <p id="turn"></p>
-                <p id="hint"></p>
-            </div>
-        </div>
-    </div>
-<!--<div>-->
-<!--<p id ="last-round"></p>-->
-<!--<p id ="player-1-tricks"></p>-->
-<!--<p id ="player-2-tricks"></p>-->
-<!--<p id ="score-update"></p>-->
-<!--<p id ="game-over"></p>-->
-<!--</div>-->
-</div>
+<div id="main"></div>
+
 <script src="/socket.io/socket.io.js"></script>
 <script>
     var socket = io();

@@ -31,6 +31,29 @@ const request = require('request')
 const Promise = require('bluebird')
 const rp = require('request-promise')
 
+const sqlite3 = require('sqlite3').verbose()
+const database = './db/main.db'
+
+// let db = new sqlite3.Database(database, (err) => {
+//     if (err) {
+//         return console.error(err.message);
+//     }
+//     console.log('Connected to the SQlite database.');
+// });
+//
+// let sql =
+//     'ALTER TABLE Users ( Name , ID );'
+//
+//
+// db.run(sql, (err) => {
+//     if (err) {
+//         return console.error(err.message, sql)
+//     }
+//     console.log("Table created!")
+// });
+//
+// db.close();
+
 const zulip = require('zulip-js')
 
 const zulipConfig = {
@@ -38,8 +61,6 @@ const zulipConfig = {
     apiKey: process.env.ZULIP_KEY,
     realm: 'https://recurse.zulipchat.com'
 };
-
-//https://www.recurse.com/settings/apps
 
 const credentials = {
     client: {
@@ -53,7 +74,6 @@ const credentials = {
 const oauth2 = require('simple-oauth2').create(credentials);
 const authorizationUri = oauth2.authorizationCode.authorizeURL({
     redirect_uri: url + '/login'
-    // redirect_uri: 'http://fox-forest.alasdairwilkins.com/login',
 });
 
 http.listen(8000, function() {
@@ -63,28 +83,27 @@ http.listen(8000, function() {
 app.use(express.static('public'))
 app.use(cookieParser())
 
+app.get('/test', (req, res) => {
+    res.sendFile(__dirname + '/test.html')
+})
+
 app.get('/', (req, res) => {
     // console.log('Body', req.body)
     console.log('Cookie', req.cookies)
-    console.log("/", req.headers.referer)
-    let cookie
+    let cookie = (!req.cookies.id) ? shortid.generate() : req.cookies.id
     if (!req.cookies.id) {
-        cookie = shortid.generate()
         res.setHeader('Set-Cookie', 'id=' + cookie)
-    } else {
-        cookie = req.cookies.id
+        if (req.query.code) {
+            let code = req.query.code
+            res.setHeader('Set-Cookie', 'code=' + code)
+        }
+        if (!active[req.cookies.id]) {
+            res.sendFile(__dirname + '/login.html')
+        } else {
+            res.sendFile(__dirname + '/main.html')
+        }
     }
-    if (req.query.code) {
-        let code = req.query.code
-        res.setHeader('Set-Cookie', 'code=' + code)
-    }
-    if (!active[req.cookies.id]) {
-        res.sendFile(__dirname + '/login.html')
-    } else {
-        res.sendFile(__dirname + '/main.html')
-        console.log('here comes a user');
-    }
-});
+})
 
 app.get('/auth', (req, res) => {
     console.log("/auth", req.headers.referer)
@@ -108,7 +127,6 @@ app.get('/login',  (req, res) => {
     let options = {
         code: code,
         redirect_uri: url + '/login'
-        // redirect_uri: 'http://fox-forest.alasdairwilkins.com/login'
     };
 
     return oauth2.authorizationCode.getToken(options)
@@ -123,12 +141,26 @@ app.get('/login',  (req, res) => {
             return rp(options)
         })
         .then(function(response) {
-            // console.log("And here we are!", response.id, response.first_name, response.last_name, response.email)
-
-            // review findPlayer function
             let user = shortid.generate()
-
             active[req.cookies.id] = {id: user, name: response.first_name, login: 'recurse', games: {}}
+
+            // let db = new sqlite3.Database(database, (err) => {
+            //     if (err) {
+            //         return console.error(err.message);
+            //     }
+            //     console.log('Connected to the SQlite database.');
+            // });
+            //
+            // db.run(`INSERT INTO Users (Name, ID) VALUES(?)`, [response.first_name, user], function(err) {
+            //     if (err) {
+            //         return console.log(err.message);
+            //     }
+            //     // get the last insert id
+            //     console.log(`A row has been inserted with rowid ${this.lastID}`);
+            // });
+            //
+            // db.close()
+
             res.redirect('/')
         })
         .catch(function (err) {
@@ -137,21 +169,6 @@ app.get('/login',  (req, res) => {
             res.redirect('/')
         })
 });
-
-//review purpose of this function?
-
-// app.post('/codesent', function(req, res) {
-//     res.setHeader('Access-Control-Allow-Origin', '*')
-//     console.log(req.body)
-// // })
-//
-// //review purpose of this function?
-//
-// app.post('/woodcutterdraw', function(req, res) {
-//     res.setHeader('Access-Control-Allow-Origin', '*')
-//     var card = round.deck.pop()
-//     res.send({'newcard': card})
-// })
 
 io.on('connection', function(socket){
 
@@ -191,22 +208,21 @@ io.on('connection', function(socket){
                 io.to(gameroom).emit('startupinfo', games[gameroom])
             }
         }
-
+    } else {
+        socket.emit("login")
     }
 
-    // check for email link -- will need to be fixed for login and Zulip
+    socket.on('username', function(username) {
+        let cookie = server.parseCookie(socket.request.headers.cookie).id
+        active[cookie] = {
+            id: null,
+            name: username,
+            games: {},
+            socket: socket.id
+        }
+        socket.emit('startup', active[cookie])
+    })
 
-    // if (!socket.request.headers.referer === url) {
-    //     console.log("A game code incoming!", console.log(socket.request.headers.referer))
-    // //     // let referer = socket.request.headers.referer
-    // //     // let query = referer.substr(url.length)
-    // //     // if (query.substr(0, 5) === '?code') {
-    // //     //     let code = query.substr(6)
-    // //     //     start2p(code, socket)
-    // //     // }
-    // } else {
-    //     console.log("Normal load up!", socket.request.headers.referer)
-    // }
 
     socket.on('start1p', function(){
         let cookie = server.parseCookie(socket.request.headers.cookie).id
@@ -390,4 +406,4 @@ io.on('connection', function(socket){
         console.log('a user disconnected');
         console.log(socket.id, cookie)
     });
-});
+})

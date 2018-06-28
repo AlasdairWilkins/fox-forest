@@ -1,3 +1,7 @@
+socket.on('login', function() {
+    display.build('main', main, 'login')
+})
+
 socket.on('startup', function(userinfo) {
     client.name = userinfo.name
     client.id = userinfo.id
@@ -62,3 +66,6 @@ socket.on('zulipinfo', function(msg) {
 socket.on('woodcuttercard', function(donext, card) {
     game.displayplayer.insertWoodcutter(card)
 })
+
+//
+
